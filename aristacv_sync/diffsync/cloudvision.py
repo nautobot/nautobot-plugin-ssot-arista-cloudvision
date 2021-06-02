@@ -96,6 +96,10 @@ class CloudVision(DiffSync):
             self.add(self.device)
             dev_tags = get_device_tags(device_id=dev["device_id"])
             for tag in dev_tags:
-                self.tag = Tag(name=tag["label"], device_name=dev["hostname"], value=tag["value"], tag_type=tag["type"])
-                self.add(self.tag)
-                self.device.add_child(self.tag)
+                # Skip empty tags
+                if tag["value"]:
+                    self.tag = Tag(
+                        name=tag["label"], device_name=dev["hostname"], value=tag["value"], tag_type=tag["type"]
+                    )
+                    self.add(self.tag)
+                    self.device.add_child(self.tag)
