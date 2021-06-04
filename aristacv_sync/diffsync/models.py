@@ -8,7 +8,7 @@ class Device(DiffSyncModel):
     """Device Model"""
 
     _modelname = "device"
-    _identifiers = ("name",)
+    _identifiers = ("name", "device_id")
     _attributes = ()
     _children = {"tag": "tags"}
 

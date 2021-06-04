@@ -12,7 +12,7 @@ TOKEN = os.environ["CVP_TOKEN"]
 
 
 def get_devices():
-    """Get devices from inventory."""
+    """Get active devices from inventory."""
     device_url = "/api/resources/inventory/v1/Device/all"
     url = CVP_URL + device_url
     head = {"Authorization": "Bearer {}".format(TOKEN)}
