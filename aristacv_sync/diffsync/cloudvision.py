@@ -5,7 +5,7 @@ import json
 import requests
 
 from diffsync import DiffSync
-from models import Device, Tag
+from .models import Device, Tag
 
 CVP_URL = "https://www.arista.io"
 TOKEN = os.environ["CVP_TOKEN"]
