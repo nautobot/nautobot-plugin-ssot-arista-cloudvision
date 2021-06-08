@@ -78,7 +78,7 @@ def get_interface_tags(device_id=None, if_id=None, label=None, value=None):
 
 
 class CloudVision(DiffSync):
-    """DiffSync adapter implementation for CloudVision device tags."""
+    """DiffSync adapter implementation for CloudVision user-defined device tags."""
 
     device = Device
     tag = Tag
@@ -96,6 +96,9 @@ class CloudVision(DiffSync):
             self.add(self.device)
             dev_tags = get_device_tags(device_id=dev["device_id"])
             for tag in dev_tags:
-                self.tag = Tag(name=tag["label"], device_name=dev["hostname"], value=tag["value"], tag_type=tag["type"])
-                self.add(self.tag)
-                self.device.add_child(self.tag)
+                if tag["type"] == "CREATOR_TYPE_USER":
+                    self.tag = Tag(
+                        name=tag["label"], device_name=dev["hostname"], value=tag["value"], tag_type=tag["type"]
+                    )
+                    self.add(self.tag)
+                    self.device.add_child(self.tag)
