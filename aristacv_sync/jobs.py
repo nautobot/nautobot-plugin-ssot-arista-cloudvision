@@ -7,7 +7,7 @@ class FormEntry:
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
 
-class CVSyncJob(Job, FormEntry):
+class CVSyncFromJob(Job, FormEntry):
     debug = FormEntry.debug
 
     class Meta:
@@ -20,4 +20,17 @@ class CVSyncJob(Job, FormEntry):
         cv.load()
 
 
-jobs = [CVSyncJob]
+class CVSyncToJob(Job, FormEntry):
+    debug = FormEntry.debug
+
+    class Meta:
+        name = "Sync to CloudVision"
+        description = "Sync custom tag data from Nautobot to CloudVision"
+
+    def run(self, data, commit):
+        cv = CloudVision()
+        self.log("Loading data from CloudVision")
+        cv.load()
+
+
+jobs = [CVSyncFromJob, CVSyncToJob]
