@@ -1,3 +1,5 @@
+from requests.exceptions import HTTPError
+
 from nautobot.extras.jobs import Job, BooleanVar
 
 from aristacv_sync.diffsync.cloudvision import CloudVision
@@ -42,6 +44,12 @@ class CVSyncToJob(Job, FormEntry):
             self.log_debug(diff_nb_cv.dict())
         if commit:
             self.log("Syncing to CloudVision")
+            try:
+                nb.sync_to(cv)
+            except HTTPError as e:
+                self.log_failure(message=f"Sync failed")
+                raise e
+            self.log_success(message="Sync complete")
 
 
 jobs = [CVSyncFromJob, CVSyncToJob]
