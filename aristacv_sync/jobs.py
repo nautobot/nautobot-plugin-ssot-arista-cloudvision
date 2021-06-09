@@ -36,9 +36,10 @@ class CVSyncToJob(Job, FormEntry):
         nb = Nautobot()
         nb.load()
         self.log("Performing diff between Nautobot and Cloudvision")
-        diff_nb_cv = nb.diff_from(cv)
-        self.log("Diff:")
-        self.log(diff_nb_cv.str())
+        diff_nb_cv = cv.diff_from(nb)
+        self.log(diff_nb_cv.summary())
+        if data["debug"]:
+            self.log_debug(diff_nb_cv.dict())
         if commit:
             self.log("Syncing to CloudVision")
 
