@@ -72,3 +72,25 @@ def get_interface_tags(device_id=None, if_id=None, label=None, value=None):
         }
         tags.append(tag)
     return tags
+
+
+def create_tag(label: str, value: str):
+    """Create user-defined tag in CloudVision."""
+    tag_url = "/api/resources/tag/v1/DeviceTagConfig"
+    url = CVP_URL + tag_url
+    head = {"Authorization": "Bearer {}".format(TOKEN)}
+    payload = {"key": {"label": label, "value": value}}
+    response = requests.post(url, headers=head, json=payload)
+    # Skip raising exception if tag already exists
+    if "tag already exists" not in response.text:
+        response.raise_for_status()
+
+
+def assign_tag_to_device(device_id: str, label: str, value: str):
+    """Assign user-defined tag to device in CloudVision."""
+    tag_url = "/api/resources/tag/v1/DeviceTagAssignmentConfig"
+    url = CVP_URL + tag_url
+    head = {"Authorization": "Bearer {}".format(TOKEN)}
+    payload = {"key": {"label": label, "value": value, "deviceId": device_id}}
+    response = requests.post(url, headers=head, json=payload)
+    response.raise_for_status()
