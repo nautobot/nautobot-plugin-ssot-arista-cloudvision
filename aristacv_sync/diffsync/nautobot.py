@@ -30,7 +30,7 @@ class Nautobot(DiffSync):
                     label, value = tag.name.split(":")
                 else:
                     label = tag.name
-                    value = None
+                    value = ""
                 self.tag = UserTag(name=label, device_name=dev.name, value=value)
                 self.add(self.tag)
                 self.device.add_child(self.tag)
