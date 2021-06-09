@@ -5,7 +5,7 @@ import json
 import requests
 
 from diffsync import DiffSync
-from .models import Device, Tag
+from .models import Device, UserTag
 
 CVP_URL = "https://www.arista.io"
 TOKEN = os.environ["CVP_TOKEN"]
@@ -81,7 +81,7 @@ class CloudVision(DiffSync):
     """DiffSync adapter implementation for CloudVision user-defined device tags."""
 
     device = Device
-    tag = Tag
+    tag = UserTag
 
     top_level = ["device"]
 
@@ -97,8 +97,6 @@ class CloudVision(DiffSync):
             dev_tags = get_device_tags(device_id=dev["device_id"])
             for tag in dev_tags:
                 if tag["type"] == "CREATOR_TYPE_USER":
-                    self.tag = Tag(
-                        name=tag["label"], device_name=dev["hostname"], value=tag["value"], tag_type=tag["type"]
-                    )
+                    self.tag = UserTag(name=tag["label"], device_name=dev["hostname"], value=tag["value"])
                     self.add(self.tag)
                     self.device.add_child(self.tag)

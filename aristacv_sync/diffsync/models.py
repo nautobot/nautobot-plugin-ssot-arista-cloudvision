@@ -17,7 +17,7 @@ class Device(DiffSyncModel):
     tags: List = list()
 
 
-class Tag(DiffSyncModel):
+class UserTag(DiffSyncModel):
     """Tag model"""
 
     _modelname = "tag"
@@ -28,4 +28,3 @@ class Tag(DiffSyncModel):
     name: str
     device_name: str
     value: str
-    tag_type: str
