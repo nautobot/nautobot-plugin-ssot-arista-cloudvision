@@ -8,12 +8,17 @@ CVP_URL = "https://www.arista.io"
 TOKEN = os.environ["CVP_TOKEN"]
 
 
+def send_request(method, url, payload=None):
+    """Send requests to CloudVision URL using method and payload provided."""
+    header = {"Authorization": f"Bearer {TOKEN}"}
+    response = requests.request(method, CVP_URL + url, headers=header, json=payload)
+    return response
+
+
 def get_devices():
     """Get devices from inventory."""
     device_url = "/api/resources/inventory/v1/Device/all"
-    url = CVP_URL + device_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
-    response = requests.get(url, headers=head)
+    response = send_request("GET", device_url)
     devices = []
     response.raise_for_status()
     for line in response.text.split():
@@ -34,12 +39,10 @@ def get_devices():
 def get_device_tags(device_id=None, if_id=None, label=None, value=None):
     """Get device tags with optional filter."""
     device_tag_url = "/api/resources/tag/v1/DeviceTag/all"
-    url = CVP_URL + device_tag_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
     payload = {
         "partialEqFilter": [{"key": {"deviceId": device_id, "interfaceId": if_id, "label": label, "value": value}}]
     }
-    response = requests.get(url, headers=head, json=payload)
+    response = send_request("GET", device_tag_url, payload)
     response.raise_for_status()
     tags = []
     for line in response.text.split():
@@ -59,9 +62,7 @@ def get_interface_tags(device_id=None, if_id=None, label=None, value=None):
     payload = {
         "partialEqFilter": [{"key": {"deviceId": device_id, "interfaceId": if_id, "label": label, "value": value}}]
     }
-    url = CVP_URL + tag_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
-    response = requests.post(url, headers=head, json=payload)
+    response = send_request("POST", tag_url, payload)
     response.raise_for_status()
     tags = []
     for line in response.text.split():
@@ -77,10 +78,8 @@ def get_interface_tags(device_id=None, if_id=None, label=None, value=None):
 def create_tag(label: str, value: str):
     """Create user-defined tag in CloudVision."""
     tag_url = "/api/resources/tag/v1/DeviceTagConfig"
-    url = CVP_URL + tag_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
     payload = {"key": {"label": label, "value": value}}
-    response = requests.post(url, headers=head, json=payload)
+    response = send_request("POST", tag_url, payload)
     # Skip raising exception if tag already exists
     if "tag already exists" not in response.text:
         response.raise_for_status()
@@ -89,8 +88,6 @@ def create_tag(label: str, value: str):
 def assign_tag_to_device(device_id: str, label: str, value: str):
     """Assign user-defined tag to device in CloudVision."""
     tag_url = "/api/resources/tag/v1/DeviceTagAssignmentConfig"
-    url = CVP_URL + tag_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
     payload = {"key": {"label": label, "value": value, "deviceId": device_id}}
-    response = requests.post(url, headers=head, json=payload)
+    response = send_request("POST", tag_url, payload)
     response.raise_for_status()
