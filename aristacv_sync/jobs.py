@@ -2,8 +2,8 @@ from requests.exceptions import HTTPError
 
 from nautobot.extras.jobs import Job, BooleanVar
 
-from aristacv_sync.diffsync.cloudvision import CloudVision
-from aristacv_sync.diffsync.nautobot import Nautobot
+from aristacv_sync.diffsync.tocv.cloudvision import CloudVision
+from aristacv_sync.diffsync.tocv.nautobot import Nautobot
 
 
 class FormEntry:
