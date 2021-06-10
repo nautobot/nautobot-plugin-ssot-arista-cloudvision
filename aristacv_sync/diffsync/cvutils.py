@@ -1,22 +1,24 @@
-"""DiffSync adapter for Arista CloudVision."""
+"""Utility functions for CloudVision Resource API."""
 import os
 import json
 
 import requests
 
-from diffsync import DiffSync
-from .models import Device, Tag
-
 CVP_URL = "https://www.arista.io"
 TOKEN = os.environ["CVP_TOKEN"]
+
+
+def send_request(method, url, payload=None):
+    """Send requests to CloudVision URL using method and payload provided."""
+    header = {"Authorization": f"Bearer {TOKEN}"}
+    response = requests.request(method, CVP_URL + url, headers=header, json=payload)
+    return response
 
 
 def get_devices():
     """Get devices from inventory."""
     device_url = "/api/resources/inventory/v1/Device/all"
-    url = CVP_URL + device_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
-    response = requests.get(url, headers=head)
+    response = send_request("GET", device_url)
     devices = []
     response.raise_for_status()
     for line in response.text.split():
@@ -37,12 +39,10 @@ def get_devices():
 def get_device_tags(device_id=None, if_id=None, label=None, value=None):
     """Get device tags with optional filter."""
     device_tag_url = "/api/resources/tag/v1/DeviceTag/all"
-    url = CVP_URL + device_tag_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
     payload = {
         "partialEqFilter": [{"key": {"deviceId": device_id, "interfaceId": if_id, "label": label, "value": value}}]
     }
-    response = requests.get(url, headers=head, data=json.dumps(payload))
+    response = send_request("GET", device_tag_url, payload)
     response.raise_for_status()
     tags = []
     for line in response.text.split():
@@ -62,9 +62,7 @@ def get_interface_tags(device_id=None, if_id=None, label=None, value=None):
     payload = {
         "partialEqFilter": [{"key": {"deviceId": device_id, "interfaceId": if_id, "label": label, "value": value}}]
     }
-    url = CVP_URL + tag_url
-    head = {"Authorization": "Bearer {}".format(TOKEN)}
-    response = requests.post(url, headers=head, data=json.dumps(payload))
+    response = send_request("POST", tag_url, payload)
     response.raise_for_status()
     tags = []
     for line in response.text.split():
@@ -77,28 +75,19 @@ def get_interface_tags(device_id=None, if_id=None, label=None, value=None):
     return tags
 
 
-class CloudVision(DiffSync):
-    """DiffSync adapter implementation for CloudVision user-defined device tags."""
+def create_tag(label: str, value: str):
+    """Create user-defined tag in CloudVision."""
+    tag_url = "/api/resources/tag/v1/DeviceTagConfig"
+    payload = {"key": {"label": label, "value": value}}
+    response = send_request("POST", tag_url, payload)
+    # Skip raising exception if tag already exists
+    if "tag already exists" not in response.text:
+        response.raise_for_status()
 
-    device = Device
-    tag = Tag
 
-    top_level = ["device"]
-
-    type = "CloudVision"
-
-    nb = None
-
-    def load(self):
-        devices = get_devices()
-        for dev in devices:
-            self.device = Device(name=dev["hostname"], device_id=dev["device_id"])
-            self.add(self.device)
-            dev_tags = get_device_tags(device_id=dev["device_id"])
-            for tag in dev_tags:
-                if tag["type"] == "CREATOR_TYPE_USER":
-                    self.tag = Tag(
-                        name=tag["label"], device_name=dev["hostname"], value=tag["value"], tag_type=tag["type"]
-                    )
-                    self.add(self.tag)
-                    self.device.add_child(self.tag)
+def assign_tag_to_device(device_id: str, label: str, value: str):
+    """Assign user-defined tag to device in CloudVision."""
+    tag_url = "/api/resources/tag/v1/DeviceTagAssignmentConfig"
+    payload = {"key": {"label": label, "value": value, "deviceId": device_id}}
+    response = send_request("POST", tag_url, payload)
+    response.raise_for_status()

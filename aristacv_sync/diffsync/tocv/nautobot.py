@@ -3,7 +3,7 @@ from nautobot.dcim.models import Device as NautobotDevice
 from nautobot.extras.models.tags import Tag
 from diffsync import DiffSync
 
-from .models import Device, Tag
+from .models import Device, UserTag
 
 
 class Nautobot(DiffSync):
@@ -30,7 +30,7 @@ class Nautobot(DiffSync):
                     label, value = tag.name.split(":")
                 else:
                     label = tag.name
-                    value = None
-                self.tag = Tag(name=label, device_name=dev.name, value=value, tag_type="CREATOR_TYPE_USER")
+                    value = ""
+                self.tag = UserTag(name=label, device_name=dev.name, value=value)
                 self.add(self.tag)
                 self.device.add_child(self.tag)
