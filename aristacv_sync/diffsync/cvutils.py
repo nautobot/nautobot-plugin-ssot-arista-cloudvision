@@ -42,7 +42,7 @@ def get_tags():
         tag_stub = tag.services.DeviceTagServiceStub(channel)
         req = tag.services.DeviceTagStreamRequest()
         responses = tag_stub.GetAll(req)
-        tags = []
+        tags = list()
         for resp in responses:
             dev_tag = {
                 "label": resp.value.key.label.value,
@@ -53,24 +53,23 @@ def get_tags():
     return tags
 
 
-def get_tags_by_type(creator_type=tag.models.CREATOR_TYPE_USER):
+def get_tags_by_type(creator_type: int = tag.models.CREATOR_TYPE_USER):
     """Get tags by creator type from CloudVision."""
     with grpc.secure_channel(cvp_url, conn_creds) as channel:
         tag_stub = tag.services.DeviceTagServiceStub(channel)
         req = tag.services.DeviceTagStreamRequest(partial_eq_filter=[tag.models.DeviceTag(creator_type=creator_type)])
         responses = tag_stub.GetAll(req)
-        tags = []
+        tags = list()
         for resp in responses:
             dev_tag = {
                 "label": resp.value.key.label.value,
                 "value": resp.value.key.value.value,
-                "creator_type": resp.value.creator_type,
             }
             tags.append(dev_tag)
     return tags
 
 
-def get_device_tags(device_id):
+def get_device_tags(device_id: str):
     """Get tags for specific device."""
     with grpc.secure_channel(cvp_url, conn_creds) as channel:
         tag_stub = tag.services.DeviceTagAssignmentConfigServiceStub(channel)
@@ -84,7 +83,7 @@ def get_device_tags(device_id):
             ]
         )
         responses = tag_stub.GetAll(req)
-        tags = []
+        tags = list()
         for resp in responses:
             dev_tag = {
                 "label": resp.value.key.label.value,
@@ -94,22 +93,37 @@ def get_device_tags(device_id):
     return tags
 
 
-# def create_tag(label: str, value: str):
-#     """Create user-defined tag in CloudVision."""
-#     tag_url = "/api/resources/tag/v1/DeviceTagConfig"
-#     payload = {"key": {"label": label, "value": value}}
-#     response = send_request("POST", tag_url, payload)
-#     # Skip raising exception if tag already exists
-#     if "tag already exists" not in response.text:
-#         response.raise_for_status()
+def create_tag(label: str, value: str):
+    """Create user-defined tag in CloudVision."""
+    with grpc.secure_channel(cvp_url, conn_creds) as channel:
+        tag_stub = tag.services.DeviceTagConfigServiceStub(channel)
+        req = tag.services.DeviceTagConfigSetRequest(
+            value=tag.models.DeviceTagConfig(
+                key=tag.models.TagKey(label=wrappers.StringValue(value=label), value=wrappers.StringValue(value=value))
+            )
+        )
+        try:
+            tag_stub.Set(req)
+        except grpc.RpcError as e:
+            # Ignore RPC error if tag already exists for idempotency
+            if e.code() != grpc.StatusCode.ALREADY_EXISTS:
+                raise e
 
 
-# def assign_tag_to_device(device_id: str, label: str, value: str):
-#     """Assign user-defined tag to device in CloudVision."""
-#     tag_url = "/api/resources/tag/v1/DeviceTagAssignmentConfig"
-#     payload = {"key": {"label": label, "value": value, "deviceId": device_id}}
-#     response = send_request("POST", tag_url, payload)
-#     response.raise_for_status()
+def assign_tag_to_device(device_id: str, label: str, value: str):
+    """Assign user-defined tag to device in CloudVision."""
+    with grpc.secure_channel(cvp_url, conn_creds) as channel:
+        tag_stub = tag.services.DeviceTagAssignmentConfigServiceStub(channel)
+        req = tag.services.DeviceTagAssignmentConfigSetRequest(
+            value=tag.models.DeviceTagAssignmentConfig(
+                key=tag.models.DeviceTagAssignmentKey(
+                    label=wrappers.StringValue(value=label),
+                    value=wrappers.StringValue(value=value),
+                    device_id=wrappers.StringValue(value=device_id),
+                )
+            )
+        )
+        tag_stub.Set(req)
 
 
 def remove_tag_from_device(device_id: str, label: str, value: str):
@@ -118,8 +132,8 @@ def remove_tag_from_device(device_id: str, label: str, value: str):
         tag_stub = tag.services.DeviceTagAssignmentConfigServiceStub(channel)
         req = tag.services.DeviceTagAssignmentConfigDeleteRequest(
             key=tag.models.DeviceTagAssignmentKey(
-                label=wrappers.StringValue(value=tag_name),
-                value=wrappers.StringValue(value=tag_value),
+                label=wrappers.StringValue(value=label),
+                value=wrappers.StringValue(value=value),
                 device_id=wrappers.StringValue(value=device_id),
             )
         )
