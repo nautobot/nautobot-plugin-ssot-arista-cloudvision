@@ -24,6 +24,7 @@ packages = [
 python = "^3.6"
 nautobot = {git = "https://github.com/nautobot/nautobot", rev = "develop"}
 diffsync = "^1.3.0"
+cloudvision = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 invoke = "*"
