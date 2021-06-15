@@ -1,8 +1,6 @@
 """Plugin declaration for aristacv_sync."""
 
 __version__ = "0.1.0"
-
-from django.db.models.signals import post_migrate
 from nautobot.extras.plugins import PluginConfig
 
 
@@ -26,10 +24,10 @@ class AristaCVSyncConfig(PluginConfig):
         super().ready()
 
         from .signals import (  # pylint: disable=import-outside-toplevel
-            post_migrate_create_custom_fields,
+            create_custom_fields,
         )
 
-        post_migrate_create_custom_fields()
+        create_custom_fields()
 
 
 config = AristaCVSyncConfig  # pylint:disable=invalid-name
