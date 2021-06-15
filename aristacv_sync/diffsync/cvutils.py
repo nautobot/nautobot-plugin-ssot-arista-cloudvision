@@ -36,6 +36,19 @@ def get_devices():
     return devices
 
 
+def get_device_id(device_name: str):
+    """Get device_id for device_name from CloudVision inventory."""
+    with grpc.secure_channel(cvp_url, conn_creds) as channel:
+        device_stub = inv.services.DeviceServiceStub(channel)
+        req = inv.services.DeviceStreamRequest(
+            partial_eq_filter=[
+                inv.models.Device(hostname=device_name, streaming_status=inv.models.STREAMING_STATUS_ACTIVE)
+            ]
+        )
+        resp = device_stub.Get(req)
+    return resp.value.key.device_id.value
+
+
 def get_tags():
     """Get all tags from CloudVision."""
     with grpc.secure_channel(cvp_url, conn_creds) as channel:
@@ -107,6 +120,21 @@ def create_tag(label: str, value: str):
         except grpc.RpcError as e:
             # Ignore RPC error if tag already exists for idempotency
             if e.code() != grpc.StatusCode.ALREADY_EXISTS:
+                raise e
+
+
+def delete_tag(label: str, value: str):
+    """Delete user-defined tag in CloudVision."""
+    with grpc.secure_channel(cvp_url, conn_creds) as channel:
+        tag_stub = tag.services.DeviceTagConfigServiceStub(channel)
+        req = tag.services.DeviceTagConfigDeleteRequest(
+            key=tag.models.TagKey(label=wrappers.StringValue(value=label), value=wrappers.StringValue(value=value))
+        )
+        try:
+            tag_stub.Delete(req)
+        # Skip error of tags that may be assigned to devices manually in CloudVision
+        except grpc.RpcError as e:
+            if e.details() != "assignments for this tag exist":
                 raise e
 
 
