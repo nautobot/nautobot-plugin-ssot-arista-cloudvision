@@ -10,7 +10,7 @@ class Nautobot(DiffSync):
     """DiffSync adapter implementation for Nautobot user-defined tags."""
 
     device = Device
-    tag = Tag
+    tag = UserTag
 
     top_level = ["device"]
 
