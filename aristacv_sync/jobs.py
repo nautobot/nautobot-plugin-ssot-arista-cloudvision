@@ -1,4 +1,4 @@
-from requests.exceptions import HTTPError
+from grpc import RpcError
 
 from nautobot.extras.jobs import Job, BooleanVar
 
@@ -46,8 +46,8 @@ class CVSyncToJob(Job, FormEntry):
             self.log("Syncing to CloudVision")
             try:
                 nb.sync_to(cv)
-            except HTTPError as e:
-                self.log_failure(message=f"Sync failed")
+            except RpcError as e:
+                self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete")
 
