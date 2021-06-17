@@ -22,9 +22,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
-nautobot = {git = "https://github.com/nautobot/nautobot", rev = "develop"}
+nautobot-ssot = {path = "./nautobot-plugin-ssot"}
 diffsync = "^1.3.0"
 cloudvision = "^1.0.0"
+packaging = "^20.9"
 
 [tool.poetry.dev-dependencies]
 invoke = "*"
