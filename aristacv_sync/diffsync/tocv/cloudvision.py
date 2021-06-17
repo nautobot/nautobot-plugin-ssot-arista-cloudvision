@@ -29,3 +29,7 @@ class CloudVision(DiffSync):
             for tag in dev_tags:
                 cur_tag = self.get(UserTag, f"{tag['label']}__{tag['value']}")
                 cur_tag.devices.append(hostname)
+
+        # Sort device list of all tags for diffsync
+        for tag in self.get_all(UserTag):
+            tag.devices = sorted(tag.devices)
