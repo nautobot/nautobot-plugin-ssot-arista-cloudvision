@@ -2,6 +2,8 @@ from grpc import RpcError
 
 from nautobot.extras.jobs import Job, BooleanVar
 
+from nautobot_ssot.jobs.base import DataTarget
+
 from aristacv_sync.diffsync.tocv.cloudvision import CloudVision
 from aristacv_sync.diffsync.tocv.nautobot import Nautobot
 
@@ -23,14 +25,15 @@ class CVSyncFromJob(Job, FormEntry):
         cv.load()
 
 
-class CVSyncToJob(Job, FormEntry):
-    debug = FormEntry.debug
+class CloudVisionDataTarget(DataTarget, Job):
+    debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
-        name = "Sync to CloudVision"
-        description = "Sync custom tag data from Nautobot to CloudVision"
+        name = "CloudVision"
+        data_target = "CloudVision"
+        description = "Sync tag data from Nautobot to CloudVision"
 
-    def run(self, data, commit):
+    def sync_data(self):
         self.log("Loading data from CloudVision")
         cv = CloudVision()
         cv.load()
@@ -38,11 +41,13 @@ class CVSyncToJob(Job, FormEntry):
         nb = Nautobot()
         nb.load()
         self.log("Performing diff between Nautobot and Cloudvision")
-        diff_nb_cv = cv.diff_from(nb)
-        self.log(diff_nb_cv.summary())
-        if data["debug"]:
-            self.log_debug(diff_nb_cv.dict())
-        if commit:
+        diff = cv.diff_from(nb)
+        self.sync.diff = diff.dict()
+        self.sync.save()
+        self.log(diff.summary())
+        # if self.kwargs["debug"]:
+        #     self.log_debug(diff_nb_cv.dict())
+        if not self.kwargs["dry_run"]:
             self.log("Syncing to CloudVision")
             try:
                 nb.sync_to(cv)
@@ -52,4 +57,4 @@ class CVSyncToJob(Job, FormEntry):
             self.log_success(message="Sync complete")
 
 
-jobs = [CVSyncFromJob, CVSyncToJob]
+jobs = [CVSyncFromJob, CloudVisionDataTarget]
