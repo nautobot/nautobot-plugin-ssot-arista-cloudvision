@@ -15,8 +15,6 @@ class CloudVision(DiffSync):
 
     type = "CloudVision"
 
-    nb = None
-
     def load(self):
         user_tags = cvutils.get_tags_by_type()
         for tag in user_tags:

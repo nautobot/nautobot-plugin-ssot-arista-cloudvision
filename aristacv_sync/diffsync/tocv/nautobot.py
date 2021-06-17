@@ -15,8 +15,6 @@ class Nautobot(DiffSync):
 
     type = "Nautobot"
 
-    nb = None
-
     def load(self):
         """Load device tag data from Nautobot and populate DiffSync models."""
         tags = Tag.objects.all()
