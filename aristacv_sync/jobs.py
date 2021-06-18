@@ -1,6 +1,7 @@
 from grpc import RpcError
 
 from nautobot.extras.jobs import Job, BooleanVar
+from nautobot.extras.models.tags import Tag
 
 from nautobot_ssot.jobs.base import DataTarget
 
@@ -55,6 +56,15 @@ class CloudVisionDataTarget(DataTarget, Job):
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete")
+
+    def lookup_object(self, model_name, unique_id):
+        if model_name == "tag":
+            try:
+                tag_name, value = unique_id.split("__")
+                return (Tag.objects.get(name=f"{tag_name}:{value}"), None)
+            except Tag.DoesNotExist:
+                pass
+        return (None, None)
 
 
 jobs = [CVSyncFromJob, CloudVisionDataTarget]
