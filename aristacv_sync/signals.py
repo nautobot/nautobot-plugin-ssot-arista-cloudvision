@@ -13,12 +13,12 @@ def post_migrate_create_custom_fields(apps, **kwargs):
 
     for device_cf_dict in [
             {
-                "name": "eos_train",
+                "name": "eostrain",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "EOS Train",
             },
             {
-                "name": "eos_version",
+                "name": "eos",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "EOS Version",
             },
@@ -29,7 +29,7 @@ def post_migrate_create_custom_fields(apps, **kwargs):
             },
             {
                 "name": "pimbidir",
-                "type": CustomFieldTypeChoices.TYPE_BOOLEAN,
+                "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "pimbidir",
             },
             {
@@ -68,9 +68,14 @@ def post_migrate_create_custom_fields(apps, **kwargs):
                 "label": "sFlow",
             },
             {
-                "name": "terminatr",
+                "name": "terminattr",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "TerminAttr Version",
+            },
+            {
+                "name": "topology_network_type",
+                "type": CustomFieldTypeChoices.TYPE_TEXT,
+                "label": "Topology Network Type",
             },
         ]:
             field, _ = CustomField.objects.get_or_create(name=device_cf_dict["name"], defaults=device_cf_dict)

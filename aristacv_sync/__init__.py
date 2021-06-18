@@ -23,7 +23,6 @@ class AristaCVSyncConfig(PluginConfig):
     def ready(self):
         """Callback invoked after the plugin is loaded."""
         super().ready()
-        print("ready was called.")
 
         from .signals import (  # pylint: disable=import-outside-toplevel
             post_migrate_create_custom_fields,
