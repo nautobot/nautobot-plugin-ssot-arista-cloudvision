@@ -51,6 +51,7 @@ class CustomField(DiffSyncModel):
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
+        print(self.name)
         # Call the super().update() method to update the in-memory DiffSyncModel instance
         if attrs["value"] == "false":
             attrs["value"] = False

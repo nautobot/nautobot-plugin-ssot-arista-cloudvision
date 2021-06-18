@@ -13,67 +13,67 @@ def post_migrate_create_custom_fields(apps, **kwargs):
 
     for device_cf_dict in [
             {
-                "name": "eostrain",
+                "name": "arista_eostrain",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "EOS Train",
             },
             {
-                "name": "eos",
+                "name": "arista_eos",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "EOS Version",
             },
             {
-                "name": "ztp",
+                "name": "arista_ztp",
                 "type": CustomFieldTypeChoices.TYPE_BOOLEAN,
                 "label": "ztp",
             },
             {
-                "name": "pimbidir",
+                "name": "arista_pimbidir",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "pimbidir",
             },
             {
-                "name": "pim",
+                "name": "arista_pim",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "pim",
             },
             {
-                "name": "bgp",
+                "name": "arista_bgp",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "bgp",
             },
             {
-                "name": "mpls",
+                "name": "arista_mpls",
                 "type": CustomFieldTypeChoices.TYPE_BOOLEAN,
                 "label": "mpls",
             },
             {
-                "name": "systype",
+                "name": "arista_systype",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "systype",
             },
             {
-                "name": "mlag",
+                "name": "arista_mlag",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "MLAG",
             },
             {
-                "name": "tapagg",
+                "name": "arista_tapagg",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "TAP Aggregation",
             },
             {
-                "name": "sflow",
+                "name": "arista_sflow",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "sFlow",
             },
             {
-                "name": "terminattr",
+                "name": "arista_terminattr",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "TerminAttr Version",
             },
             {
-                "name": "topology_network_type",
+                "name": "arista_topology_network_type",
                 "type": CustomFieldTypeChoices.TYPE_TEXT,
                 "label": "Topology Network Type",
             },

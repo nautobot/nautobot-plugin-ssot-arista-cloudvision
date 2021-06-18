@@ -24,7 +24,7 @@ class CloudVision(DiffSync):
             for tag in dev_tags:
                 if any(tag["label"] in string for string in ["hostname", "serialnumber", "model"]):
                     continue
-                self.cf = CustomField(name=tag["label"], value=tag["value"], device_name=dev["hostname"])
+                self.cf = CustomField(name=f"arista_{tag['label']}", value=tag["value"], device_name=dev["hostname"])
                 self.add(self.cf)
                 self.device.add_child(self.cf)
 
