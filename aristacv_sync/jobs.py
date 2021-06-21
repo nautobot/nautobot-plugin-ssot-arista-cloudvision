@@ -1,5 +1,7 @@
 from grpc import RpcError
 
+from django.templatetags.static import static
+
 from nautobot.extras.jobs import Job, BooleanVar
 from nautobot.extras.models.tags import Tag
 
@@ -32,6 +34,7 @@ class CloudVisionDataTarget(DataTarget, Job):
     class Meta:
         name = "CloudVision"
         data_target = "CloudVision"
+        data_target_icon = static("aristacv_sync/cvp_logo.png")
         description = "Sync tag data from Nautobot to CloudVision"
 
     def sync_data(self):
