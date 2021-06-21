@@ -26,3 +26,8 @@ class Nautobot(DiffSync):
                 self.cf = CustomField(name=cf_name, value=cf_value, device_name=dev.name)
                 self.add(self.cf)
                 self.device.add_child(self.cf)
+            # Gets model from device and puts it into CustomField Object.
+            self.cf = CustomField(name="arista_model", value=str(dev.platform), device_name=dev.name)
+            self.add(self.cf)
+            self.device.add_child(self.cf)
+
