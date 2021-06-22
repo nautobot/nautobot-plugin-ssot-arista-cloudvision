@@ -15,6 +15,7 @@ from aristacv_sync.diffsync.tocv.nautobot import Nautobot
 from aristacv_sync.diffsync.fromcv.cloudvision import CloudVision as C
 from aristacv_sync.diffsync.fromcv.nautobot import Nautobot as N
 
+
 class CloudVisionDataSource(DataSource, Job):
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
@@ -48,12 +49,11 @@ class CloudVisionDataSource(DataSource, Job):
     def lookup_object(self, model_name, unique_id):
         if model_name == "cf":
             try:
-                tag_name, value = unique_id.split("__")
-                return (Tag.objects.get(name=f"{tag_name}:{value}"), None)
-            except Tag.DoesNotExist:
+                cf_name, value = unique_id.split("__")
+                return (CustomField.objects.get(name=f"{cf_name}"), None)
+            except CustomField.DoesNotExist:
                 pass
         return (None, None)
-
 
 
 class CloudVisionDataTarget(DataTarget, Job):
@@ -91,9 +91,9 @@ class CloudVisionDataTarget(DataTarget, Job):
     def lookup_object(self, model_name, unique_id):
         if model_name == "tag":
             try:
-                cf_name, value = unique_id.split("__")
-                return (CustomField.objects.get(name=f"{cf_name}"), None)
-            except CustomField.DoesNotExist:
+                tag_name, value = unique_id.split("__")
+                return (Tag.objects.get(name=f"{tag_name}:{value}"), None)
+            except Tag.DoesNotExist:
                 pass
         return (None, None)
 
