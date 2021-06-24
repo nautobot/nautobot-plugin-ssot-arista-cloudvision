@@ -1,9 +1,9 @@
 ---
 dev_addr: "127.0.0.1:8001"
-edit_uri: "edit/main/nautobot-plugin-aristacv-sync/docs"
-site_name: "AristaCVSync Documentation"
-site_url: "https://nautobot-plugin-aristacv-sync.readthedocs.io/"
-repo_url: "https://github.com/nautobot/nautobot-plugin-aristacv-sync"
+edit_uri: "edit/main/nautobot-plugin-ssot-aristacv/docs"
+site_name: "Nautobot SSoT Arista CloudVision Documentation"
+site_url: "https://nautobot-plugin-ssot-aristacv.readthedocs.io/"
+repo_url: "https://github.com/nautobot/nautobot-plugin-ssot-aristacv"
 python:
   install:
     - requirements: "docs/requirements.txt"
