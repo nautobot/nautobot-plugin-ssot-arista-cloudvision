@@ -5,15 +5,16 @@ __version__ = "0.1.0"
 from nautobot.extras.plugins import PluginConfig
 from django.db.models.signals import post_migrate
 
-class AristaCVSyncConfig(PluginConfig):
-    """Plugin configuration for the aristacv_sync plugin."""
 
-    name = "aristacv_sync"
-    verbose_name = "Nautobot to Arista CloudVision Sync"
+class NautobotSSOTAristaCVConfig(PluginConfig):
+    """Plugin configuration for the nautobot_ssot_aristacv plugin."""
+
+    name = "nautobot_ssot_aristacv"
+    verbose_name = "Nautobot SSoT Arista CloudVision"
     version = __version__
     author = "Network to Code, LLC"
-    description = "Nautobot to Arista CloudVision Sync."
-    base_url = "aristacv-sync"
+    description = "Nautobot SSoT Arista CloudVision."
+    base_url = "nautobot-sot_aristacv"
     required_settings = []
     min_version = "1.0.0"
     max_version = "1.9999"
@@ -31,5 +32,4 @@ class AristaCVSyncConfig(PluginConfig):
         post_migrate.connect(post_migrate_create_custom_fields)
 
 
-
-config = AristaCVSyncConfig  # pylint:disable=invalid-name
+config = NautobotSSOTAristaCVConfig  # pylint:disable=invalid-name

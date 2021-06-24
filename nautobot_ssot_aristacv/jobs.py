@@ -9,11 +9,11 @@ from nautobot.extras.models.customfields import CustomField
 from nautobot_ssot.jobs.base import DataTarget
 from nautobot_ssot.jobs.base import DataSource
 
-from aristacv_sync.diffsync.tocv.cloudvision import CloudVision
-from aristacv_sync.diffsync.tocv.nautobot import Nautobot
+from nautobot_ssot_aristacv.diffsync.tocv.cloudvision import CloudVision
+from nautobot_ssot_aristacv.diffsync.tocv.nautobot import Nautobot
 
-from aristacv_sync.diffsync.fromcv.cloudvision import CloudVision as C
-from aristacv_sync.diffsync.fromcv.nautobot import Nautobot as N
+from nautobot_ssot_aristacv.diffsync.fromcv.cloudvision import CloudVision as C
+from nautobot_ssot_aristacv.diffsync.fromcv.nautobot import Nautobot as N
 
 
 class CloudVisionDataSource(DataSource, Job):
@@ -22,7 +22,7 @@ class CloudVisionDataSource(DataSource, Job):
     class Meta:
         name = "Sync from CloudVision"
         data_source = "Cloudvision"
-        data_source_icon = static("aristacv_sync/cvp_logo.png")
+        data_source_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync system tag data from CloudVision to Nautobot"
 
     def sync_data(self):
@@ -62,7 +62,7 @@ class CloudVisionDataTarget(DataTarget, Job):
     class Meta:
         name = "CloudVision"
         data_target = "CloudVision"
-        data_target_icon = static("aristacv_sync/cvp_logo.png")
+        data_target_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync tag data from Nautobot to CloudVision"
 
     def sync_data(self):

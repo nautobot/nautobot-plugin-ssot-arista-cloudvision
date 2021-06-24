@@ -1,7 +1,7 @@
 """DiffSync adapter for Arista CloudVision."""
 from diffsync import DiffSync
 import arista.tag.v1 as TAG
-import aristacv_sync.diffsync.cvutils as cvutils
+import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 from .models import Device, CustomField
 
@@ -27,4 +27,3 @@ class CloudVision(DiffSync):
                 self.cf = CustomField(name=f"arista_{tag['label']}", value=tag["value"], device_name=dev["hostname"])
                 self.add(self.cf)
                 self.device.add_child(self.cf)
-

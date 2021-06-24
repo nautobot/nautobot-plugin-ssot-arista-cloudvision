@@ -1,7 +1,7 @@
 """DiffSync adapter for Arista CloudVision."""
 from diffsync import DiffSync
 
-import aristacv_sync.diffsync.cvutils as cvutils
+import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 from .models import UserTag
 
