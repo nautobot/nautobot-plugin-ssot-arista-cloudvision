@@ -1,7 +1,7 @@
 """DiffSync adapter for Arista CloudVision."""
 from diffsync import DiffSync
 
-import aristacv_sync.diffsync.cvutils as cvutils
+import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 from .models import UserTag
 
@@ -14,8 +14,6 @@ class CloudVision(DiffSync):
     top_level = ["tag"]
 
     type = "CloudVision"
-
-    nb = None
 
     def load(self):
         user_tags = cvutils.get_tags_by_type()
@@ -31,3 +29,7 @@ class CloudVision(DiffSync):
             for tag in dev_tags:
                 cur_tag = self.get(UserTag, f"{tag['label']}__{tag['value']}")
                 cur_tag.devices.append(hostname)
+
+        # Sort device list of all tags for diffsync
+        for tag in self.get_all(UserTag):
+            tag.devices = sorted(tag.devices)

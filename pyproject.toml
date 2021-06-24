@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "aristacv-sync"
+name = "nautobot-ssot-aristacv"
 version = "0.1.0"
-description = "Nautobot to Arista CloudVision Sync"
+description = "Nautobot SSoT Arista CloudVision"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 
 license = "Apache-2.0"
 
 readme = "README.md"
-homepage = "https://github.com/nautobot/nautobot-plugin-aristacv-sync"
-repository = "https://github.com/nautobot/nautobot-plugin-aristacv-sync"
+homepage = "https://github.com/nautobot/nautobot-plugin-ssot-aristacv"
+repository = "https://github.com/nautobot/nautobot-plugin-ssot-aristacv"
 keywords = ["nautobot", "nautobot-plugin"]
 include = [
 
@@ -17,12 +17,13 @@ include = [
     "README.md",
 ]
 packages = [
-    { include = "aristacv_sync" },
+    { include = "nautobot_ssot_aristacv" },
 ]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-nautobot = {git = "https://github.com/nautobot/nautobot", rev = "develop"}
+nautobot = {git = "https://github.com/nautobot/nautobot.git", rev = "develop"}
+nautobot-ssot = {path = "./packages/nautobot_ssot-0.1.0-py3-none-any.whl"}
 diffsync = "^1.3.0"
 cloudvision = "^1.0.0"
 

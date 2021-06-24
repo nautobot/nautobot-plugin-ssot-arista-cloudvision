@@ -15,8 +15,6 @@ class Nautobot(DiffSync):
 
     type = "Nautobot"
 
-    nb = None
-
     def load(self):
         """Load device tag data from Nautobot and populate DiffSync models."""
         tags = Tag.objects.all()
@@ -30,4 +28,7 @@ class Nautobot(DiffSync):
             tagged_devices = Device.objects.filter(tags__name__exact=cur_tag.name)
             for dev in tagged_devices:
                 self.tag.devices.append(dev.name)
+
+            # Sort device list for diffsync
+            self.tag.devices = sorted(self.tag.devices)
             self.add(self.tag)
