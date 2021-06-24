@@ -23,6 +23,11 @@ class Nautobot(DiffSync):
             for cf_name, cf_value in dev_custom_fields.items():
                 if cf_value == None:
                     cf_value = ""
+                if cf_name == "arista_mpls" or cf_name == "arista_ztp":
+                    if cf_value:
+                        cf_value = "true"
+                    else:
+                        cf_value = "false"
                 self.cf = CustomField(name=cf_name, value=cf_value, device_name=dev.name)
                 self.add(self.cf)
                 self.device.add_child(self.cf)
