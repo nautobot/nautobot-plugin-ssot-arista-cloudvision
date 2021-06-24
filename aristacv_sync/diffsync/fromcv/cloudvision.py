@@ -2,7 +2,6 @@
 from diffsync import DiffSync
 import arista.tag.v1 as TAG
 import aristacv_sync.diffsync.cvutils as cvutils
-import distutils
 
 from .models import Device, CustomField
 
