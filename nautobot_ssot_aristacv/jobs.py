@@ -33,7 +33,7 @@ class CloudVisionDataSource(DataSource, Job):
         nb = N()
         nb.load()
         self.log("Performing diff between Cloudvision and Nautobot.")
-        diff = nb.diff_from(cv)
+        diff = cv.diff_to(nb)
         self.sync.diff = diff.dict()
         self.sync.save()
         self.log(diff.summary())
