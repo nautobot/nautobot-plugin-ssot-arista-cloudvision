@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from nautobot.dcim.models import Device as NautobotDevice
 from nautobot.dcim.models import Platform as NautobotPlatform
 from typing import List
+import distutils
 
 class Device(DiffSyncModel):
     """Device Model"""
@@ -71,10 +72,11 @@ class CustomField(DiffSyncModel):
                 device.platform = existing_platform
                 device.validated_save()
                 return super().update(attrs)
-        if attrs["value"] == "false":
-            attrs["value"] = False
-        elif attrs["value"] == "true":
-            attrs["value"] == True
+        try:
+            attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
+        except ValueError as e:
+            # value isn't convertable to bool so continue
+            pass
         device = NautobotDevice.objects.get(name=self.device_name)
         device.custom_field_data.update({self.name: attrs["value"]})
         device.validated_save()
@@ -84,7 +86,7 @@ class CustomField(DiffSyncModel):
     def delete(self):
         # Call the super().delete() method to remove the DiffSyncModel instance from its parent DiffSync adapter
         device = NautobotDevice.objects.get(name=self.device_name)
-        device.custom_field_data.pop(self.name)
+        device.custom_field_data.update({self.name: None})
         device.validated_save()
         super().delete()
         return self

@@ -2,6 +2,7 @@
 from diffsync import DiffSync
 import arista.tag.v1 as TAG
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+import distutils
 
 from .models import Device, CustomField
 
@@ -24,6 +25,8 @@ class CloudVision(DiffSync):
             for tag in dev_tags:
                 if any(tag["label"] in string for string in ["hostname", "serialnumber"]):
                     continue
+                if tag["label"] == "mpls" or tag["label"] == "ztp":
+                    tag["value"] = bool(distutils.util.strtobool(tag["value"]))
                 self.cf = CustomField(name=f"arista_{tag['label']}", value=tag["value"], device_name=dev["hostname"])
                 self.add(self.cf)
                 self.device.add_child(self.cf)
