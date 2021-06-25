@@ -85,7 +85,6 @@ class CustomField(DiffSyncModel):
 
     def delete(self):
         # Call the super().delete() method to remove the DiffSyncModel instance from its parent DiffSync adapter
-        print(self.name)
         device = NautobotDevice.objects.get(name=self.device_name)
         device.custom_field_data.update({self.name: "-"})
         device.validated_save()
