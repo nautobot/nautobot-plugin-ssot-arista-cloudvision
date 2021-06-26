@@ -16,6 +16,7 @@ class CloudVision(DiffSync):
     top_level = ["device"]
 
     def load(self):
+        cvutils.connect()
         devices = cvutils.get_devices()
         system_tags = cvutils.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
         for dev in devices:
