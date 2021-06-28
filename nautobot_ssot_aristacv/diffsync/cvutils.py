@@ -15,6 +15,7 @@ _channel = None
 
 
 def connect():
+    """Connect shared gRPC channel to the configured CloudVision instance."""
     global _channel
 
     cvp_host = os.getenv("CVP_HOST")
@@ -43,6 +44,12 @@ def connect():
         channel_creds = grpc.ssl_channel_credentials()
     conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
     _channel = grpc.secure_channel(cvp_url, conn_creds)
+
+
+def disconnect():
+    """Close the shared gRPC channel."""
+    global _channel
+    _channel.close()
 
 
 def get_devices():

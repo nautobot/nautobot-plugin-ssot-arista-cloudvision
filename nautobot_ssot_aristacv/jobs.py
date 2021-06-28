@@ -1,3 +1,5 @@
+import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+
 from grpc import RpcError
 
 from django.templatetags.static import static
@@ -26,6 +28,8 @@ class CloudVisionDataSource(DataSource, Job):
         description = "Sync system tag data from CloudVision to Nautobot"
 
     def sync_data(self):
+        self.log("Connecting to CloudVision")
+        cvutils.connect()
         self.log("Loading data from CloudVision")
         cv = C()
         cv.load()
@@ -45,6 +49,7 @@ class CloudVisionDataSource(DataSource, Job):
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete.")
+        cvutils.disconnect()
 
     def lookup_object(self, model_name, unique_id):
         if model_name == "cf":
@@ -66,6 +71,8 @@ class CloudVisionDataTarget(DataTarget, Job):
         description = "Sync tag data from Nautobot to CloudVision"
 
     def sync_data(self):
+        self.log("Connecting to CloudVision")
+        cvutils.connect()
         self.log("Loading data from CloudVision")
         cv = CloudVision()
         cv.load()
@@ -87,6 +94,7 @@ class CloudVisionDataTarget(DataTarget, Job):
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete")
+        cvutils.disconnect()
 
     def lookup_object(self, model_name, unique_id):
         if model_name == "tag":
