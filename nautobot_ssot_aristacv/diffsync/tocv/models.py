@@ -24,7 +24,9 @@ class UserTag(DiffSyncModel):
         # Create mapping from device_name to CloudVision device_id
         device_ids = {dev["hostname"]: dev["device_id"] for dev in cvutils.get_devices()}
         for device in attrs["devices"]:
-            cvutils.assign_tag_to_device(device_ids[device], ids["name"], ids["value"])
+            # Exclude devices that are inactive in CloudVision
+            if device in device_ids:
+                cvutils.assign_tag_to_device(device_ids[device], ids["name"], ids["value"])
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
@@ -35,12 +37,14 @@ class UserTag(DiffSyncModel):
         for device in remove:
             cvutils.remove_tag_from_device(device_ids[device], self.name, self.value)
         for device in add:
-            cvutils.assign_tag_to_device(device_ids[device], self.name, self.value)
+            # Exclude devices that are inactive in CloudVision
+            if device in device_ids:
+                cvutils.assign_tag_to_device(device_ids[device], self.name, self.value)
         # Call the super().update() method to update the in-memory DiffSyncModel instance
         return super().update(attrs)
 
     def delete(self):
-        """Delete user tag applied to device in CloudVision."""
+        """Delete user tag applied to devices in CloudVision."""
         device_ids = {dev["hostname"]: dev["device_id"] for dev in cvutils.get_devices()}
         for device in self.devices:
             cvutils.remove_tag_from_device(device_ids[device], self.name, self.value)
