@@ -27,6 +27,11 @@ class UserTag(DiffSyncModel):
             # Exclude devices that are inactive in CloudVision
             if device in device_ids:
                 cvutils.assign_tag_to_device(device_ids[device], ids["name"], ids["value"])
+            else:
+                tag = f"{ids['name']}:{ids['value']}" if ids["value"] else ids["name"]
+                diffsync.job.log_warning(
+                    message=f"{device} is inactive or missing in CloudVision - skipping for tag: {tag}"
+                )
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
@@ -40,6 +45,11 @@ class UserTag(DiffSyncModel):
             # Exclude devices that are inactive in CloudVision
             if device in device_ids:
                 cvutils.assign_tag_to_device(device_ids[device], self.name, self.value)
+            else:
+                tag = f"{self.name}:{self.value}" if self.value else self.name
+                self.diffsync.job.log_warning(
+                    message=f"{device} is inactive or missing in CloudVision - skipping for tag: {tag}"
+                )
         # Call the super().update() method to update the in-memory DiffSyncModel instance
         return super().update(attrs)
 

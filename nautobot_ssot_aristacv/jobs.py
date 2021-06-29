@@ -74,7 +74,7 @@ class CloudVisionDataTarget(DataTarget, Job):
         self.log("Connecting to CloudVision")
         cvutils.connect()
         self.log("Loading data from CloudVision")
-        cv = CloudVision()
+        cv = CloudVision(job=self)
         cv.load()
         self.log("Loading data from Nautobot")
         nb = Nautobot()
