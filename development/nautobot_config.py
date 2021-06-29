@@ -246,6 +246,12 @@ PAGINATE_COUNT = int(os.environ.get("PAGINATE_COUNT", 50))
 # Enable installed plugins. Add the name of each plugin to the list.
 PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 
+PLUGINS_CONFIG = {
+    "nautobot_ssot": {
+        "hide_example_jobs": True,  # defaults to False if unspecified
+    }
+}
+
 # Plugins configuration settings. These settings are used by various plugins that the user may have installed.
 # Each key in the dictionary is the name of an installed plugin and its value is a dictionary of settings.
 # PLUGINS_CONFIG = {

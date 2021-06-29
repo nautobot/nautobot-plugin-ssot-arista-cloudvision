@@ -55,10 +55,10 @@ class CloudVisionDataSource(DataSource, Job):
         if model_name == "cf":
             try:
                 cf_name, value = unique_id.split("__")
-                return (CustomField.objects.get(name=f"{cf_name}"), None)
+                return CustomField.objects.get(name=f"{cf_name}")
             except CustomField.DoesNotExist:
                 pass
-        return (None, None)
+        return None
 
 
 class CloudVisionDataTarget(DataTarget, Job):
@@ -100,10 +100,10 @@ class CloudVisionDataTarget(DataTarget, Job):
         if model_name == "tag":
             try:
                 tag_name, value = unique_id.split("__")
-                return (Tag.objects.get(name=f"{tag_name}:{value}"), None)
+                return Tag.objects.get(name=f"{tag_name}:{value}")
             except Tag.DoesNotExist:
                 pass
-        return (None, None)
+        return None
 
 
 jobs = [CloudVisionDataSource, CloudVisionDataTarget]
