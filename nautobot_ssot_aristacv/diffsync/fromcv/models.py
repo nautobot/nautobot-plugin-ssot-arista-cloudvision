@@ -31,8 +31,8 @@ class Device(DiffSyncModel):
         return super().update(attrs, diffsync)
 
     def delete(self):
-        ## TODO add your own logic here to delete the device on the remote system
-        # Call the super().delete() method to remove the DiffSyncModel instance from its parent DiffSync adapter
+        device = NautobotDevice.objects.get(name=self.name)
+        device.delete()
         super().delete()
         return self
 
@@ -84,9 +84,16 @@ class CustomField(DiffSyncModel):
 
 
     def delete(self):
-        # Call the super().delete() method to remove the DiffSyncModel instance from its parent DiffSync adapter
-        device = NautobotDevice.objects.get(name=self.device_name)
-        device.custom_field_data.update({self.name: None})
-        device.validated_save()
-        super().delete()
-        return self
+        try:
+            device = NautobotDevice.objects.get(name=self.device_name)
+            if self.name == "arista_model":
+                device.platform = None
+            else:
+                # device.custom_field_data.update({self.name: None})
+                device.custom_field_data.pop(self.name)
+            device.validated_save()
+            super().delete()
+            return self
+        except NautobotDevice.DoesNotExist:
+            # Do not need to delete customfield if the device does not exist.
+            return self
