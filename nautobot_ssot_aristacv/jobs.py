@@ -22,7 +22,7 @@ class CloudVisionDataSource(DataSource, Job):
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
-        name = "Sync from CloudVision"
+        name = "CloudVision"
         data_source = "Cloudvision"
         data_source_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync system tag data from CloudVision to Nautobot"
