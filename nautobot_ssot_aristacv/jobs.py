@@ -3,13 +3,13 @@ import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 from grpc import RpcError
 
 from django.templatetags.static import static
+from django.urls import reverse
 
 from nautobot.extras.jobs import Job, BooleanVar
 from nautobot.extras.models.tags import Tag
 from nautobot.extras.models.customfields import CustomField
 
-from nautobot_ssot.jobs.base import DataTarget
-from nautobot_ssot.jobs.base import DataSource
+from nautobot_ssot.jobs.base import DataTarget, DataSource, DataMapping
 
 from nautobot_ssot_aristacv.diffsync.tocv.cloudvision import CloudVision
 from nautobot_ssot_aristacv.diffsync.tocv.nautobot import Nautobot
@@ -22,7 +22,7 @@ class CloudVisionDataSource(DataSource, Job):
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
-        name = "Sync from CloudVision"
+        name = "CloudVision"
         data_source = "Cloudvision"
         data_source_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync system tag data from CloudVision to Nautobot"
@@ -69,6 +69,11 @@ class CloudVisionDataTarget(DataTarget, Job):
         data_target = "CloudVision"
         data_target_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync tag data from Nautobot to CloudVision"
+
+    @classmethod
+    def data_mappings(cls):
+        """List describing the data mappings involved in this DataTarget."""
+        return (DataMapping("Tags", reverse("extras:tag_list"), "Device Tags", None),)
 
     def sync_data(self):
         self.log("Connecting to CloudVision")
