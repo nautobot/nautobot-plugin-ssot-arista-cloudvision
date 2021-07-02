@@ -27,6 +27,26 @@ class CloudVisionDataSource(DataSource, Job):
         data_source_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync system tag data from CloudVision to Nautobot"
 
+    @classmethod
+    def data_mappings(cls):
+        """List describing the data mappings involved in this DataSource."""
+        return (DataMapping("topology_network_type", None, "Topology Network Type", None ),
+                DataMapping("mlag", None, "MLAG", None),
+                DataMapping("mpls", None, "mpls", None),
+                DataMapping("model", None, "Platform", reverse("dcim:platform_list")),
+                DataMapping("systype", None, "systype", None),
+                DataMapping("serialnumber", None, "Device Serial Number", None),
+                DataMapping("pimbidir", None, "pimbidir", None),
+                DataMapping("sflow", None, "sFlow", None),
+                DataMapping("eostrain", None, "eosttain", None),
+                DataMapping("tapagg", None, "tapagg", None),
+                DataMapping("pim", None, "pim", None),
+                DataMapping("bgp", None, "bgp", None),
+                DataMapping("terminattr", None, "TerminAttr Version", None),
+                DataMapping("ztp", None, "ztp", None),
+                DataMapping("eos", None, "EOS Version", None),
+                DataMapping("topology_type", None, "Topology Type", None),)
+
     def sync_data(self):
         self.log("Connecting to CloudVision")
         cvutils.connect()
