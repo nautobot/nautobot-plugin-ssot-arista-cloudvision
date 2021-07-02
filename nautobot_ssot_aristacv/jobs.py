@@ -30,7 +30,8 @@ class CloudVisionDataSource(DataSource, Job):
     @classmethod
     def data_mappings(cls):
         """List describing the data mappings involved in this DataSource."""
-        return (DataMapping("topology_network_type", None, "Topology Network Type", None ),
+        return (
+            DataMapping("topology_network_type", None, "Topology Network Type", None),
                 DataMapping("mlag", None, "MLAG", None),
                 DataMapping("mpls", None, "mpls", None),
                 DataMapping("model", None, "Platform", reverse("dcim:platform_list")),
@@ -45,7 +46,8 @@ class CloudVisionDataSource(DataSource, Job):
                 DataMapping("terminattr", None, "TerminAttr Version", None),
                 DataMapping("ztp", None, "ztp", None),
                 DataMapping("eos", None, "EOS Version", None),
-                DataMapping("topology_type", None, "Topology Type", None),)
+            DataMapping("topology_type", None, "Topology Type", None),
+        )
 
     def sync_data(self):
         self.log("Connecting to CloudVision")
