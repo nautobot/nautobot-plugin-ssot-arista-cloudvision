@@ -1,5 +1,5 @@
-import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
-
+# pylint: disable=invalid-name,too-few-public-methods
+"""Jobs for CloudVision integration with SSoT plugin."""
 from grpc import RpcError
 
 from django.conf import settings
@@ -18,8 +18,12 @@ from nautobot_ssot_aristacv.diffsync.tocv.nautobot import Nautobot
 from nautobot_ssot_aristacv.diffsync.fromcv.cloudvision import CloudVision as C
 from nautobot_ssot_aristacv.diffsync.fromcv.nautobot import Nautobot as N
 
+import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+
 
 class CloudVisionDataSource(DataSource, Job):
+    """CloudVision SSoT Data Source."""
+
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
@@ -40,12 +44,11 @@ class CloudVisionDataSource(DataSource, Job):
                 "Insecure": configs.get("insecure")
                 # Password is intentionally omitted!
             }
-        else:
-            return {
-                "Server type": "CVaaS",
-                "CloudVision host": "www.arista.io",
-                # Token is intentionally omitted!
-            }
+        return {
+            "Server type": "CVaaS",
+            "CloudVision host": "www.arista.io",
+            # Token is intentionally omitted!
+        }
 
     @classmethod
     def data_mappings(cls):
@@ -70,6 +73,7 @@ class CloudVisionDataSource(DataSource, Job):
         )
 
     def sync_data(self):
+        """Sync system tags from CloudVision to Nautobot custom fields."""
         self.log("Connecting to CloudVision")
         cvutils.connect()
         self.log("Loading data from CloudVision")
@@ -94,9 +98,10 @@ class CloudVisionDataSource(DataSource, Job):
         cvutils.disconnect()
 
     def lookup_object(self, model_name, unique_id):
+        """Lookup object for SSoT plugin integration."""
         if model_name == "cf":
             try:
-                cf_name, value = unique_id.split("__")
+                cf_name, _ = unique_id.split("__")
                 return CustomField.objects.get(name=f"{cf_name}")
             except CustomField.DoesNotExist:
                 pass
@@ -104,6 +109,8 @@ class CloudVisionDataSource(DataSource, Job):
 
 
 class CloudVisionDataTarget(DataTarget, Job):
+    """CloudVision SSoT Data Target."""
+
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
@@ -124,12 +131,11 @@ class CloudVisionDataTarget(DataTarget, Job):
                 "Insecure": configs.get("insecure")
                 # Password is intentionally omitted!
             }
-        else:
-            return {
-                "Server type": "CVaaS",
-                "CloudVision host": "www.arista.io",
-                # Token is intentionally omitted!
-            }
+        return {
+            "Server type": "CVaaS",
+            "CloudVision host": "www.arista.io",
+            # Token is intentionally omitted!
+        }
 
     @classmethod
     def data_mappings(cls):
@@ -137,6 +143,7 @@ class CloudVisionDataTarget(DataTarget, Job):
         return (DataMapping("Tags", reverse("extras:tag_list"), "Device Tags", None),)
 
     def sync_data(self):
+        """Sync device tags from CloudVision to Nautobot."""
         self.log("Connecting to CloudVision")
         cvutils.connect()
         self.log("Loading data from CloudVision")
@@ -163,6 +170,7 @@ class CloudVisionDataTarget(DataTarget, Job):
         cvutils.disconnect()
 
     def lookup_object(self, model_name, unique_id):
+        """Lookup object for SSoT plugin integration."""
         if model_name == "tag":
             try:
                 tag_name, value = unique_id.split("__")

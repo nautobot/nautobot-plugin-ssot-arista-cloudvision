@@ -1,7 +1,5 @@
+# pylint: disable=invalid-name
 """Nautobot signal handler functions for aristavc_sync."""
-
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 
 from nautobot.extras.choices import CustomFieldTypeChoices
 

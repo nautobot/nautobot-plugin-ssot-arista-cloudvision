@@ -1,5 +1,4 @@
 """Utility functions for CloudVision Resource API."""
-import os
 import ssl
 
 import requests
