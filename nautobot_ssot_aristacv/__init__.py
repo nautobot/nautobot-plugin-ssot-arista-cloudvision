@@ -2,6 +2,8 @@
 
 __version__ = "0.1.0"
 
+import os
+
 from nautobot.extras.plugins import PluginConfig
 from django.db.models.signals import post_migrate
 
@@ -18,7 +20,13 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
     required_settings = []
     min_version = "1.0.0"
     max_version = "1.9999"
-    default_settings = {}
+    default_settings = {
+        "cvp_host": os.getenv("CVP_HOST"),
+        "cvp_user": os.getenv("CVP_USER"),
+        "cvp_password": os.getenv("CVP_PASSWORD"),
+        "insecure": os.getenv("CVP_INSECURE", False),
+        "cvp_token": os.getenv("CVP_TOKEN"),
+    }
     caching_config = {}
 
     def ready(self):
