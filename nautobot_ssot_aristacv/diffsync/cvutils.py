@@ -7,9 +7,11 @@ import grpc
 import arista.inventory.v1 as inv
 import arista.tag.v1 as tag
 from google.protobuf import wrappers_pb2 as wrappers
+from django.conf import settings
 
 RPC_TIMEOUT = 30
 
+PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 
 _channel = None
 
@@ -18,13 +20,13 @@ def connect():
     """Connect shared gRPC channel to the configured CloudVision instance."""
     global _channel
 
-    cvp_host = os.getenv("CVP_HOST")
+    cvp_host = PLUGIN_SETTINGS["cvp_host"]
     # If CVP_HOST is defined, we assume an on-prem installation.
     if cvp_host:
         cvp_url = f"{cvp_host}:8443"
-        insecure = os.getenv("CVP_INSECURE", False)
-        username = os.environ["CVP_USER"]
-        password = os.environ["CVP_PASSWORD"]
+        insecure = PLUGIN_SETTINGS["insecure"]
+        username = PLUGIN_SETTINGS["cvp_user"]
+        password = PLUGIN_SETTINGS["cvp_password"]
         # If insecure, the cert will be downloaded from the server and automatically trusted for gRPC.
         if insecure:
             cert = bytes(ssl.get_server_certificate((cvp_host, 8443)), "utf-8")
@@ -40,7 +42,7 @@ def connect():
     # Set up credentials for CVaaS using supplied token.
     else:
         cvp_url = "www.arista.io:443"
-        call_creds = grpc.access_token_call_credentials(os.environ["CVP_TOKEN"])
+        call_creds = grpc.access_token_call_credentials(PLUGIN_SETTINGS["cvp_token"])
         channel_creds = grpc.ssl_channel_credentials()
     conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
     _channel = grpc.secure_channel(cvp_url, conn_creds)
