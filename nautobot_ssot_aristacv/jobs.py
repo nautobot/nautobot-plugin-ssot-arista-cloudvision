@@ -2,6 +2,7 @@ import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 from grpc import RpcError
 
+from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -28,24 +29,45 @@ class CloudVisionDataSource(DataSource, Job):
         description = "Sync system tag data from CloudVision to Nautobot"
 
     @classmethod
+    def config_information(cls):
+        """Dictionary describing the configuration of this DataSource."""
+        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
+        if configs.get("cvp_host"):
+            return {
+                "Server type": "On prem",
+                "CloudVision host": configs.get("cvp_host"),
+                "Username": configs.get("cvp_user"),
+                "Insecure": configs.get("insecure")
+                # Password is intentionally omitted!
+            }
+        else:
+            return {
+                "Server type": "CVaaS",
+                "CloudVision host": "www.arista.io",
+                # Token is intentionally omitted!
+            }
+
+    @classmethod
     def data_mappings(cls):
         """List describing the data mappings involved in this DataSource."""
-        return (DataMapping("topology_network_type", None, "Topology Network Type", None ),
-                DataMapping("mlag", None, "MLAG", None),
-                DataMapping("mpls", None, "mpls", None),
-                DataMapping("model", None, "Platform", reverse("dcim:platform_list")),
-                DataMapping("systype", None, "systype", None),
-                DataMapping("serialnumber", None, "Device Serial Number", None),
-                DataMapping("pimbidir", None, "pimbidir", None),
-                DataMapping("sflow", None, "sFlow", None),
-                DataMapping("eostrain", None, "eosttain", None),
-                DataMapping("tapagg", None, "tapagg", None),
-                DataMapping("pim", None, "pim", None),
-                DataMapping("bgp", None, "bgp", None),
-                DataMapping("terminattr", None, "TerminAttr Version", None),
-                DataMapping("ztp", None, "ztp", None),
-                DataMapping("eos", None, "EOS Version", None),
-                DataMapping("topology_type", None, "Topology Type", None),)
+        return (
+            DataMapping("topology_network_type", None, "Topology Network Type", None),
+            DataMapping("mlag", None, "MLAG", None),
+            DataMapping("mpls", None, "mpls", None),
+            DataMapping("model", None, "Platform", reverse("dcim:platform_list")),
+            DataMapping("systype", None, "systype", None),
+            DataMapping("serialnumber", None, "Device Serial Number", None),
+            DataMapping("pimbidir", None, "pimbidir", None),
+            DataMapping("sflow", None, "sFlow", None),
+            DataMapping("eostrain", None, "eosttain", None),
+            DataMapping("tapagg", None, "tapagg", None),
+            DataMapping("pim", None, "pim", None),
+            DataMapping("bgp", None, "bgp", None),
+            DataMapping("terminattr", None, "TerminAttr Version", None),
+            DataMapping("ztp", None, "ztp", None),
+            DataMapping("eos", None, "EOS Version", None),
+            DataMapping("topology_type", None, "Topology Type", None),
+        )
 
     def sync_data(self):
         self.log("Connecting to CloudVision")
@@ -89,6 +111,25 @@ class CloudVisionDataTarget(DataTarget, Job):
         data_target = "CloudVision"
         data_target_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync tag data from Nautobot to CloudVision"
+
+    @classmethod
+    def config_information(cls):
+        """Dictionary describing the configuration of this DataTarget."""
+        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
+        if configs.get("cvp_host"):
+            return {
+                "Server type": "On prem",
+                "CloudVision host": configs.get("cvp_host"),
+                "Username": configs.get("cvp_user"),
+                "Insecure": configs.get("insecure")
+                # Password is intentionally omitted!
+            }
+        else:
+            return {
+                "Server type": "CVaaS",
+                "CloudVision host": "www.arista.io",
+                # Token is intentionally omitted!
+            }
 
     @classmethod
     def data_mappings(cls):
