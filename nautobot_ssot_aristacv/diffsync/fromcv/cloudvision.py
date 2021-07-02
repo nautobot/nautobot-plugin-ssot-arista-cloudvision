@@ -21,7 +21,13 @@ class CloudVision(DiffSync):
         for dev in devices:
             self.device = Device(name=dev["hostname"], device_id=dev["device_id"])
             self.add(self.device)
+
             dev_tags = [tag for tag in cvutils.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
+            # Check if topology_type tag exists
+            list_of_tag_names = [value['label'] for value in dev_tags]
+            if not "topology_type" in list_of_tag_names:
+                dev_tags.append({"label": "topology_type", "value": "-"})
+
             for tag in dev_tags:
                 if any(tag["label"] in string for string in ["hostname", "serialnumber"]):
                     continue

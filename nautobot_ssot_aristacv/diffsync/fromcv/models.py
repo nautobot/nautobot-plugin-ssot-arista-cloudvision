@@ -89,8 +89,7 @@ class CustomField(DiffSyncModel):
             if self.name == "arista_model":
                 device.platform = None
             else:
-                # device.custom_field_data.update({self.name: None})
-                device.custom_field_data.pop(self.name)
+                device.custom_field_data.update({self.name: None})
             device.validated_save()
             super().delete()
             return self
