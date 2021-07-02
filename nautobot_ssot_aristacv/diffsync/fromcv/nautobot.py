@@ -32,4 +32,3 @@ class Nautobot(DiffSync):
             self.cf = CustomField(name="arista_model", value=str(dev.platform), device_name=dev.name)
             self.add(self.cf)
             self.device.add_child(self.cf)
-

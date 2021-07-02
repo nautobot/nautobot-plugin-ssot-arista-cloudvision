@@ -6,6 +6,7 @@ from nautobot.dcim.models import Platform as NautobotPlatform
 from typing import List
 import distutils
 
+
 class Device(DiffSyncModel):
     """Device Model"""
 
@@ -21,8 +22,8 @@ class Device(DiffSyncModel):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         # Call the super().create() method to create the in-memory DiffSyncModel instance
-        #new_device = NautobotDevice(status = "", device_type = "", device_role="", site="", name=ids["name"])
-        #new_device.validated_save()
+        # new_device = NautobotDevice(status = "", device_type = "", device_role="", site="", name=ids["name"])
+        # new_device.validated_save()
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, diffsync, attrs):
@@ -35,6 +36,7 @@ class Device(DiffSyncModel):
         device.delete()
         super().delete()
         return self
+
 
 class CustomField(DiffSyncModel):
     """Custom Field model"""
@@ -81,7 +83,6 @@ class CustomField(DiffSyncModel):
         device.custom_field_data.update({self.name: attrs["value"]})
         device.validated_save()
         return super().update(attrs)
-
 
     def delete(self):
         try:
