@@ -6,8 +6,9 @@ from nautobot.dcim.models import Platform as NautobotPlatform
 from typing import List
 import distutils
 
+
 class Device(DiffSyncModel):
-    """Device Model"""
+    """Device Model."""
 
     _modelname = "device"
     _identifiers = ("name",)
@@ -20,24 +21,26 @@ class Device(DiffSyncModel):
 
     @classmethod
     def create(cls, diffsync, ids, attrs):
+        """Create device object in Nautobot."""
         # Call the super().create() method to create the in-memory DiffSyncModel instance
-        #new_device = NautobotDevice(status = "", device_type = "", device_role="", site="", name=ids["name"])
-        #new_device.validated_save()
+        # new_device = NautobotDevice(status = "", device_type = "", device_role="", site="", name=ids["name"])
+        # new_device.validated_save()
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, diffsync, attrs):
-        ## TODO add your own logic here to update the device on the remote system
-        # Call the super().update() method to update the in-memory DiffSyncModel instance
+        """Update device object in Nautobot."""
         return super().update(attrs, diffsync)
 
     def delete(self):
+        """Delete device object in Nautobot."""
         device = NautobotDevice.objects.get(name=self.name)
         device.delete()
         super().delete()
         return self
 
+
 class CustomField(DiffSyncModel):
-    """Custom Field model"""
+    """Custom Field model."""
 
     _modelname = "cf"
     _identifiers = ("name", "device_name")
@@ -50,11 +53,11 @@ class CustomField(DiffSyncModel):
 
     @classmethod
     def create(cls, diffsync, ids, attrs):
-        ## TODO add your own logic here to create the device on the remote system
-        # Call the super().create() method to create the in-memory DiffSyncModel instance
+        """Create Custom Field in Nautobot."""
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
+        """Update Custom Field in Nautobot."""
         if self.name == "arista_model":
             try:
                 # Try to create new platform
@@ -65,7 +68,7 @@ class CustomField(DiffSyncModel):
                 device.platform = new_platform
                 device.validated_save()
                 return super().update(attrs)
-            except ValidationError as e:
+            except ValidationError:
                 # Assign existing platform to device.
                 existing_platform = NautobotPlatform.objects.get(name=attrs["value"])
                 device = NautobotDevice.objects.get(name=self.device_name)
@@ -74,7 +77,7 @@ class CustomField(DiffSyncModel):
                 return super().update(attrs)
         try:
             attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
-        except ValueError as e:
+        except ValueError:
             # value isn't convertable to bool so continue
             pass
         device = NautobotDevice.objects.get(name=self.device_name)
@@ -82,8 +85,8 @@ class CustomField(DiffSyncModel):
         device.validated_save()
         return super().update(attrs)
 
-
     def delete(self):
+        """Delete Custom Field in Nautobot."""
         try:
             device = NautobotDevice.objects.get(name=self.device_name)
             if self.name == "arista_model":

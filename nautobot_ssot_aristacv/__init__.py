@@ -24,7 +24,7 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
         "cvp_host": os.getenv("CVP_HOST"),
         "cvp_user": os.getenv("CVP_USER"),
         "cvp_password": os.getenv("CVP_PASSWORD"),
-        "insecure": os.getenv("CVP_INSECURE", False),
+        "insecure": os.getenv("CVP_INSECURE") or False,
         "cvp_token": os.getenv("CVP_TOKEN"),
     }
     caching_config = {}
