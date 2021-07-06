@@ -42,7 +42,7 @@ class Role:
 
 def main():
     # Developed for use with local dev instance and sample cred file. Change token if needed.
-    nautobot = pynautobot.api(url="http://localhost:8080", token="0123456789abcdef0123456789abcdef01234567") # nosec
+    nautobot = pynautobot.api(url="http://localhost:8080", token="0123456789abcdef0123456789abcdef01234567")  # nosec
     site, created = get_or_create(nautobot.dcim.sites, "name", "Lab", slug="lab", status="active")
     print(site, created)
 
