@@ -22,7 +22,7 @@ class Nautobot(DiffSync):
             dev_custom_fields = dev.custom_field_data
 
             for cf_name, cf_value in dev_custom_fields.items():
-                if cf_value == None:
+                if cf_value is None:
                     cf_value = ""
                 self.cf = CustomField(name=cf_name, value=cf_value, device_name=dev.name)
                 self.add(self.cf)

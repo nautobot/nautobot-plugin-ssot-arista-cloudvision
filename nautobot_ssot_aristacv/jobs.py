@@ -27,6 +27,8 @@ class CloudVisionDataSource(DataSource, Job):
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
+        """Meta data for DataSource."""
+
         name = "CloudVision"
         data_source = "Cloudvision"
         data_source_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
@@ -114,6 +116,8 @@ class CloudVisionDataTarget(DataTarget, Job):
     debug = BooleanVar(description="Enable for more verbose debug logging")
 
     class Meta:
+        """Meta data for DataTarget."""
+
         name = "CloudVision"
         data_target = "CloudVision"
         data_target_icon = static("nautobot_ssot_aristacv/cvp_logo.png")

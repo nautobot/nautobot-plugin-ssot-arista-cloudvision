@@ -7,7 +7,7 @@ import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 
 class UserTag(DiffSyncModel):
-    """Tag model"""
+    """Tag model."""
 
     _modelname = "tag"
     _identifiers = ("name", "value")
@@ -35,6 +35,7 @@ class UserTag(DiffSyncModel):
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
+        """Update user tag in Cloudvision."""
         remove = set(self.devices) - set(attrs["devices"])
         add = set(attrs["devices"]) - set(self.devices)
         # Create mapping from device_name to CloudVision device_id

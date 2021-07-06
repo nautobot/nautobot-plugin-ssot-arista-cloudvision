@@ -16,6 +16,7 @@ class CloudVision(DiffSync):
     top_level = ["device"]
 
     def load(self):
+        """Load tag data from CloudVision."""
         devices = cvutils.get_devices()
         system_tags = cvutils.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
         for dev in devices:
@@ -25,7 +26,7 @@ class CloudVision(DiffSync):
             dev_tags = [tag for tag in cvutils.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
             # Check if topology_type tag exists
             list_of_tag_names = [value["label"] for value in dev_tags]
-            if not "topology_type" in list_of_tag_names:
+            if "topology_type" not in list_of_tag_names:
                 dev_tags.append({"label": "topology_type", "value": "-"})
 
             for tag in dev_tags:
