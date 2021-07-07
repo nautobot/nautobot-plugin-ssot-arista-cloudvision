@@ -249,6 +249,7 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 PLUGINS_CONFIG = {
     "nautobot_ssot": {
         "hide_example_jobs": True,  # defaults to False if unspecified
+        "delete_devices_on_sync": False
     }
 }
 

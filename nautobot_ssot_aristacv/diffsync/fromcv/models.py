@@ -1,6 +1,7 @@
 """Diffsync models for Nautobot <-> CloudVision sync."""
 from diffsync import DiffSyncModel
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from nautobot.dcim.models import Device as NautobotDevice
 from nautobot.dcim.models import Platform as NautobotPlatform
 from typing import List
@@ -33,9 +34,11 @@ class Device(DiffSyncModel):
 
     def delete(self):
         """Delete device object in Nautobot."""
-        device = NautobotDevice.objects.get(name=self.name)
-        device.delete()
-        super().delete()
+        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
+        if not configs.get("delete_devices_on_sync"):
+            device = NautobotDevice.objects.get(name=self.name)
+            device.delete()
+            super().delete()
         return self
 
 
