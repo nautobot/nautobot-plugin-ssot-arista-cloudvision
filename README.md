@@ -1,45 +1,79 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot).
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization between Arista Cloudvision and Nautobot.
+
+This plugin is an extension of the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) and you must have that plugin installed before installing this extension.
 
 ## Installation
 
 The plugin is available as a Python package in pypi and can be installed with pip
 
 ```shell
-pip install aristacv-sync
+pip install nautobot_ssot_aristacv
 ```
 
 > The plugin is compatible with Nautobot 1.0.0 and higher
 
-To ensure Nautobot to Arista CloudVision Sync is automatically re-installed during future upgrades, create a file named `local_requirements.txt` (if not already existing) in the Nautobot root directory (alongside `requirements.txt`) and list the `aristacv-sync` package:
+To ensure Nautobot to Arista CloudVision Sync is automatically re-installed during future upgrades, create a file named `local_requirements.txt` (if not already existing) in the Nautobot root directory (alongside `requirements.txt`) and list the `nautobot_ssot_aristacv` package:
 
 ```no-highlight
-# echo aristacv-sync >> local_requirements.txt
+# echo nautobot_ssot_aristacv >> local_requirements.txt
 ```
 
 Once installed, the plugin needs to be enabled in your `nautobot_configuration.py`
 
 ```python
 # In your configuration.py
-PLUGINS = ["aristacv_sync"]
+PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 
 # PLUGINS_CONFIG = {
-#   "aristacv_sync": {
+#   "nautobot_ssot" : {
+#     ADD YOUR SETTINGS HERE
+#   }
+#   "nautobot_ssot_aristacv": {
 #     ADD YOUR SETTINGS HERE
 #   }
 # }
 ```
 
+Upon installation, this plugin creates the following custom fields in Nautobot:
+
+- `arista_bgp`
+- `arists_eos`
+- `arista_eostrain`
+- `arista_mlag`
+- `arista_mpls`
+- `arista_pim`
+- `arista_pimbidir`
+- `arista_sflow`
+- `arista_systype`
+- `arista_tapagg`
+- `arista_terminattr`
+- `arista_topology_network_type`
+- `arista_topology_type`
+- `arista_ztp`
+
+> While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
+
 The plugin behavior can be controlled with the following list of settings
 
-- TODO
+- `cvp_host` string: The hostname or address of the onprem instance of Cloudvision
+- `cvp_user` string: The username used to connect to the onprem instance Cloudvision.
+- `cvp_password` string: The password used to connect to the onprem instance Cloudvision.
+- `insecure` boolean: If true, the plugin will download the certificate from Cloudvision and trusted for gRPC.
+- `cvp_token` string: Token to be used when connected to Cloudvision as a Service.
+- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in Cloudvision when syncing from Cloudvision.
 
 ## Usage
 
-### API
+This extension can sync data both `to` and `from` Nautobot. Once the plugin has been installed succesfully two new options are available under the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) plugin.
 
-TODO
+![Arista Extension](https://user-images.githubusercontent.com/38091261/124857275-9a6c0100-df71-11eb-8ace-2ddf67a2471f.PNG)
+
+When syncing data from Cloudvision to Nautobot, the data in the system tags in Cloudvision are copied over to the aforementioned custom fields in Nautobot. You can start this process by clicking the sync button under the "Data Sources" section in the above picture.
+
+When syncing data from Nautobot to Cloudvision, the tag data in Nautobot is copied into User Tags in Cloudvision. You can start this process by clicking the sync button under the "Data Targets" section in the above picture.
+
 
 ## Contributing
 
@@ -89,7 +123,7 @@ aristacv_sync:
 poetry shell
 poetry install
 export $(cat development/dev.env | xargs)
-export $(cat development/creds.env | xargs) 
+export $(cat development/creds.env | xargs)
 ```
 
 4.  You can now run nautobot-server commands as you would from the [Nautobot documentation](https://nautobot.readthedocs.io/en/latest/) for example to start the development server:
@@ -119,7 +153,7 @@ Nautobot server can now be accessed at [http://localhost:8080](http://localhost:
 
 ### CLI Helper Commands
 
-The project is coming with a CLI helper based on [invoke](http://www.pyinvoke.org/) to help setup the development environment. The commands are listed below in 3 categories `dev environment`, `utility` and `testing`. 
+The project is coming with a CLI helper based on [invoke](http://www.pyinvoke.org/) to help setup the development environment. The commands are listed below in 3 categories `dev environment`, `utility` and `testing`.
 
 Each command can be executed with `invoke <command>`. Environment variables `INVOKE_ARISTACV-SYNC_PYTHON_VER` and `INVOKE_ARISTACV-SYNC_NAUTOBOT_VER` may be specified to override the default versions. Each command also has its own help `invoke <command> --help`
 
@@ -155,10 +189,6 @@ Each command can be executed with `invoke <command>`. Environment variables `INV
   unittest         Run Django unit tests for the plugin.
 ```
 
-### Project Documentation
-
-Project documentation is generated by [mkdocs](https://www.mkdocs.org/) from the documentation located in the docs folder.  You can configure [readthedocs.io](https://readthedocs.io/) to point at this folder in your repo.  For development purposes a `docker-compose.docs.yml` is also included.  A container hosting the docs will be started using the invoke commands on [http://localhost:8001](http://localhost:8001), as changes are saved the docs will be automatically reloaded.
-
 ## Questions
 
 For any questions or comments, please check the [FAQ](FAQ.md) first and feel free to swing by the [Network to Code slack channel](https://networktocode.slack.com/) (channel #networktocode).
@@ -166,4 +196,11 @@ Sign up [here](http://slack.networktocode.com/)
 
 ## Screenshots
 
-TODO
+This screenshot shows the Cloudvision to Nautobot home page. This contains a list of all the system tags from Cloudvision and how they map to custom fields in Nautobot. This also displays current plugin configuration and sync history.
+
+![cv_to_naut](https://user-images.githubusercontent.com/38091261/124859726-03557800-df76-11eb-9622-af4c29ba8d40.PNG)
+
+This screenshow shows the Nautobot to Cloudvision home page. It also contains data mappings, plugin configuration and sync history.
+
+![naut_to_cv](https://user-images.githubusercontent.com/38091261/124859903-55969900-df76-11eb-87c4-64ca2616bffe.PNG)
+
