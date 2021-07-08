@@ -87,6 +87,11 @@ class CloudVisionDataSource(DataSource, Job):
         nb = N()
         nb.load()
         self.log("Performing diff between Cloudvision and Nautobot.")
+        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
+        if configs.get("delete_devices_on_sync"):
+            self.log_warning(message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot.")
+        else:
+            self.log_warning(message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot.")
         diff = nb.diff_from(cv)
         self.sync.diff = diff.dict()
         self.sync.save()

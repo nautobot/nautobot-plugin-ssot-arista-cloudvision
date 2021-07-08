@@ -35,7 +35,8 @@ class Device(DiffSyncModel):
     def delete(self):
         """Delete device object in Nautobot."""
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if not configs.get("delete_devices_on_sync"):
+        # self.diffsync.job.log_warning(f"This is a test.")
+        if configs.get("delete_devices_on_sync"):
             device = NautobotDevice.objects.get(name=self.name)
             device.delete()
             super().delete()
