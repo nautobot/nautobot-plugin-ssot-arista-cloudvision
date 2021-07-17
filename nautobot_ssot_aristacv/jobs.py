@@ -44,13 +44,13 @@ class CloudVisionDataSource(DataSource, Job):
                 "CloudVision host": configs.get("cvp_host"),
                 "Username": configs.get("cvp_user"),
                 "Insecure": configs.get("insecure"),
-                "delete_devices_on_sync": configs.get("delete_devices_on_sync")
+                "Delete_devices_on_sync": configs.get("delete_devices_on_sync")
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
             "CloudVision host": "www.arista.io",
-            "delete_devices_on_sync": configs.get("delete_devices_on_sync")
+            "Delete_devices_on_sync": configs.get("delete_devices_on_sync")
             # Token is intentionally omitted!
         }
 
