@@ -4,8 +4,14 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from nautobot.dcim.models import Device as NautobotDevice
 from nautobot.dcim.models import Platform as NautobotPlatform
-from typing import List
+from nautobot.extras.models.statuses import Status
+from typing import List, Optional
+import nautobot_ssot_aristacv.diffsync.nbutils as nbutils
+import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 import distutils
+
+cvutils.connect()
+CLOUDVISION_DEVICES = cvutils.get_devices()
 
 
 class Device(DiffSyncModel):
@@ -19,13 +25,31 @@ class Device(DiffSyncModel):
 
     name: str
     cfs: List = list()
+    device_model: Optional[str]
 
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create device object in Nautobot."""
-        # Call the super().create() method to create the in-memory DiffSyncModel instance
-        # new_device = NautobotDevice(status = "", device_type = "", device_role="", site="", name=ids["name"])
-        # new_device.validated_save()
+        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
+        default_site_object = nbutils.verify_site(configs.get("from_cloudvision_default_site"))
+
+        device_dict = next((device for device in CLOUDVISION_DEVICES if device["hostname"] == ids["name"]), {})
+        device_type_cv = device_dict.get("model")
+
+        device_type_object = nbutils.verify_device_type_object(device_type_cv)
+        device_role_object = nbutils.verify_device_role_object(
+            configs.get("from_cloudvision_default_device_role"),
+            configs.get("from_cloudvision_default_device_role_color"),
+        )
+        new_device = NautobotDevice(
+            status=Status.objects.get(name=configs.get("from_cloudvision_default_device_status")),
+            device_type=device_type_object,
+            device_role=device_role_object,
+            site=default_site_object,
+            name=ids["name"],
+        )
+        new_device.validated_save()
+        # diffysnc.job.log_warning(message=)
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, diffsync, attrs):
@@ -35,8 +59,8 @@ class Device(DiffSyncModel):
     def delete(self):
         """Delete device object in Nautobot."""
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        # self.diffsync.job.log_warning(f"This is a test.")
         if configs.get("delete_devices_on_sync"):
+            self.diffsync.job.log_warning(message=f"Device {self.name} will be deleted per plugin settings.")
             device = NautobotDevice.objects.get(name=self.name)
             device.delete()
             super().delete()

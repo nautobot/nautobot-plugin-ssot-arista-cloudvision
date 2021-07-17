@@ -20,7 +20,7 @@ class CloudVision(DiffSync):
         devices = cvutils.get_devices()
         system_tags = cvutils.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
         for dev in devices:
-            self.device = Device(name=dev["hostname"], device_id=dev["device_id"])
+            self.device = Device(name=dev["hostname"], device_id=dev["device_id"], device_model=dev["model"])
             self.add(self.device)
 
             dev_tags = [tag for tag in cvutils.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
