@@ -249,7 +249,15 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 PLUGINS_CONFIG = {
     "nautobot_ssot": {
         "hide_example_jobs": True,  # defaults to False if unspecified
-    }
+    },
+    "nautobot_ssot_aristacv": {
+        "delete_devices_on_sync": True,
+        "from_cloudvision_default_site": "cloudvision_imported",
+        "from_cloudvision_default_device_role": "network",
+        "from_cloudvision_default_device_role_color": "ff0000",
+        "from_cloudvision_default_device_status": "Active",
+        "cvp_token": "",
+    },
 }
 
 # Plugins configuration settings. These settings are used by various plugins that the user may have installed.

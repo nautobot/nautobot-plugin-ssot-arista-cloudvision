@@ -13,6 +13,11 @@ class Nautobot(DiffSync):
 
     top_level = ["device"]
 
+    def __init__(self, *args, job=None, **kwargs):
+        """Initialize the CloudVision DiffSync adapter."""
+        super().__init__(*args, **kwargs)
+        self.job = job
+
     def load(self):
         """Load device custom field data from Nautobot and populate DiffSync models."""
         devices = NautobotDevice.objects.all()
