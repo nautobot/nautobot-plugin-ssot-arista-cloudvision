@@ -10,9 +10,6 @@ import nautobot_ssot_aristacv.diffsync.nbutils as nbutils
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 import distutils
 
-cvutils.connect()
-CLOUDVISION_DEVICES = cvutils.get_devices()
-
 
 class Device(DiffSyncModel):
     """Device Model."""
@@ -33,7 +30,8 @@ class Device(DiffSyncModel):
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
         default_site_object = nbutils.verify_site(configs.get("from_cloudvision_default_site"))
 
-        device_dict = next((device for device in CLOUDVISION_DEVICES if device["hostname"] == ids["name"]), {})
+        cvutils.connect()
+        device_dict = next((device for device in cvutils.get_devices() if device["hostname"] == ids["name"]), {})
         device_type_cv = device_dict.get("model")
 
         device_type_object = nbutils.verify_device_type_object(device_type_cv)
