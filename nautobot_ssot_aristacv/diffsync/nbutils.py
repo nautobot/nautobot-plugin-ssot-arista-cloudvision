@@ -57,10 +57,10 @@ def verify_device_role_object(role_name, role_color):
         role_obj.validated_save()
     return role_obj
 
+
 def assign_arista_cf(device):
     """Assigns arista custom fields to device."""
     for cf in CustomField.objects.filter(name__contains="arista"):
         device.cf[cf.name] = cf.default
 
     return device
-

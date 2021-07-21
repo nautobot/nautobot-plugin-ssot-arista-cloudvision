@@ -88,7 +88,7 @@ class CustomField(DiffSyncModel):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create Custom Field in Nautobot."""
-        if ids['name'] == "arista_model":
+        if ids["name"] == "arista_model":
             try:
                 # Try to create new platform
                 new_platform = NautobotPlatform(name=attrs["value"], slug=attrs["value"].lower())
