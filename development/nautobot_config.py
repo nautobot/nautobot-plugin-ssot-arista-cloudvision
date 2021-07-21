@@ -256,7 +256,7 @@ PLUGINS_CONFIG = {
         "from_cloudvision_default_device_role": "network",
         "from_cloudvision_default_device_role_color": "ff0000",
         "from_cloudvision_default_device_status": "Active",
-        "cvp_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjE3NTE0LCJkc24iOiJEaWZmU3luYyIsImRzdCI6ImFjY291bnQiLCJzaWQiOiJiNzhhZGQ4MWRiMGViNmU1NTZlN2EwOTZkODFjNDk3MzRhMjEzZjg4M2Q2NzI5NGUwZWM5MGNkNmY0NjQyZGYyLTFGYmV3ck1sTmdVSlNZMVBSUjgxOVE5RU90ajN1UlQ3NUxBUWZYSnAifQ.HNX73W3V5TvECtx2DZ-uIQDxaYruV374DLViPmf0eCxM6fEZ-tIJ6pYAncGJpsXbchFaPYemeshtnwToVNWexw",
+        "cvp_token": "",
     },
 }
 
