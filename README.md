@@ -63,6 +63,10 @@ The plugin behavior can be controlled with the following list of settings
 - `insecure` boolean: If true, the plugin will download the certificate from Cloudvision and trusted for gRPC.
 - `cvp_token` string: Token to be used when connected to Cloudvision as a Service.
 - `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in Cloudvision when syncing from Cloudvision.
+- `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot.
+- `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot.
+- `from_cloudvision_default_device_role_color` string: The default color to assign to the default role.
+- `from_cloudvision_default_device_status`: string: The default status used when the syncing creates new devices in Nautobot.
 
 ## Usage
 
@@ -70,9 +74,17 @@ This extension can sync data both `to` and `from` Nautobot. Once the plugin has 
 
 ![Arista Extension](https://user-images.githubusercontent.com/38091261/124857275-9a6c0100-df71-11eb-8ace-2ddf67a2471f.PNG)
 
-When syncing data from Cloudvision to Nautobot, the data in the system tags in Cloudvision are copied over to the aforementioned custom fields in Nautobot. You can start this process by clicking the sync button under the "Data Sources" section in the above picture.
 
-When syncing data from Nautobot to Cloudvision, the tag data in Nautobot is copied into User Tags in Cloudvision. You can start this process by clicking the sync button under the "Data Targets" section in the above picture.
+### Syncing From Cloudvision
+
+> When loading Nautobot data, this tool only loads devices with a deice type that has a manufacturer of "Arista"
+When syncing data from Cloudvision to Nautobot, system tags as well as devices are synced.  When a device exists in Cloudvision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file. When a device exists in Nautobot that doesn't exist in Cloudvision, this tool will delete that device from Nautobot. You can watch the below video for an example.
+
+![fromcv_sync](https://user-images.githubusercontent.com/38091261/126499331-e41946c4-4e61-4b5e-8b7f-73efb9cd8d3f.gif)
+
+When syncing data from Nautobot to Cloudvision, the tag data in Nautobot is copied into User Tags in Cloudvision. You can watch the video below for an example.
+
+![tocv_sync](https://user-images.githubusercontent.com/38091261/126499484-2e4c4feb-0492-4dc6-abb6-a092701c81ed.gif)
 
 
 ## Contributing

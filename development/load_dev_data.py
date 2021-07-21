@@ -55,10 +55,14 @@ def main():
         print(role, created)
 
     manufacturer, created = get_or_create(nautobot.dcim.manufacturers, "name", "Arista", slug="arista")
+    manufacturer2, created2 = get_or_create(nautobot.dcim.manufacturers, "name", "Cisco", slug="cisco")
     print(manufacturer, created)
 
     device_type, created = get_or_create(
         nautobot.dcim.device_types, "model", "vEOS", slug="veos", manufacturer=manufacturer.id
+    )
+    device_type2, created2 = get_or_create(
+        nautobot.dcim.device_types, "model", "IOS", slug="ios", manufacturer=manufacturer2.id
     )
     print(device_type, created)
 

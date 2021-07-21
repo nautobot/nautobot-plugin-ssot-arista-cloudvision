@@ -1,6 +1,7 @@
 """Utility functions for Nautobot ORM."""
 from nautobot.dcim.models import DeviceType, DeviceRole, Site, Manufacturer
 from nautobot.extras.models.statuses import Status
+from nautobot.extras.models.customfields import CustomField
 
 
 def verify_site(site_name):
@@ -55,3 +56,11 @@ def verify_device_role_object(role_name, role_color):
         role_obj = DeviceRole(name=role_name, slug=role_name.lower(), color=role_color)
         role_obj.validated_save()
     return role_obj
+
+def assign_arista_cf(device):
+    """Assigns arista custom fields to device."""
+    for cf in CustomField.objects.filter(name__contains="arista"):
+        device.cf[cf.name] = cf.default
+
+    return device
+
