@@ -46,8 +46,10 @@ class Device(DiffSyncModel):
             site=default_site_object,
             name=ids["name"],
         )
+
+        new_device = nbutils.assign_arista_cf(new_device)
+
         new_device.validated_save()
-        # diffysnc.job.log_warning(message=)
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, diffsync, attrs):
@@ -63,6 +65,12 @@ class Device(DiffSyncModel):
             device.delete()
             super().delete()
         return self
+
+    def ensure_default_cf(obj, model):
+        """Update objects's default custom fields."""
+        for cf in CustomField.objects.get_for_model(model):
+            if (cf.default is not None) and (cf.name not in obj.cf):
+                obj.cf[cf.name] = cf.default
 
 
 class CustomField(DiffSyncModel):
@@ -80,6 +88,31 @@ class CustomField(DiffSyncModel):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create Custom Field in Nautobot."""
+        if ids["name"] == "arista_model":
+            try:
+                # Try to create new platform
+                new_platform = NautobotPlatform(name=attrs["value"], slug=attrs["value"].lower())
+                new_platform.validated_save()
+                # Assign new platform to device.
+                device = NautobotDevice.objects.get(name=ids.device_name)
+                device.platform = new_platform
+                device.validated_save()
+                return super().update(attrs)
+            except ValidationError:
+                # Assign existing platform to device.
+                existing_platform = NautobotPlatform.objects.get(name=attrs["value"])
+                device = NautobotDevice.objects.get(name=ids["device_name"])
+                device.platform = existing_platform
+                device.validated_save()
+                return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
+        try:
+            attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
+        except ValueError:
+            # value isn't convertable to bool so continue
+            pass
+        device = NautobotDevice.objects.get(name=ids["device_name"])
+        device.custom_field_data.update({ids["name"]: attrs["value"]})
+        device.validated_save()
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):

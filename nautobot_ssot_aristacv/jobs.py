@@ -84,7 +84,7 @@ class CloudVisionDataSource(DataSource, Job):
         cv = C()
         cv.load()
         self.log("Loading data from Nautobot")
-        nb = N()
+        nb = N(job=self)
         nb.load()
         self.log("Performing diff between Cloudvision and Nautobot.")
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
@@ -103,7 +103,7 @@ class CloudVisionDataSource(DataSource, Job):
         if not self.kwargs["dry_run"]:
             self.log("Syncing to Nautbot")
             try:
-                cv.sync_to(nb)
+                nb.sync_from(cv)
             except RpcError as e:
                 self.log_failure("Sync failed.")
                 raise e
