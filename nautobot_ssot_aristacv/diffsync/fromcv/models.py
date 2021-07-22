@@ -94,10 +94,10 @@ class CustomField(DiffSyncModel):
                 new_platform = NautobotPlatform(name=attrs["value"], slug=attrs["value"].lower())
                 new_platform.validated_save()
                 # Assign new platform to device.
-                device = NautobotDevice.objects.get(name=ids.device_name)
+                device = NautobotDevice.objects.get(name=ids["device_name"])
                 device.platform = new_platform
                 device.validated_save()
-                return super().update(attrs)
+                return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
             except ValidationError:
                 # Assign existing platform to device.
                 existing_platform = NautobotPlatform.objects.get(name=attrs["value"])
