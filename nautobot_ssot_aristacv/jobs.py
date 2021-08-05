@@ -44,13 +44,21 @@ class CloudVisionDataSource(DataSource, Job):
                 "CloudVision host": configs.get("cvp_host"),
                 "Username": configs.get("cvp_user"),
                 "Insecure": configs.get("insecure"),
-                "Delete_devices_on_sync": configs.get("delete_devices_on_sync")
+                "Delete devices on sync": configs.get("delete_devices_on_sync"),
+                "New device default site": configs.get("from_cloudvision_default_site"),
+                "New device default role": configs.get("from_cloudvision_default_device_role"),
+                "New device default role color": configs.get("from_cloudvision_default_device_role_color"),
+                "New device default status": configs.get("from_cloudvision_default_device_status")
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
             "CloudVision host": "www.arista.io",
-            "Delete_devices_on_sync": configs.get("delete_devices_on_sync")
+            "Delete_devices_on_sync": configs.get("delete_devices_on_sync"),
+            "New device default site": configs.get("from_cloudvision_default_site"),
+            "New device default role": configs.get("from_cloudvision_default_device_role"),
+            "New device default role color": configs.get("from_cloudvision_default_device_role_color"),
+            "New device default status": configs.get("from_cloudvision_default_device_status")
             # Token is intentionally omitted!
         }
 

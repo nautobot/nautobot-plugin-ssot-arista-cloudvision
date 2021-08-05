@@ -55,18 +55,27 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 > While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
 
-The plugin behavior can be controlled with the following list of settings
+The plugin can connect to either on-premise or a cloud instance of Cloudvision. To connect to an on-premise instance you must set the following variables in the nautobot configuration file.
 
 - `cvp_host` string: The hostname or address of the onprem instance of Cloudvision
 - `cvp_user` string: The username used to connect to the onprem instance Cloudvision.
 - `cvp_password` string: The password used to connect to the onprem instance Cloudvision.
 - `insecure` boolean: If true, the plugin will download the certificate from Cloudvision and trusted for gRPC.
-- `cvp_token` string: Token to be used when connected to Cloudvision as a Service.
-- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in Cloudvision when syncing from Cloudvision.
+
+To connect to a cloud instance of Cloudvision you must set the following variable:
+- `cvaas_token` string: Token to be used when connected to Cloudvision as a Service.
+
+
+When syncing from Cloudvision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default value sin the nautobot config file.
+
 - `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot.
 - `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot.
 - `from_cloudvision_default_device_role_color` string: The default color to assign to the default role.
 - `from_cloudvision_default_device_status`: string: The default status used when the syncing creates new devices in Nautobot.
+
+Lastly, when a device exists in Nautobot but not in Cloudvision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+
+- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in Cloudvision when syncing from Cloudvision.
 
 ## Usage
 

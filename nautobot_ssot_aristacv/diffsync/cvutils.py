@@ -41,7 +41,7 @@ def connect():
     # Set up credentials for CVaaS using supplied token.
     else:
         cvp_url = "www.arista.io:443"
-        call_creds = grpc.access_token_call_credentials(PLUGIN_SETTINGS["cvp_token"])
+        call_creds = grpc.access_token_call_credentials(PLUGIN_SETTINGS["cvaas_token"])
         channel_creds = grpc.ssl_channel_credentials()
     conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
     _channel = grpc.secure_channel(cvp_url, conn_creds)
