@@ -85,8 +85,11 @@ This extension can sync data both `to` and `from` Nautobot. Once the plugin has 
 
 ### Syncing From CloudVision
 
-> When loading Nautobot data, this tool only loads devices with a deice type that has a manufacturer of "Arista"
-When syncing data from CloudVision to Nautobot, system tags as well as devices are synced.  When a device exists in CloudVision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file. When a device exists in Nautobot that doesn't exist in CloudVision, this tool will delete that device from Nautobot. You can watch the below video for an example.
+> When loading Nautobot data, this tool only loads devices with a device type that has a manufacturer of "Arista"
+
+When syncing data from CloudVision to Nautobot, system tags as well as devices are synced.  When a device exists in CloudVision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file. 
+When a device exists in Nautobot that does not exist in CloudVision, this tool can be configured to either delete or skip that device. 
+You can watch the below video for an example.
 
 ![fromcv_sync](https://user-images.githubusercontent.com/38091261/126499331-e41946c4-4e61-4b5e-8b7f-73efb9cd8d3f.gif)
 
