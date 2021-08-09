@@ -1,8 +1,44 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization between Arista CloudVision and Nautobot.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while using devices and system tags from CloudVision to ensure device syncronization and populate device metadata.  Here is a table showing the data mappings when syncing from CloudVision.
 
-This plugin is an extension of the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) and you must have that plugin installed before installing this extension.
+| CloudVision System Tags | Nautobot Device Custom Field |
+|-------------------------|------------------------------|
+| topology_network_type   | Topology Network Typ         |
+| mlag                    | MLAG                         |
+| mpls                    | mpls                         |
+| model                   | Device Platform*             |
+| systype                 | Systype                      |
+| serialnumber            | Device Serial Number         |
+| pimbidir                | pimbidir                     |
+| sflow                   | sFlow                        |
+| eostrain                | eostrain                     |
+| tapagg                  | tapagg                       |
+| pim                     | pim                          |
+| bgp                     | bgp                          |
+| terminattr              | TerminAttr Version           |
+| ztp                     | ztp                          |
+| eos                     | EOS Version                  |
+| topology_type           | Topology Type                |
+> The model system tag is mapped to the device platform model in Nautobot.
+
+When syncing User tags from Nautobot to CloudVision the data mappings are as follows:
+
+| Nautobot | CloudVision |
+|----------|-------------|
+| Tags     | Device Tags |
+
+> This plugin is an extension of the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) and you must have that plugin installed before installing this extension.
+
+## Screenshots
+
+This screenshot shows the CloudVision to Nautobot home page. This contains a list of all the system tags from CloudVision and how they map to custom fields in Nautobot. This also displays current plugin configuration and sync history.
+
+![cv_to_naut](https://user-images.githubusercontent.com/38091261/124859726-03557800-df76-11eb-9622-af4c29ba8d40.PNG)
+
+This screenshow shows the Nautobot to CloudVision home page. It also contains data mappings, plugin configuration and sync history.
+
+![naut_to_cv](https://user-images.githubusercontent.com/38091261/124859903-55969900-df76-11eb-87c4-64ca2616bffe.PNG)
 
 ## Installation
 
@@ -87,8 +123,8 @@ This extension can sync data both `to` and `from` Nautobot. Once the plugin has 
 
 > When loading Nautobot data, this tool only loads devices with a device type that has a manufacturer of "Arista"
 
-When syncing data from CloudVision to Nautobot, system tags as well as devices are synced.  When a device exists in CloudVision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file. 
-When a device exists in Nautobot that does not exist in CloudVision, this tool can be configured to either delete or skip that device. 
+When syncing data from CloudVision to Nautobot, system tags as well as devices are synced.  When a device exists in CloudVision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file.
+When a device exists in Nautobot that does not exist in CloudVision, this tool can be configured to either delete or skip that device.
 You can watch the below video for an example.
 
 ![fromcv_sync](https://user-images.githubusercontent.com/38091261/126499331-e41946c4-4e61-4b5e-8b7f-73efb9cd8d3f.gif)
@@ -96,16 +132,6 @@ You can watch the below video for an example.
 When syncing data from Nautobot to CloudVision, the tag data in Nautobot is copied into User Tags in CloudVision. You can watch the video below for an example.
 
 ![tocv_sync](https://user-images.githubusercontent.com/38091261/126499484-2e4c4feb-0492-4dc6-abb6-a092701c81ed.gif)
-
-## Screenshots
-
-This screenshot shows the CloudVision to Nautobot home page. This contains a list of all the system tags from CloudVision and how they map to custom fields in Nautobot. This also displays current plugin configuration and sync history.
-
-![cv_to_naut](https://user-images.githubusercontent.com/38091261/124859726-03557800-df76-11eb-9622-af4c29ba8d40.PNG)
-
-This screenshow shows the Nautobot to CloudVision home page. It also contains data mappings, plugin configuration and sync history.
-
-![naut_to_cv](https://user-images.githubusercontent.com/38091261/124859903-55969900-df76-11eb-87c4-64ca2616bffe.PNG)
 
 ## Contributing
 

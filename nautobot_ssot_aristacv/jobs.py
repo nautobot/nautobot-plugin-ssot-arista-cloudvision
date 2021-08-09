@@ -74,7 +74,7 @@ class CloudVisionDataSource(DataSource, Job):
             DataMapping("serialnumber", None, "Device Serial Number", None),
             DataMapping("pimbidir", None, "pimbidir", None),
             DataMapping("sflow", None, "sFlow", None),
-            DataMapping("eostrain", None, "eosttain", None),
+            DataMapping("eostrain", None, "eostrain", None),
             DataMapping("tapagg", None, "tapagg", None),
             DataMapping("pim", None, "pim", None),
             DataMapping("bgp", None, "bgp", None),
