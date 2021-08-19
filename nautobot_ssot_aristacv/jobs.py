@@ -18,6 +18,7 @@ from nautobot_ssot_aristacv.diffsync.tocv.nautobot import Nautobot
 from nautobot_ssot_aristacv.diffsync.fromcv.cloudvision import CloudVision as C
 from nautobot_ssot_aristacv.diffsync.fromcv.nautobot import Nautobot as N
 
+from nautobot_ssot_aristacv.diffsync.fromcv.models import DEFAULT_SITE, DEFAULT_DEVICE_ROLE, DEFAULT_DEVICE_ROLE_COLOR, DEFAULT_DEVICE_STATUS, DEFAULT_DEVICE_STATUS_COLOR, DEFAULT_DELETE_DEVICES_ON_SYNC
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 
@@ -44,21 +45,23 @@ class CloudVisionDataSource(DataSource, Job):
                 "CloudVision host": configs.get("cvp_host"),
                 "Username": configs.get("cvp_user"),
                 "Insecure": configs.get("insecure"),
-                "Delete devices on sync": configs.get("delete_devices_on_sync"),
-                "New device default site": configs.get("from_cloudvision_default_site"),
-                "New device default role": configs.get("from_cloudvision_default_device_role"),
-                "New device default role color": configs.get("from_cloudvision_default_device_role_color"),
-                "New device default status": configs.get("from_cloudvision_default_device_status")
+                "Delete devices on sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
+                "New device default site": configs.get("from_cloudvision_default_site", DEFAULT_SITE),
+                "New device default role": configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
+                "New device default role color": configs.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
+                "New device default status": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
+                "New device default status color": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR)
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
             "CloudVision host": "www.arista.io",
-            "Delete_devices_on_sync": configs.get("delete_devices_on_sync"),
-            "New device default site": configs.get("from_cloudvision_default_site"),
-            "New device default role": configs.get("from_cloudvision_default_device_role"),
-            "New device default role color": configs.get("from_cloudvision_default_device_role_color"),
-            "New device default status": configs.get("from_cloudvision_default_device_status")
+            "Delete_devices_on_sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
+            "New device default site": configs.get("from_cloudvision_default_site", DEFAULT_SITE),
+            "New device default role": configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
+            "New device default role color": configs.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
+            "New device default status": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
+            "New device default status color": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR)
             # Token is intentionally omitted!
         }
 
