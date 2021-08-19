@@ -5,7 +5,7 @@ A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchr
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
 | topology_network_type   | Topology Network Typ         |
-| mlag                    | MLAG                         |
+| mlag                    | mlag                         |
 | mpls                    | mpls                         |
 | model                   | Device Platform*             |
 | systype                 | Systype                      |
@@ -56,7 +56,7 @@ To ensure Nautobot to Arista CloudVision Sync is automatically re-installed duri
 # echo nautobot_ssot_aristacv >> local_requirements.txt
 ```
 
-Once installed, the plugin needs to be enabled in your `nautobot_configuration.py`
+Once installed, the plugin needs to be enabled in your `nautobot_configuration.py` and plugin settings need to be defined.
 
 ```python
 # In your configuration.py
@@ -67,10 +67,22 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 #     ADD YOUR SETTINGS HERE
 #   }
 #   "nautobot_ssot_aristacv": {
-#     ADD YOUR SETTINGS HERE
+#     "cvaas_token": "",
+#     "cvp_host": "",
+#     "cvp_user": "",
+#     "cvp_password": "",
+#     "insecure": "",
+#     "from_cloudvision_default_site": "",
+#     "from_cloudvision_default_device_role": "",
+#     "from_cloudvision_default_device_role_color": "",
+#     "from_cloudvision_default_device_status": "",
+#     "from_cloudvision_default_device_status_color": "",
+#     "delete_devices_on_sync_cv_source": ""
 #   }
 # }
 ```
+
+> All plugin settings are defined in the picture above as an example. Only some will be needed as described below.
 
 Upon installation, this plugin creates the following custom fields in Nautobot:
 
@@ -104,14 +116,19 @@ To connect to a cloud instance of CloudVision you must set the following variabl
 
 When syncing from CloudVision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default value sin the nautobot config file.
 
-- `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot.
-- `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot.
-- `from_cloudvision_default_device_role_color` string: The default color to assign to the default role.
-- `from_cloudvision_default_device_status`: string: The default status used when the syncing creates new devices in Nautobot.
+- `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot. Defaults to `cloudvision_imported`.
+- `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot. Defaults to `network`.
+- `from_cloudvision_default_device_role_color` string: The default color to assign to the default role. Defaults to `ff0000`.
+- `from_cloudvision_default_device_status`: string: The default status used when the syncing creates new devices in Nautobot. Defaults to `cloudvision_imported`.
+- `from_cloudvision_default_device_status_color`: string: The default color to assign to the default status. Defaults to `ff0000`.
+
+> When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
 Lastly, when a device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
 
-- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in CloudVision when syncing from CloudVision.
+- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in CloudVision when syncing from CloudVision. Defaults to `False`.
+
+> when this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
 ## Usage
 

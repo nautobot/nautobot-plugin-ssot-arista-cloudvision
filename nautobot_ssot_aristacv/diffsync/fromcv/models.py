@@ -4,11 +4,18 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from nautobot.dcim.models import Device as NautobotDevice
 from nautobot.dcim.models import Platform as NautobotPlatform
-from nautobot.extras.models.statuses import Status
 from typing import List, Optional
 import nautobot_ssot_aristacv.diffsync.nbutils as nbutils
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 import distutils
+
+
+DEFAULT_SITE = "cloudvision_imported"
+DEFAULT_DEVICE_ROLE = "network"
+DEFAULT_DEVICE_ROLE_COLOR = "ff0000"
+DEFAULT_DEVICE_STATUS = "cloudvision_imported"
+DEFAULT_DEVICE_STATUS_COLOR = "ff0000"
+DEFAULT_DELETE_DEVICES_ON_SYNC = False
 
 
 class Device(DiffSyncModel):
@@ -28,7 +35,7 @@ class Device(DiffSyncModel):
     def create(cls, diffsync, ids, attrs):
         """Create device object in Nautobot."""
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        default_site_object = nbutils.verify_site(configs.get("from_cloudvision_default_site"))
+        default_site_object = nbutils.verify_site(configs.get("from_cloudvision_default_site", DEFAULT_SITE))
 
         cvutils.connect()
         device_dict = next((device for device in cvutils.get_devices() if device["hostname"] == ids["name"]), {})
@@ -36,11 +43,17 @@ class Device(DiffSyncModel):
 
         device_type_object = nbutils.verify_device_type_object(device_type_cv)
         device_role_object = nbutils.verify_device_role_object(
-            configs.get("from_cloudvision_default_device_role"),
-            configs.get("from_cloudvision_default_device_role_color"),
+            configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
+            configs.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
         )
+
+        device_status = nbutils.verify_device_status(
+            configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
+            configs.get("from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR),
+        )
+
         new_device = NautobotDevice(
-            status=Status.objects.get(name=configs.get("from_cloudvision_default_device_status")),
+            status=device_status,
             device_type=device_type_object,
             device_role=device_role_object,
             site=default_site_object,
@@ -59,7 +72,7 @@ class Device(DiffSyncModel):
     def delete(self):
         """Delete device object in Nautobot."""
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("delete_devices_on_sync"):
+        if configs.get("delete_devices_on_sync", DEFAULT_DELETE_DEVICES_ON_SYNC):
             self.diffsync.job.log_warning(message=f"Device {self.name} will be deleted per plugin settings.")
             device = NautobotDevice.objects.get(name=self.name)
             device.delete()
