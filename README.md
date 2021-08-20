@@ -114,7 +114,7 @@ To connect to a cloud instance of CloudVision you must set the following variabl
 
 - `cvaas_token` string: Token to be used when connected to CloudVision as a Service.
 
-When syncing from CloudVision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default value sin the nautobot config file.
+When syncing from CloudVision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
 
 - `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot. Defaults to `cloudvision_imported`.
 - `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot. Defaults to `network`.
@@ -126,9 +126,9 @@ When syncing from CloudVision, this plugin will create new devices that do not e
 
 Lastly, when a device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
 
-- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in CloudVision when syncing from CloudVision. Defaults to `False`.
+- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautobot with device type manufacturer set to Arista that do not exist in CloudVision when syncing from CloudVision. Defaults to `False`.
 
-> when this variable is not defined in the plugin settings, the plugin will default to using `False`.
+> When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
 ## Usage
 
