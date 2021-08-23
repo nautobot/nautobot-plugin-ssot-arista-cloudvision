@@ -1,6 +1,6 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while using devices and system tags from CloudVision to ensure device syncronization and populate device metadata.  Here is a table showing the data mappings when syncing from CloudVision.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while using devices and system tags from CloudVision to ensure device synchronization and populate device metadata.  Here is a table showing the data mappings when syncing from CloudVision.
 
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
@@ -87,7 +87,7 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 Upon installation, this plugin creates the following custom fields in Nautobot:
 
 - `arista_bgp`
-- `arists_eos`
+- `arista_eos`
 - `arista_eostrain`
 - `arista_mlag`
 - `arista_mpls`
@@ -103,7 +103,7 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 > While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
 
-The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance you must set the following variables in the nautobot configuration file.
+The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance, you must set the following variables in the Nautobot configuration file.
 
 | Configuration Variable | Type    | Usage                                                                                            |
 |------------------------|---------|--------------------------------------------------------------------------------------------------|
@@ -118,7 +118,7 @@ To connect to a cloud instance of CloudVision you must set the following variabl
 |------------------------|--------|---------------------------------------------------------------|
 | cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. |
 
-When syncing from CloudVision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
+When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
 
 | Configuration Variable                       | Type   | Usage                                                      | Default              |
 |----------------------------------------------|--------|------------------------------------------------------------|----------------------|
@@ -130,7 +130,7 @@ When syncing from CloudVision, this plugin will create new devices that do not e
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
-Lastly, when a device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+Lastly, when an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
 
 | Configuration Variable          | Type    | Usage                                                                                                                                                              | Default |
 |---------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
