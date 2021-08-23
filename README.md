@@ -105,28 +105,36 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance you must set the following variables in the nautobot configuration file.
 
-- `cvp_host` string: The hostname or address of the onprem instance of CloudVision
-- `cvp_user` string: The username used to connect to the onprem instance CloudVision.
-- `cvp_password` string: The password used to connect to the onprem instance CloudVision.
-- `insecure` boolean: If true, the plugin will download the certificate from CloudVision and trusted for gRPC.
+| Configuration Variable | Type    | Usage                                                                                            |
+|------------------------|---------|--------------------------------------------------------------------------------------------------|
+| cvp_host               | string  | Hostname or ip address of the onprem instance of CloudVision.                                    |
+| cvp_user               | string  | The username used to connect to the onprem instance of CloudVision.                              |
+| cvp_password           | string  | The password used by the user specified above.                                                   |
+| insecure               | boolean | If true, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
-- `cvaas_token` string: Token to be used when connected to CloudVision as a Service.
+| Configuration Variable | Type   | Usage                                                         |
+|------------------------|--------|---------------------------------------------------------------|
+| cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. |
 
 When syncing from CloudVision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
 
-- `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot. Defaults to `cloudvision_imported`.
-- `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot. Defaults to `network`.
-- `from_cloudvision_default_device_role_color` string: The default color to assign to the default role. Defaults to `ff0000`.
-- `from_cloudvision_default_device_status`: string: The default status used when the syncing creates new devices in Nautobot. Defaults to `cloudvision_imported`.
-- `from_cloudvision_default_device_status_color`: string: The default color to assign to the default status. Defaults to `ff0000`.
+| Configuration Variable                       | Type   | Usage                                                      | Default              |
+|----------------------------------------------|--------|------------------------------------------------------------|----------------------|
+| from_cloudvision_default_site                | string | Default site created when syncing new devices to Nautobot. | cloudvision_imported |
+| from_cloudvision_default_device_role         | string | Default role created when syncing new devices to Nautobot. | network              |
+| from_cloudvision_default_device_role_color   | string | Default role color used for default role.                  | ff0000               |
+| from_cloudvision_default_device_status       | string | Default status used when syncing new devices to Nautobot.  | cloudvision_imported |
+| from_cloudvision_default_device_status_color | string | Default status color used for default status.              | ff0000               |
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
 Lastly, when a device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
 
-- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautobot with device type manufacturer set to Arista that do not exist in CloudVision when syncing from CloudVision. Defaults to `False`.
+| Configuration Variable          | Type    | Usage                                                                                                                                                              | Default |
+|---------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| de;ete_deices_on_sync_cv_source | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
