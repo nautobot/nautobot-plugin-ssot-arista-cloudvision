@@ -4,16 +4,16 @@ A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchr
 
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
-| topology_network_type   | Topology Network Typ         |
+| topology_network_type   | Topology Network Type        |
 | mlag                    | mlag                         |
 | mpls                    | mpls                         |
 | model                   | Device Platform*             |
-| systype                 | Systype                      |
+| systype                 | systype                      |
 | serialnumber            | Device Serial Number         |
 | pimbidir                | pimbidir                     |
 | sflow                   | sFlow                        |
-| eostrain                | eostrain                     |
-| tapagg                  | tapagg                       |
+| eostrain                | EOS Train                    |
+| tapagg                  | TAP Aggregation              |
 | pim                     | pim                          |
 | bgp                     | bgp                          |
 | terminattr              | TerminAttr Version           |
