@@ -19,7 +19,5 @@ services:
     env_file:
       - "dev.env"
       - "creds.env"
-    ports:
-      - "6379:6379"
 volumes:
   postgres_data: {}

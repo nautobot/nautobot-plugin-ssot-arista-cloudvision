@@ -1,19 +1,19 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while using devices and system tags from CloudVision to ensure device syncronization and populate device metadata.  Here is a table showing the data mappings when syncing from CloudVision.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while using devices and system tags from CloudVision to ensure device synchronization and populate device metadata.  Here is a table showing the data mappings when syncing from CloudVision.
 
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
-| topology_network_type   | Topology Network Typ         |
-| mlag                    | MLAG                         |
+| topology_network_type   | Topology Network Type        |
+| mlag                    | mlag                         |
 | mpls                    | mpls                         |
 | model                   | Device Platform*             |
-| systype                 | Systype                      |
+| systype                 | systype                      |
 | serialnumber            | Device Serial Number         |
 | pimbidir                | pimbidir                     |
 | sflow                   | sFlow                        |
-| eostrain                | eostrain                     |
-| tapagg                  | tapagg                       |
+| eostrain                | EOS Train                    |
+| tapagg                  | TAP Aggregation              |
 | pim                     | pim                          |
 | bgp                     | bgp                          |
 | terminattr              | TerminAttr Version           |
@@ -56,7 +56,7 @@ To ensure Nautobot to Arista CloudVision Sync is automatically re-installed duri
 # echo nautobot_ssot_aristacv >> local_requirements.txt
 ```
 
-Once installed, the plugin needs to be enabled in your `nautobot_configuration.py`
+Once installed, the plugin needs to be enabled in your `nautobot_configuration.py` and plugin settings need to be defined.
 
 ```python
 # In your configuration.py
@@ -67,15 +67,27 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 #     ADD YOUR SETTINGS HERE
 #   }
 #   "nautobot_ssot_aristacv": {
-#     ADD YOUR SETTINGS HERE
+#     "cvaas_token": "",
+#     "cvp_host": "",
+#     "cvp_user": "",
+#     "cvp_password": "",
+#     "insecure": "",
+#     "from_cloudvision_default_site": "",
+#     "from_cloudvision_default_device_role": "",
+#     "from_cloudvision_default_device_role_color": "",
+#     "from_cloudvision_default_device_status": "",
+#     "from_cloudvision_default_device_status_color": "",
+#     "delete_devices_on_sync_cv_source": ""
 #   }
 # }
 ```
 
+> All plugin settings are defined in the picture above as an example. Only some will be needed as described below.
+
 Upon installation, this plugin creates the following custom fields in Nautobot:
 
 - `arista_bgp`
-- `arists_eos`
+- `arista_eos`
 - `arista_eostrain`
 - `arista_mlag`
 - `arista_mpls`
@@ -91,27 +103,40 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 > While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
 
-The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance you must set the following variables in the nautobot configuration file.
+The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance, you must set the following variables in the Nautobot configuration file.
 
-- `cvp_host` string: The hostname or address of the onprem instance of CloudVision
-- `cvp_user` string: The username used to connect to the onprem instance CloudVision.
-- `cvp_password` string: The password used to connect to the onprem instance CloudVision.
-- `insecure` boolean: If true, the plugin will download the certificate from CloudVision and trusted for gRPC.
+| Configuration Variable | Type    | Usage                                                                                            |
+|------------------------|---------|--------------------------------------------------------------------------------------------------|
+| cvp_host               | string  | Hostname or ip address of the onprem instance of CloudVision.                                    |
+| cvp_user               | string  | The username used to connect to the onprem instance of CloudVision.                              |
+| cvp_password           | string  | The password used by the user specified above.                                                   |
+| insecure               | boolean | If true, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
-- `cvaas_token` string: Token to be used when connected to CloudVision as a Service.
+| Configuration Variable | Type   | Usage                                                         |
+|------------------------|--------|---------------------------------------------------------------|
+| cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. |
 
-When syncing from CloudVision, this plugin will create new devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default value sin the nautobot config file.
+When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
 
-- `from_cloudvision_default_site` string: The default site used when syncing creates new devices in Nautobot.
-- `from_cloudvision_default_device_role` string: The default device role used when the syncing creates new devices in Nautobot.
-- `from_cloudvision_default_device_role_color` string: The default color to assign to the default role.
-- `from_cloudvision_default_device_status`: string: The default status used when the syncing creates new devices in Nautobot.
+| Configuration Variable                       | Type   | Usage                                                      | Default              |
+|----------------------------------------------|--------|------------------------------------------------------------|----------------------|
+| from_cloudvision_default_site                | string | Default site created when syncing new devices to Nautobot. | cloudvision_imported |
+| from_cloudvision_default_device_role         | string | Default role created when syncing new devices to Nautobot. | network              |
+| from_cloudvision_default_device_role_color   | string | Default role color used for default role.                  | ff0000               |
+| from_cloudvision_default_device_status       | string | Default status used when syncing new devices to Nautobot.  | cloudvision_imported |
+| from_cloudvision_default_device_status_color | string | Default status color used for default status.              | ff0000               |
 
-Lastly, when a device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+> When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
-- `delete_devices_on_sync_cv_source` boolean (default False): If true, this will delete devices in Nautbot that do not exist in CloudVision when syncing from CloudVision.
+Lastly, when an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+
+| Configuration Variable          | Type    | Usage                                                                                                                                                              | Default |
+|---------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| de;ete_deices_on_sync_cv_source | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
+
+> When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
 ## Usage
 
