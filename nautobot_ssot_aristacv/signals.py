@@ -54,7 +54,7 @@ def post_migrate_create_custom_fields(apps, **kwargs):
         {
             "name": "arista_mlag",
             "type": CustomFieldTypeChoices.TYPE_TEXT,
-            "label": "MLAG",
+            "label": "mlag",
         },
         {
             "name": "arista_tapagg",
