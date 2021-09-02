@@ -118,7 +118,7 @@ To connect to a cloud instance of CloudVision you must set the following variabl
 |------------------------|--------|---------------------------------------------------------------|
 | cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. |
 
-When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
+When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. When creating new devices in Nautobot, a site, device role, device role color, device status, and device are required. You may define which values to use by configuring the following values in your nautobot config file. If you define a `default_device_role` and `default_device_status` that already exist, the default color value for both of those will be ignored as it will pull that information from Nautobot.
 
 | Configuration Variable                       | Type   | Usage                                                      | Default              |
 |----------------------------------------------|--------|------------------------------------------------------------|----------------------|
@@ -130,13 +130,21 @@ When syncing from CloudVision, this plugin will create new Arista devices that d
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
-Lastly, when an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+When an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
 
-| Configuration Variable          | Type    | Usage                                                                                                                                                              | Default |
-|---------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| de;ete_deices_on_sync_cv_source | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
+| Configuration Variable           | Type    | Usage                                                                                                                                                              | Default |
+|----------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| delete_devices_on_sync_cv_source | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
+
+Lastly, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
+
+| Configuration Variable                       | Type    | Usage                                                      | Default              |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| apply_import_tag                             | boolean | Apply import tag to devices imported from CloudVision.     | False                |
+
+> If apply_import_tag is set to True, the tag value that is applied to devices is `cloudvision_imported`.
 
 ## Usage
 

@@ -1,6 +1,7 @@
 """Utility functions for Nautobot ORM."""
 from nautobot.dcim.models import DeviceType, DeviceRole, Site, Manufacturer
 from nautobot.extras.models.statuses import Status
+from nautobot.extras.models.tags import Tag
 from nautobot.extras.models.customfields import CustomField
 from django.contrib.contenttypes.models import ContentType
 
@@ -79,6 +80,16 @@ def verify_device_status(device_status, device_status_color):
         status_obj.validated_save()
         status_obj.content_types.set([dcim_device])
     return status_obj
+
+
+def verify_import_tag():
+    """Verify `cloudvision_imported` tag exists. if not, creates the tag."""
+    try:
+        import_tag = Tag.objects.get(name="cloudvision_imported")
+    except Tag.DoesNotExist:
+        import_tag = Tag(name="cloudvision_imported", slug="cloudvision_imported", color="ff0000")
+        import_tag.validated_save()
+    return import_tag
 
 
 def assign_arista_cf(device):

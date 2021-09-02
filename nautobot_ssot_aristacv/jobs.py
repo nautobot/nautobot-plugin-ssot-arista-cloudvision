@@ -25,6 +25,7 @@ from nautobot_ssot_aristacv.diffsync.fromcv.models import (
     DEFAULT_DEVICE_STATUS,
     DEFAULT_DEVICE_STATUS_COLOR,
     DEFAULT_DELETE_DEVICES_ON_SYNC,
+    APPLY_IMPORT_TAG,
 )
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
@@ -63,7 +64,8 @@ class CloudVisionDataSource(DataSource, Job):
                 ),
                 "New device default status color": configs.get(
                     "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR
-                )
+                ),
+                "Apply import tag": str(configs.get("apply_import_tag", APPLY_IMPORT_TAG))
                 # Password is intentionally omitted!
             }
         return {
@@ -78,7 +80,8 @@ class CloudVisionDataSource(DataSource, Job):
             "New device default status": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
             "New device default status color": configs.get(
                 "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR
-            )
+            ),
+            "Apply import tag": str(configs.get("apply_import_tag", APPLY_IMPORT_TAG))
             # Token is intentionally omitted!
         }
 
