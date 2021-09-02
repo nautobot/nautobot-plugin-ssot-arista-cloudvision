@@ -256,6 +256,7 @@ PLUGINS_CONFIG = {
         "from_cloudvision_default_device_role": "network",
         "from_cloudvision_default_device_role_color": "ff0000",
         "from_cloudvision_default_device_status": "Active",
+        "from_cloudvision_default_device_status_color": "ff0000",
         "cvp_token": "",
     },
 }

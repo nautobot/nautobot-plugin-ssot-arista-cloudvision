@@ -62,7 +62,7 @@ class CloudVisionDataSource(DataSource, Job):
                     "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS
                 ),
                 "New device default status color": configs.get(
-                    "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR
+                    "from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR
                 )
                 # Password is intentionally omitted!
             }
@@ -77,7 +77,7 @@ class CloudVisionDataSource(DataSource, Job):
             ),
             "New device default status": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
             "New device default status color": configs.get(
-                "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR
+                "from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR
             )
             # Token is intentionally omitted!
         }
