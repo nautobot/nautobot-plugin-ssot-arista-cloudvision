@@ -16,6 +16,7 @@ DEFAULT_DEVICE_ROLE_COLOR = "ff0000"
 DEFAULT_DEVICE_STATUS = "cloudvision_imported"
 DEFAULT_DEVICE_STATUS_COLOR = "ff0000"
 DEFAULT_DELETE_DEVICES_ON_SYNC = False
+APPLY_IMPORT_TAG = False
 
 
 class Device(DiffSyncModel):
@@ -63,6 +64,12 @@ class Device(DiffSyncModel):
         new_device = nbutils.assign_arista_cf(new_device)
 
         new_device.validated_save()
+
+        if configs.get("apply_import_tag", APPLY_IMPORT_TAG):
+            import_tag = nbutils.verify_import_tag()
+            new_device.tags.add(import_tag)
+            new_device.validated_save()
+
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, diffsync, attrs):
