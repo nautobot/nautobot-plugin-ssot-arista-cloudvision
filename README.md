@@ -77,7 +77,8 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 #     "from_cloudvision_default_device_role_color": "",
 #     "from_cloudvision_default_device_status": "",
 #     "from_cloudvision_default_device_status_color": "",
-#     "delete_devices_on_sync": ""
+#     "delete_devices_on_sync": "",
+#     "apply_import_tag": ""
 #   }
 # }
 ```
