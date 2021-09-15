@@ -135,7 +135,7 @@ When an Arista device exists in Nautobot but not in CloudVision, this plugin can
 
 | Configuration Variable           | Type    | Usage                                                                                                                                                              | Default |
 |----------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| delete_devices_on_sync_cv_source | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
+| delete_devices_on_sync | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
