@@ -14,7 +14,7 @@ class Nautobot(DiffSync):
     top_level = ["device"]
 
     def __init__(self, *args, job=None, **kwargs):
-        """Initialize the CloudVision DiffSync adapter."""
+        """Initialize the Nautobot DiffSync adapter."""
         super().__init__(*args, **kwargs)
         self.job = job
 
