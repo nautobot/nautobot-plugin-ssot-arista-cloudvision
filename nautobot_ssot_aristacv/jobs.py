@@ -25,6 +25,7 @@ from nautobot_ssot_aristacv.diffsync.fromcv.models import (
     DEFAULT_DEVICE_STATUS,
     DEFAULT_DEVICE_STATUS_COLOR,
     DEFAULT_DELETE_DEVICES_ON_SYNC,
+    APPLY_IMPORT_TAG,
 )
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
@@ -62,14 +63,15 @@ class CloudVisionDataSource(DataSource, Job):
                     "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS
                 ),
                 "New device default status color": configs.get(
-                    "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR
-                )
+                    "from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR
+                ),
+                "Apply import tag": str(configs.get("apply_import_tag", APPLY_IMPORT_TAG))
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
-            "CloudVision host": "www.arista.io",
-            "Delete_devices_on_sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
+            "CloudVision host": configs.get("cvaas_url"),
+            "Delete devices on sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
             "New device default site": configs.get("from_cloudvision_default_site", DEFAULT_SITE),
             "New device default role": configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
             "New device default role color": configs.get(
@@ -77,8 +79,9 @@ class CloudVisionDataSource(DataSource, Job):
             ),
             "New device default status": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
             "New device default status color": configs.get(
-                "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS_COLOR
-            )
+                "from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR
+            ),
+            "Apply import tag": str(configs.get("apply_import_tag", APPLY_IMPORT_TAG))
             # Token is intentionally omitted!
         }
 
@@ -106,15 +109,6 @@ class CloudVisionDataSource(DataSource, Job):
 
     def sync_data(self):
         """Sync system tags from CloudVision to Nautobot custom fields."""
-        self.log("Connecting to CloudVision")
-        cvutils.connect()
-        self.log("Loading data from CloudVision")
-        cv = C()
-        cv.load()
-        self.log("Loading data from Nautobot")
-        nb = N(job=self)
-        nb.load()
-        self.log("Performing diff between Cloudvision and Nautobot.")
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
         if configs.get("delete_devices_on_sync"):
             self.log_warning(
@@ -124,6 +118,15 @@ class CloudVisionDataSource(DataSource, Job):
             self.log_warning(
                 message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
             )
+        self.log("Connecting to CloudVision")
+        cvutils.connect()
+        self.log("Loading data from CloudVision")
+        cv = C(job=self)
+        cv.load()
+        self.log("Loading data from Nautobot")
+        nb = N(job=self)
+        nb.load()
+        self.log("Performing diff between Cloudvision and Nautobot.")
         diff = nb.diff_from(cv)
         self.sync.diff = diff.dict()
         self.sync.save()

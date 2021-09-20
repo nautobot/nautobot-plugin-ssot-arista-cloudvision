@@ -77,7 +77,8 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 #     "from_cloudvision_default_device_role_color": "",
 #     "from_cloudvision_default_device_status": "",
 #     "from_cloudvision_default_device_status_color": "",
-#     "delete_devices_on_sync_cv_source": ""
+#     "delete_devices_on_sync": "",
+#     "apply_import_tag": ""
 #   }
 # }
 ```
@@ -103,6 +104,10 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 > While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
 
+Other custom fields may need to be created by the user. When a sync is ran and a system tag for a device in CloudVision is found without a corresponding custom field, the sync log will display a message. In order to have that data synced, a custom field must be created in the Admin UI using the given name in the message.
+
+![Custom_Fields_Arista](https://user-images.githubusercontent.com/38091261/133857343-94ee262c-87ca-4e64-a3b2-c3d410755098.PNG)
+
 The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance, you must set the following variables in the Nautobot configuration file.
 
 | Configuration Variable | Type    | Usage                                                                                            |
@@ -114,11 +119,12 @@ The plugin can connect to either on-premise or a cloud instance of CloudVision. 
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
-| Configuration Variable | Type   | Usage                                                         |
-|------------------------|--------|---------------------------------------------------------------|
-| cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. |
+| Configuration Variable | Type   | Usage                                                         | Default            |
+|------------------------|--------|---------------------------------------------------------------|--------------------|
+| cvaas_url              | string | URL used to connect to your CvaaS instance.                   | www.arista.io:443  |
+| cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. | No default set     |
 
-When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. In order for this to work properly, you must provide the following default values in the nautobot config file.
+When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. When creating new devices in Nautobot, a site, device role, device role color, device status, and device are required. You may define which values to use by configuring the following values in your nautobot config file. If you define a `default_device_role` and `default_device_status` that already exist, the default color value for both of those will be ignored as it will pull that information from Nautobot.
 
 | Configuration Variable                       | Type   | Usage                                                      | Default              |
 |----------------------------------------------|--------|------------------------------------------------------------|----------------------|
@@ -130,13 +136,21 @@ When syncing from CloudVision, this plugin will create new Arista devices that d
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
-Lastly, when an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+When an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
 
-| Configuration Variable          | Type    | Usage                                                                                                                                                              | Default |
-|---------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| de;ete_deices_on_sync_cv_source | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
+| Configuration Variable           | Type    | Usage                                                                                                                                                              | Default |
+|----------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| delete_devices_on_sync | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
+
+Lastly, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
+
+| Configuration Variable                       | Type    | Usage                                                      | Default              |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| apply_import_tag                             | boolean | Apply import tag to devices imported from CloudVision.     | False                |
+
+> If apply_import_tag is set to True, the tag value that is applied to devices is `cloudvision_imported`.
 
 ## Usage
 
