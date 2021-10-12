@@ -15,6 +15,15 @@ PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 _channel = None
 
 
+class AuthFailure(Exception):
+    """Exception raised when authenticating to on-prem CVP fails."""
+
+    def __init__(self, error_code, message):
+        """Populate exception information."""
+        self.expression = error_code
+        self.message = message
+
+
 def connect():
     """Connect shared gRPC channel to the configured CloudVision instance."""
     global _channel
@@ -37,7 +46,12 @@ def connect():
         else:
             channel_creds = grpc.ssl_channel_credentials()
             response = requests.post(f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password))
-        call_creds = grpc.access_token_call_credentials(response.json()["sessionId"])
+        session_id = response.json().get("sessionId")
+        if not session_id:
+            error_code = response.json().get("errorCode")
+            error_message = response.json().get("errorMessage")
+            raise AuthFailure(error_code, error_message)
+        call_creds = grpc.access_token_call_credentials(session_id)
     # Set up credentials for CVaaS using supplied token.
     else:
         cvp_url = PLUGIN_SETTINGS.get("cvaas_url", "www.arista.io:443")
