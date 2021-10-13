@@ -31,7 +31,8 @@ def connect():
     cvp_host = PLUGIN_SETTINGS["cvp_host"]
     # If CVP_HOST is defined, we assume an on-prem installation.
     if cvp_host:
-        cvp_url = f"{cvp_host}:8443"
+        cvp_port = PLUGIN_SETTINGS.get("cvp_port", "8443")
+        cvp_url = f"{cvp_host}:{cvp_port}"
         insecure = PLUGIN_SETTINGS["insecure"]
         username = PLUGIN_SETTINGS["cvp_user"]
         password = PLUGIN_SETTINGS["cvp_password"]
