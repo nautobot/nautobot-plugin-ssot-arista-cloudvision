@@ -30,6 +30,9 @@ from nautobot_ssot_aristacv.diffsync.fromcv.models import (
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
 
 
+name = "SSoT Arista CloudVision"  # pylint: disable=invalid-name
+
+
 class CloudVisionDataSource(DataSource, Job):
     """CloudVision SSoT Data Source."""
 
