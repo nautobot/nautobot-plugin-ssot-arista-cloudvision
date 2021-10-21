@@ -884,7 +884,7 @@ svgwrite = ">=1.4.1,<1.5.0"
 
 [[package]]
 name = "nautobot-ssot"
-version = "1.0.0"
+version = "1.0.1"
 description = "Nautobot Single Source of Truth"
 category = "main"
 optional = false
@@ -1528,7 +1528,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "abfb05730a2ca11d6c6cceeb683aac8cdd8eba470c64deb1202dea100754343b"
+content-hash = "5a88ba281bd6ff0bf62aaa04c88d11be2a2bdc21b64d2d4230c44d94fc61dae2"
 
 [metadata.files]
 aniso8601 = [
@@ -2028,8 +2028,8 @@ nautobot = [
     {file = "nautobot-1.0.3.tar.gz", hash = "sha256:866c777bfa52ca062a5ed36528aa571e2baacc11f97eec7813027a0d12fef99d"},
 ]
 nautobot-ssot = [
-    {file = "nautobot-ssot-1.0.0.tar.gz", hash = "sha256:ee5c8722dbfcc7ae7b7ce28c90e8ed91db72bd32392884e7bfc90c5fe7d1e649"},
-    {file = "nautobot_ssot-1.0.0-py3-none-any.whl", hash = "sha256:823429a6ea3850cf9a6b3fae7b0803f57cd582b4ea1cee462decdc484951a5b0"},
+    {file = "nautobot-ssot-1.0.1.tar.gz", hash = "sha256:21de4cf3fda47054a1d59672e43314bcd1a9fb736c35c1ca4dddc53e4f1ebbca"},
+    {file = "nautobot_ssot-1.0.1-py3-none-any.whl", hash = "sha256:7ef8ea1c73f303fe81d118bd0dbbb78b69154c566a037eb02b51625f98628dae"},
 ]
 netaddr = [
     {file = "netaddr-0.8.0-py2.py3-none-any.whl", hash = "sha256:9666d0232c32d2656e5e5f8d735f58fd6c7457ce52fc21c98d45f2af78f990ac"},
