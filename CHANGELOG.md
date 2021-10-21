@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.0.3 - 2021-10-21
+
+### Added
+
+- #56 Add config option for gRPC port
+
+### Changed
+
+- #57 - Add the name for the section in Nautobot jobs and update SSoT plugin dep to v1.0.1
+
+### Fixed
+
+- #55 Raise error when auth fails to on-prem CVP
+
 ## v1.0.2 - 2021-09-20
 
 ### Added
