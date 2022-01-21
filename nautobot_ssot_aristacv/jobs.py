@@ -27,7 +27,7 @@ from nautobot_ssot_aristacv.diffsync.fromcv.models import (
     DEFAULT_DELETE_DEVICES_ON_SYNC,
     APPLY_IMPORT_TAG,
 )
-import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+from nautobot_ssot_aristacv.diffsync import cvutils
 
 
 name = "SSoT - Arista CloudVision"  # pylint: disable=invalid-name
