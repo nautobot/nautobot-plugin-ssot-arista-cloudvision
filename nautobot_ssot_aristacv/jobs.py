@@ -41,7 +41,7 @@ class CloudVisionDataSource(DataSource, Job):
     class Meta:
         """Meta data for DataSource."""
 
-        name = "CloudVision -> Nautobot"
+        name = "CloudVision ⟹ Nautobot"
         data_source = "Cloudvision"
         data_source_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync system tag data from CloudVision to Nautobot"
@@ -163,7 +163,7 @@ class CloudVisionDataTarget(DataTarget, Job):
     class Meta:
         """Meta data for DataTarget."""
 
-        name = "Nautobot -> CloudVision"
+        name = "Nautobot ⟹ CloudVision"
         data_target = "CloudVision"
         data_target_icon = static("nautobot_ssot_aristacv/cvp_logo.png")
         description = "Sync tag data from Nautobot to CloudVision"
