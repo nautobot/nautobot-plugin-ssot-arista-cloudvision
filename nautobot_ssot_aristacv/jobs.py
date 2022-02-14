@@ -33,7 +33,7 @@ from nautobot_ssot_aristacv.diffsync import cvutils
 name = "SSoT - Arista CloudVision"  # pylint: disable=invalid-name
 
 
-class CloudVisionDataSource(DataSource, Job):
+class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
     """CloudVision SSoT Data Source."""
 
     debug = BooleanVar(description="Enable for more verbose debug logging")
@@ -155,7 +155,7 @@ class CloudVisionDataSource(DataSource, Job):
         return None
 
 
-class CloudVisionDataTarget(DataTarget, Job):
+class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     """CloudVision SSoT Data Target."""
 
     debug = BooleanVar(description="Enable for more verbose debug logging")
