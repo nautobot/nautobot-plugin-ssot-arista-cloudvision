@@ -78,6 +78,6 @@ PLUGINS_CONFIG = {
         "from_cloudvision_default_device_status": "Active",
         "from_cloudvision_default_device_status_color": "ff0000",
         "apply_import_tag": True,
-        "cvaas_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjE3NTE0LCJkc24iOiJEaWZmU3luYyIsImRzdCI6ImFjY291bnQiLCJleHAiOjE2ODQ2MTY1MjQsImlhdCI6MTY1MzMzOTczNCwic2lkIjoiMTA5NjkzZmNhNTZjNzRkODI2ZjJiZmFmZWZiZGM3OWVlZGRlNWUwYTFhOTExYzRkMWQ5NTY1ZjQ2ZWU4MmFjYS1ydWxnYllSaHFkTk9JZTNXbVZHdlROb2xBUXBRNkRnR0VaZE03RUxCIn0.XGI4qEwZYCvINvjgK-OG5XLc4dQQP7TbtSiL0mfdSRjXmf1UtNtvHnZoJnS1xXHGgMGSz_sdjvlQ8s3IDcl3FA",
+        "cvaas_token": "",
     },
 }
