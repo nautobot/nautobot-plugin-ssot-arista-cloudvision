@@ -38,9 +38,9 @@ namespace = Collection("nautobot_ssot_aristacv")
 namespace.configure(
     {
         "nautobot_ssot_aristacv": {
-            "nautobot_ver": "1.0.1",
+            "nautobot_ver": "1.2.1",
             "project_name": "nautobot-ssot-aristacv",
-            "python_ver": "3.6",
+            "python_ver": "3.7",
             "local": False,
             "compose_dir": os.path.join(os.path.dirname(__file__), "development"),
             "compose_files": [
