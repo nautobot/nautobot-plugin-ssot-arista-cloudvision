@@ -1,10 +1,11 @@
 # pylint: disable=invalid-name
 """Nautobot signal handler functions for aristavc_sync."""
 
+from django.apps import apps as global_apps
 from nautobot.extras.choices import CustomFieldTypeChoices
 
 
-def post_migrate_create_custom_fields(apps, **kwargs):
+def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
     """Callback function for post_migrate() -- create CustomField records."""
     ContentType = apps.get_model("contenttypes", "ContentType")
     Device = apps.get_model("dcim", "Device")
