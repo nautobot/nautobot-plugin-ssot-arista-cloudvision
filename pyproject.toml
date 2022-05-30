@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nautobot-ssot-aristacv"
-version = "1.0.5"
+version = "1.0.6"
 description = "Nautobot SSoT Arista CloudVision"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 
