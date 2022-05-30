@@ -1,6 +1,6 @@
 """Plugin declaration for aristacv_sync."""
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 import os
 
