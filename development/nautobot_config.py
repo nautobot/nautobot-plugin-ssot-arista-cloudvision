@@ -78,6 +78,7 @@ PLUGINS_CONFIG = {
         "from_cloudvision_default_device_status": "Active",
         "from_cloudvision_default_device_status_color": "ff0000",
         "apply_import_tag": True,
-        "cvaas_token": "",
+        "cvaas_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkaWQiOjE3NTE0LCJkc24iOiJEaWZmU3luYyIsImRzdCI6ImFjY291bnQiLCJleHAiOjE2NjU2OTg3MjMsImlhdCI6MTY1NDIwNzUyOSwic2lkIjoiODU5MmIyMTM0NTFiNWQ5YTBjM2RjZjE0MWNjMWMwNmI2ZjM4NTExYzdjMDhjNzk3OGVmNTRjZGMyMTU2NGZlZi1jYmJoaEc3MjN5bHQzRmMxSnVUOFRfWTVBSEduc2V2bXc0SFpoUE9qIn0.S1Qk9NoEuVP6mD_bg1BEfedGOMCcD2TTAyFUUKMSUN6I5gilAqi40oL9QkntNuQI6__GsF2Bpxdy8rXMMRsXXA",
+        "cvaas_url": "www.cv-staging.corp.arista.io",
     },
 }
