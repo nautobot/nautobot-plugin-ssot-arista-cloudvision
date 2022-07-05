@@ -1,6 +1,12 @@
 """Plugin declaration for aristacv_sync."""
 
-__version__ = "1.0.6"
+try:
+    from importlib import metadata
+except ImportError:
+    # Python version < 3.8
+    import importlib_metadata as metadata
+
+__version__ = metadata.version(__name__)
 
 import os
 
