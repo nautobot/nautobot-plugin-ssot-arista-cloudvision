@@ -1,11 +1,17 @@
 """Plugin declaration for aristacv_sync."""
+
+try:
+    from importlib import metadata
+except ImportError:
+    # Python version < 3.8
+    import importlib_metadata as metadata
+
+__version__ = metadata.version(__name__)
+
 import os
 
 from nautobot.extras.plugins import PluginConfig
 from django.db.models.signals import post_migrate
-
-__version__ = "1.0.4"
-
 
 class NautobotSSOTAristaCVConfig(PluginConfig):
     """Plugin configuration for the nautobot_ssot_aristacv plugin."""
