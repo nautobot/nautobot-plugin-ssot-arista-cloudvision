@@ -13,6 +13,7 @@ import os
 from nautobot.extras.plugins import PluginConfig
 from django.db.models.signals import post_migrate
 
+
 class NautobotSSOTAristaCVConfig(PluginConfig):
     """Plugin configuration for the nautobot_ssot_aristacv plugin."""
 
