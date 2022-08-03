@@ -38,7 +38,7 @@ def connect():
         password = PLUGIN_SETTINGS["cvp_password"]
         # If insecure, the cert will be downloaded from the server and automatically trusted for gRPC.
         if insecure:
-            cert = bytes(ssl.get_server_certificate((cvp_host, 8443)), "utf-8")
+            cert = bytes(ssl.get_server_certificate((cvp_host, cvp_port)), "utf-8")
             channel_creds = grpc.ssl_channel_credentials(cert)
             response = requests.post(
                 f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password), verify=False  # nosec
