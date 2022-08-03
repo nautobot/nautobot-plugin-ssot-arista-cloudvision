@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "nautobot-ssot-aristacv"
-version = "1.0.6"
+version = "1.0.7"
 description = "Nautobot SSoT Arista CloudVision"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 
 license = "Apache-2.0"
 
 readme = "README.md"
-homepage = "https://github.com/nautobot/nautobot-plugin-ssot-aristacv"
-repository = "https://github.com/nautobot/nautobot-plugin-ssot-aristacv"
+homepage = "https://github.com/nautobot/nautobot-plugin-ssot-arista-cloudvision"
+repository = "https://github.com/nautobot/nautobot-plugin-ssot-arista-cloudvision"
 keywords = ["nautobot", "nautobot-plugin"]
 include = [
 
