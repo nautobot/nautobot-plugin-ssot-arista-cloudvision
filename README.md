@@ -62,26 +62,26 @@ Once installed, the plugin needs to be enabled in your `nautobot_configuration.p
 # In your configuration.py
 PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 
-# PLUGINS_CONFIG = {
-#   "nautobot_ssot" : {
-#     ADD YOUR SETTINGS HERE
-#   }
-#   "nautobot_ssot_aristacv": {
-#     "cvaas_token": "",
-#     "cvp_host": "",
-#     "cvp_port": "",
-#     "cvp_user": "",
-#     "cvp_password": "",
+PLUGINS_CONFIG = {
+  "nautobot_ssot" : {
+    "hide_example_jobs": True,
+  },
+  "nautobot_ssot_aristacv": {
+    "cvp_token": os.getenv("NAUTOBOT_ARISTACV_TOKEN", ""),
+    "cvp_host": os.getenv("NAUTOBOT_ARISTACV_HOST", ""),
+    "cvp_port": os.getenv("NAUTOBOT_ARISTACV_PORT", 443),
+    "cvp_user": os.getenv("NAUTOBOT_ARISTACV_USERNAME", ""),
+    "cvp_password": os.getenv("NAUTOBOT_ARISTACV_PASSWORD", ""),
     "verify": os.getenv("NAUTOBOT_ARISTACV_VERIFY", True),
-#     "from_cloudvision_default_site": "",
-#     "from_cloudvision_default_device_role": "",
-#     "from_cloudvision_default_device_role_color": "",
-#     "from_cloudvision_default_device_status": "",
-#     "from_cloudvision_default_device_status_color": "",
-#     "delete_devices_on_sync": "",
-#     "apply_import_tag": ""
-#   }
-# }
+    "from_cloudvision_default_site": "",
+    "from_cloudvision_default_device_role": "",
+    "from_cloudvision_default_device_role_color": "",
+    "from_cloudvision_default_device_status": "",
+    "from_cloudvision_default_device_status_color": "",
+    "delete_devices_on_sync": os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False),
+    "apply_import_tag": os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False),
+  }
+}
 ```
 
 > All plugin settings are defined in the picture above as an example. Only some will be needed as described below.
