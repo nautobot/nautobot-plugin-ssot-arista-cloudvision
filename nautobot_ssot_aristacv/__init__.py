@@ -30,7 +30,7 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
         "cvp_host": os.getenv("NAUTOBOT_ARISTACV_HOST"),
         "cvp_user": os.getenv("NAUTOBOT_ARISTACV_USERNAME"),
         "cvp_password": os.getenv("NAUTOBOT_ARISTACV_PASSWORD"),
-        "verify": os.getenv("NAUTOBOT_ARISTACVP_VERIFY") or True,
+        "verify": os.getenv("NAUTOBOT_ARISTACVP_VERIFY"),
         "cvp_token": os.getenv("NAUTOBOT_ARISTACV_TOKEN"),
     }
     caching_config = {}
