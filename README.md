@@ -72,14 +72,14 @@ PLUGINS_CONFIG = {
     "cvp_port": os.getenv("NAUTOBOT_ARISTACV_PORT", 443),
     "cvp_user": os.getenv("NAUTOBOT_ARISTACV_USERNAME", ""),
     "cvp_password": os.getenv("NAUTOBOT_ARISTACV_PASSWORD", ""),
-    "verify": os.getenv("NAUTOBOT_ARISTACV_VERIFY", True),
+    "verify": is_truthy(os.getenv("NAUTOBOT_ARISTACV_VERIFY", True)),
     "from_cloudvision_default_site": "",
     "from_cloudvision_default_device_role": "",
     "from_cloudvision_default_device_role_color": "",
     "from_cloudvision_default_device_status": "",
     "from_cloudvision_default_device_status_color": "",
-    "delete_devices_on_sync": os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False),
-    "apply_import_tag": os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False),
+    "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
+    "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
   }
 }
 ```
