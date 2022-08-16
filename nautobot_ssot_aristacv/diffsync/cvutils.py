@@ -78,9 +78,12 @@ def disconnect():
 def get_devices():
     """Get active devices from CloudVision inventory."""
     device_stub = inv.services.DeviceServiceStub(_channel)
-    req = inv.services.DeviceStreamRequest(
-        partial_eq_filter=[inv.models.Device(streaming_status=inv.models.STREAMING_STATUS_ACTIVE)]
-    )
+    if PLUGIN_SETTINGS.get("import_active"):
+        req = inv.services.DeviceStreamRequest(
+            partial_eq_filter=[inv.models.Device(streaming_status=inv.models.STREAMING_STATUS_ACTIVE)]
+        )
+    else:
+        req = inv.services.DeviceStreamRequest()
     responses = device_stub.GetAll(req)
     devices = list()
     for resp in responses:
