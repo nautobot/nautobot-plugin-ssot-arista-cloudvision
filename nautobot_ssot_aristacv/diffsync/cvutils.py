@@ -29,34 +29,42 @@ def connect():
     global _channel
 
     cvp_host = PLUGIN_SETTINGS["cvp_host"]
+    cvp_port = PLUGIN_SETTINGS.get("cvp_port", "8443")
+    cvp_url = f"{cvp_host}:{cvp_port}"
+    verify = PLUGIN_SETTINGS["verify"]
+    username = PLUGIN_SETTINGS["cvp_user"]
+    password = PLUGIN_SETTINGS["cvp_password"]
+    cvp_token = PLUGIN_SETTINGS["cvp_token"]
+    session_id = None
     # If CVP_HOST is defined, we assume an on-prem installation.
     if cvp_host:
-        cvp_port = PLUGIN_SETTINGS.get("cvp_port", "8443")
-        cvp_url = f"{cvp_host}:{cvp_port}"
-        insecure = PLUGIN_SETTINGS["insecure"]
-        username = PLUGIN_SETTINGS["cvp_user"]
-        password = PLUGIN_SETTINGS["cvp_password"]
-        # If insecure, the cert will be downloaded from the server and automatically trusted for gRPC.
-        if insecure:
+        # If we don't want to verify the cert, it will be downloaded from the server and automatically trusted for gRPC.
+        if not verify:
             cert = bytes(ssl.get_server_certificate((cvp_host, cvp_port)), "utf-8")
             channel_creds = grpc.ssl_channel_credentials(cert)
-            response = requests.post(
-                f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password), verify=False  # nosec
-            )
         # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
         else:
             channel_creds = grpc.ssl_channel_credentials()
-            response = requests.post(f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password))
-        session_id = response.json().get("sessionId")
-        if not session_id:
-            error_code = response.json().get("errorCode")
-            error_message = response.json().get("errorMessage")
-            raise AuthFailure(error_code, error_message)
-        call_creds = grpc.access_token_call_credentials(session_id)
+        if username and password:
+            response = requests.post(
+                f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password), verify=verify
+            )  # nosec
+            session_id = response.json().get("sessionId")
+            if not session_id:
+                error_code = response.json().get("errorCode")
+                error_message = response.json().get("errorMessage")
+                raise AuthFailure(error_code, error_message)
+            call_creds = grpc.access_token_call_credentials(session_id)
+        elif cvp_token:
+            call_creds = grpc.access_token_call_credentials(cvp_token)
+        else:
+            raise AuthFailure(
+                error_code="Missing Credentials", message="Unable to authenticate due to missing credentials."
+            )
     # Set up credentials for CVaaS using supplied token.
     else:
-        cvp_url = PLUGIN_SETTINGS.get("cvaas_url", "www.arista.io:443")
-        call_creds = grpc.access_token_call_credentials(PLUGIN_SETTINGS["cvaas_token"])
+        cvp_url = "www.arista.io:443"
+        call_creds = grpc.access_token_call_credentials(cvp_token)
         channel_creds = grpc.ssl_channel_credentials()
     conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
     _channel = grpc.secure_channel(cvp_url, conn_creds)
