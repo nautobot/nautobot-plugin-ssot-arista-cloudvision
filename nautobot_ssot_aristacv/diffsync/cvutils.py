@@ -46,10 +46,10 @@ def connect():
             channel_creds = grpc.ssl_channel_credentials(cert)
         if cvp_token:
             call_creds = grpc.access_token_call_credentials(cvp_token)
-        elif username != "" and password != "":
+        elif username != "" and password != "":  # nosec
             response = requests.post(
                 f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password), verify=verify
-            )  # nosec
+            )
             session_id = response.json().get("sessionId")
             if not session_id:
                 error_code = response.json().get("errorCode")
