@@ -35,12 +35,13 @@ def connect():
     username = PLUGIN_SETTINGS["cvp_user"]
     password = PLUGIN_SETTINGS["cvp_password"]
     cvp_token = PLUGIN_SETTINGS["cvp_token"]
-    session_id = None
     # If CVP_HOST is defined, we assume an on-prem installation.
     if cvp_host:
         # If we don't want to verify the cert, it will be downloaded from the server and automatically trusted for gRPC.
         if not verify:
+            print("Verify is False so pulling server SSL certificate.")
             cert = bytes(ssl.get_server_certificate((cvp_host, cvp_port)), "utf-8")
+            print(f"Cert: {cert}")
             channel_creds = grpc.ssl_channel_credentials(cert)
         # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
         else:
@@ -56,6 +57,7 @@ def connect():
                 raise AuthFailure(error_code, error_message)
             call_creds = grpc.access_token_call_credentials(session_id)
         elif cvp_token:
+            print("Token found so using for authentication.")
             call_creds = grpc.access_token_call_credentials(cvp_token)
         else:
             raise AuthFailure(
