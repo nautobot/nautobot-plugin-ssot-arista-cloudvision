@@ -72,7 +72,7 @@ PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 #     "cvp_port": "",
 #     "cvp_user": "",
 #     "cvp_password": "",
-#     "insecure": "",
+    "verify": os.getenv("NAUTOBOT_ARISTACV_VERIFY", True),
 #     "from_cloudvision_default_site": "",
 #     "from_cloudvision_default_device_role": "",
 #     "from_cloudvision_default_device_role_color": "",
@@ -117,7 +117,7 @@ The plugin can connect to either on-premise or a cloud instance of CloudVision. 
 | cvp_port               | string  | gRPC port (defaults to 8443, but this port has changed to 443 as of CVP 2021.3.0)                |
 | cvp_user               | string  | The username used to connect to the onprem instance of CloudVision.                              |
 | cvp_password           | string  | The password used by the user specified above.                                                   |
-| insecure               | boolean | If true, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
+| verify               | boolean | If False, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
