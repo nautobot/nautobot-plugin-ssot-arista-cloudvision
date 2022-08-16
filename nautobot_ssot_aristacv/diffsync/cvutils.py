@@ -46,7 +46,10 @@ def connect():
         # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
         else:
             channel_creds = grpc.ssl_channel_credentials()
-        if username and password:
+        if cvp_token:
+            print("Token found so using for authentication.")
+            call_creds = grpc.access_token_call_credentials(cvp_token)
+        elif username != "" and password != "":
             response = requests.post(
                 f"https://{cvp_host}/cvpservice/login/authenticate.do", auth=(username, password), verify=verify
             )  # nosec
@@ -56,9 +59,6 @@ def connect():
                 error_message = response.json().get("errorMessage")
                 raise AuthFailure(error_code, error_message)
             call_creds = grpc.access_token_call_credentials(session_id)
-        elif cvp_token:
-            print("Token found so using for authentication.")
-            call_creds = grpc.access_token_call_credentials(cvp_token)
         else:
             raise AuthFailure(
                 error_code="Missing Credentials", message="Unable to authenticate due to missing credentials."
