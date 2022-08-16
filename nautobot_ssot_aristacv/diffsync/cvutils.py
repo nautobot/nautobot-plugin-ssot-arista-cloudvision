@@ -39,14 +39,15 @@ def connect():
     if cvp_host:
         print(f"Host: {cvp_url} User: {username} Pass: {password} Token: {cvp_token} Verify: {str(verify)}")
         # If we don't want to verify the cert, it will be downloaded from the server and automatically trusted for gRPC.
-        if not verify:
+        if verify:
+            print("Verify is True so NOT pulling server SSL certificate.")
+            # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
+            channel_creds = grpc.ssl_channel_credentials()
+        else:
             print("Verify is False so pulling server SSL certificate.")
             cert = bytes(ssl.get_server_certificate((cvp_host, cvp_port)), "utf-8")
             print(f"Cert: {cert}")
             channel_creds = grpc.ssl_channel_credentials(cert)
-        # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
-        else:
-            channel_creds = grpc.ssl_channel_credentials()
         if cvp_token:
             print("Token found so using for authentication.")
             call_creds = grpc.access_token_call_credentials(cvp_token)
