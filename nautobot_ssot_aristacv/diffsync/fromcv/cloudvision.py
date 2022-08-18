@@ -28,15 +28,19 @@ class CloudVision(DiffSync):
         system_tags = cvutils.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
 
         for dev in devices:
-            if self.job.kwargs.get("debug"):
-                self.job.log_debug(message=f"Device being loaded: {dev}")
+            new_device = None
             if dev["hostname"] != "":
+                if self.job.kwargs.get("debug"):
+                    self.job.log_debug(message=f"Device being loaded: {dev}")
                 new_device = self.device(name=dev["hostname"], device_id=dev["device_id"], device_model=dev["model"])
                 try:
                     self.add(new_device)
                 except ValidationError as err:
                     self.job.log_warning(message=f"Unable to load Device {dev['hostname']}. {err}")
                     continue
+            else:
+                self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
+                continue
 
             dev_tags = [tag for tag in cvutils.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
 
