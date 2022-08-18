@@ -27,11 +27,11 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
     min_version = "1.0.0"
     max_version = "1.9999"
     default_settings = {
-        "cvp_host": os.getenv("CVP_HOST"),
-        "cvp_user": os.getenv("CVP_USER"),
-        "cvp_password": os.getenv("CVP_PASSWORD"),
-        "insecure": os.getenv("CVP_INSECURE") or False,
-        "cvp_token": os.getenv("CVP_TOKEN"),
+        "cvp_host": os.getenv("NAUTOBOT_ARISTACV_HOST"),
+        "cvp_user": os.getenv("NAUTOBOT_ARISTACV_USERNAME"),
+        "cvp_password": os.getenv("NAUTOBOT_ARISTACV_PASSWORD"),
+        "verify": os.getenv("NAUTOBOT_ARISTACVP_VERIFY"),
+        "cvp_token": os.getenv("NAUTOBOT_ARISTACV_TOKEN"),
     }
     caching_config = {}
 

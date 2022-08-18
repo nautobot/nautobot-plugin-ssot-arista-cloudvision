@@ -55,7 +55,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 "Server type": "On prem",
                 "CloudVision host": configs.get("cvp_host"),
                 "Username": configs.get("cvp_user"),
-                "Insecure": configs.get("insecure"),
+                "Verify": configs.get("verify"),
                 "Delete devices on sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
                 "New device default site": configs.get("from_cloudvision_default_site", DEFAULT_SITE),
                 "New device default role": configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
@@ -177,7 +177,7 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
                 "Server type": "On prem",
                 "CloudVision host": configs.get("cvp_host"),
                 "Username": configs.get("cvp_user"),
-                "Insecure": configs.get("insecure")
+                "Verify": configs.get("verify")
                 # Password is intentionally omitted!
             }
         return {
