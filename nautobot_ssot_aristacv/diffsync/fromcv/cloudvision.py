@@ -1,5 +1,6 @@
 """DiffSync adapter for Arista CloudVision."""
 from diffsync import DiffSync
+from django.forms import ValidationError
 import arista.tag.v1 as TAG
 from diffsync.exceptions import ObjectAlreadyExists
 import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
@@ -27,8 +28,19 @@ class CloudVision(DiffSync):
         system_tags = cvutils.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
 
         for dev in devices:
-            self.device = Device(name=dev["hostname"], device_id=dev["device_id"], device_model=dev["model"])
-            self.add(self.device)
+            new_device = None
+            if dev["hostname"] != "":
+                if self.job.kwargs.get("debug"):
+                    self.job.log_debug(message=f"Device being loaded: {dev}")
+                new_device = self.device(name=dev["hostname"], device_id=dev["device_id"], device_model=dev["model"])
+                try:
+                    self.add(new_device)
+                except ValidationError as err:
+                    self.job.log_warning(message=f"Unable to load Device {dev['hostname']}. {err}")
+                    continue
+            else:
+                self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
+                continue
 
             dev_tags = [tag for tag in cvutils.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
 
@@ -43,11 +55,12 @@ class CloudVision(DiffSync):
                 if tag["label"] == "mpls" or tag["label"] == "ztp":
                     tag["value"] = bool(distutils.util.strtobool(tag["value"]))
 
-                self.cf = CustomField(name=f"arista_{tag['label']}", value=tag["value"], device_name=dev["hostname"])
+                new_cf = self.cf(name=f"arista_{tag['label']}", value=tag["value"], device_name=dev["hostname"])
                 try:
-                    self.add(self.cf)
-                    self.device.add_child(self.cf)
+                    self.add(new_cf)
+                    if new_device:
+                        new_device.add_child(new_cf)
                 except ObjectAlreadyExists:
                     self.job.log_warning(
-                        message=f"Duplicate object encountered for {tag['label']} on device {self.device.name}"
+                        message=f"Duplicate object encountered for {tag['label']} on device {dev['hostname']}"
                     )

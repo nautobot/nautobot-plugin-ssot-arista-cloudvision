@@ -80,6 +80,7 @@ PLUGINS_CONFIG = {
     "from_cloudvision_default_device_status_color": "",
     "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
     "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
+    "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
   }
 }
 ```
@@ -146,13 +147,19 @@ When an Arista device exists in Nautobot but not in CloudVision, this plugin can
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
-Lastly, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
+Optionally, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
 
 | Configuration Variable                       | Type    | Usage                                                      | Default              |
 |----------------------------------------------|---------|------------------------------------------------------------|----------------------|
 | apply_import_tag                             | boolean | Apply import tag to devices imported from CloudVision.     | False                |
 
 > If apply_import_tag is set to True, the tag value that is applied to devices is `cloudvision_imported`.
+
+Lastly, you can control whether only active devices are imported or whether all devices regardless of status are imported.
+
+| Configuration Variable                       | Type    | Usage                                                      | Default              |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| import_active                                | boolean | Only import active devices from CloudVision.               | False                |
 
 ## Usage
 

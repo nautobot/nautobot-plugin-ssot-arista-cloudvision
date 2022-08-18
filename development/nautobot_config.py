@@ -78,5 +78,6 @@ PLUGINS_CONFIG = {
         "from_cloudvision_default_device_status": "Active",
         "from_cloudvision_default_device_status_color": "ff0000",
         "apply_import_tag": True,
+        "import_active": False,
     },
 }
