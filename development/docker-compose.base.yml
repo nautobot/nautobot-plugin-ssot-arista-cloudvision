@@ -1,12 +1,14 @@
 ---
-x-nautobot-build: &nautobot-build
+x-nautobot-build:
+  &nautobot-build
   build:
     args:
       NAUTOBOT_VER: "${NAUTOBOT_VER}"
       PYTHON_VER: "${PYTHON_VER}"
     context: "../"
     dockerfile: "development/Dockerfile"
-x-nautobot-base: &nautobot-base
+x-nautobot-base:
+  &nautobot-base
   image: "nautobot-ssot-aristacv/nautobot:${NAUTOBOT_VER}-py${PYTHON_VER}"
   env_file:
     - "dev.env"
@@ -27,6 +29,14 @@ services:
     entrypoint: "nautobot-server rqworker"
     depends_on:
       - "nautobot"
+    healthcheck:
+      disable: true
+    <<: *nautobot-base
+  celery_worker:
+    entrypoint: "nautobot-server celery worker -l INFO"
+    depends_on:
+      - "nautobot"
+      - "redis"
     healthcheck:
       disable: true
     <<: *nautobot-base

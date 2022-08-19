@@ -62,26 +62,27 @@ Once installed, the plugin needs to be enabled in your `nautobot_configuration.p
 # In your configuration.py
 PLUGINS = ["nautobot_ssot", "nautobot_ssot_aristacv"]
 
-# PLUGINS_CONFIG = {
-#   "nautobot_ssot" : {
-#     ADD YOUR SETTINGS HERE
-#   }
-#   "nautobot_ssot_aristacv": {
-#     "cvaas_token": "",
-#     "cvp_host": "",
-#     "cvp_port": "",
-#     "cvp_user": "",
-#     "cvp_password": "",
-#     "insecure": "",
-#     "from_cloudvision_default_site": "",
-#     "from_cloudvision_default_device_role": "",
-#     "from_cloudvision_default_device_role_color": "",
-#     "from_cloudvision_default_device_status": "",
-#     "from_cloudvision_default_device_status_color": "",
-#     "delete_devices_on_sync": "",
-#     "apply_import_tag": ""
-#   }
-# }
+PLUGINS_CONFIG = {
+  "nautobot_ssot" : {
+    "hide_example_jobs": True,
+  },
+  "nautobot_ssot_aristacv": {
+    "cvp_token": os.getenv("NAUTOBOT_ARISTACV_TOKEN", ""),
+    "cvp_host": os.getenv("NAUTOBOT_ARISTACV_HOST", ""),
+    "cvp_port": os.getenv("NAUTOBOT_ARISTACV_PORT", 443),
+    "cvp_user": os.getenv("NAUTOBOT_ARISTACV_USERNAME", ""),
+    "cvp_password": os.getenv("NAUTOBOT_ARISTACV_PASSWORD", ""),
+    "verify": is_truthy(os.getenv("NAUTOBOT_ARISTACV_VERIFY", True)),
+    "from_cloudvision_default_site": "",
+    "from_cloudvision_default_device_role": "",
+    "from_cloudvision_default_device_role_color": "",
+    "from_cloudvision_default_device_status": "",
+    "from_cloudvision_default_device_status_color": "",
+    "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
+    "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
+    "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
+  }
+}
 ```
 
 > All plugin settings are defined in the picture above as an example. Only some will be needed as described below.
@@ -117,7 +118,7 @@ The plugin can connect to either on-premise or a cloud instance of CloudVision. 
 | cvp_port               | string  | gRPC port (defaults to 8443, but this port has changed to 443 as of CVP 2021.3.0)                |
 | cvp_user               | string  | The username used to connect to the onprem instance of CloudVision.                              |
 | cvp_password           | string  | The password used by the user specified above.                                                   |
-| insecure               | boolean | If true, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
+| verify               | boolean | If False, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
@@ -146,13 +147,19 @@ When an Arista device exists in Nautobot but not in CloudVision, this plugin can
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
-Lastly, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
+Optionally, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
 
 | Configuration Variable                       | Type    | Usage                                                      | Default              |
 |----------------------------------------------|---------|------------------------------------------------------------|----------------------|
 | apply_import_tag                             | boolean | Apply import tag to devices imported from CloudVision.     | False                |
 
 > If apply_import_tag is set to True, the tag value that is applied to devices is `cloudvision_imported`.
+
+Lastly, you can control whether only active devices are imported or whether all devices regardless of status are imported.
+
+| Configuration Variable                       | Type    | Usage                                                      | Default              |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| import_active                                | boolean | Only import active devices from CloudVision.               | False                |
 
 ## Usage
 
