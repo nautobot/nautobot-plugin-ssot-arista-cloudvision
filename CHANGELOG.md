@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.1.0 - 2022-8-19
+
+### Added
+
+- #79 Add support for Token with On Prem CloudVision
+- #82 Import all devices option
+
+### Changed
+
+- #65 Update Nautobot Job names
+- #70 Update signals.py
+
+### Fixed
+
+- #74 Cloudvision dependency pinned
+
 ## v1.0.3 - 2021-10-21
 
 ### Added
