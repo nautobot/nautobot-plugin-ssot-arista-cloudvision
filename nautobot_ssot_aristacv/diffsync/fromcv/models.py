@@ -5,8 +5,8 @@ from django.conf import settings
 from nautobot.dcim.models import Device as NautobotDevice
 from nautobot.dcim.models import Platform as NautobotPlatform
 from typing import List, Optional
-import nautobot_ssot_aristacv.diffsync.nbutils as nbutils
-import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+from nautobot_ssot_aristacv.utils import nautobot
+from nautobot_ssot_aristacv.utils import cloudvision
 import distutils
 
 
@@ -37,19 +37,19 @@ class Device(DiffSyncModel):
     def create(cls, diffsync, ids, attrs):
         """Create device object in Nautobot."""
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        default_site_object = nbutils.verify_site(configs.get("from_cloudvision_default_site", DEFAULT_SITE))
+        default_site_object = nautobot.verify_site(configs.get("from_cloudvision_default_site", DEFAULT_SITE))
 
-        cvutils.connect()
-        device_dict = next((device for device in cvutils.get_devices() if device["hostname"] == ids["name"]), {})
+        cloudvision.connect()
+        device_dict = next((device for device in cloudvision.get_devices() if device["hostname"] == ids["name"]), {})
         device_type_cv = device_dict.get("model")
 
-        device_type_object = nbutils.verify_device_type_object(device_type_cv)
-        device_role_object = nbutils.verify_device_role_object(
+        device_type_object = nautobot.verify_device_type_object(device_type_cv)
+        device_role_object = nautobot.verify_device_role_object(
             configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
             configs.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
         )
 
-        device_status = nbutils.verify_device_status(
+        device_status = nautobot.verify_device_status(
             configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
             configs.get("from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR),
         )
@@ -62,12 +62,12 @@ class Device(DiffSyncModel):
             name=ids["name"],
         )
 
-        new_device = nbutils.assign_arista_cf(new_device)
+        new_device = nautobot.assign_arista_cf(new_device)
 
         new_device.validated_save()
 
         if configs.get("apply_import_tag", APPLY_IMPORT_TAG):
-            import_tag = nbutils.verify_import_tag()
+            import_tag = nautobot.verify_import_tag()
             new_device.tags.add(import_tag)
             new_device.validated_save()
 

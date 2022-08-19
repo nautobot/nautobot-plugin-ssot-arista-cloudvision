@@ -3,7 +3,7 @@
 from diffsync import DiffSyncModel
 from typing import List
 
-import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+from nautobot_ssot_aristacv.utils import cloudvision
 
 
 class UserTag(DiffSyncModel):
@@ -20,13 +20,13 @@ class UserTag(DiffSyncModel):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create a user tag in CloudVision."""
-        cvutils.create_tag(ids["name"], ids["value"])
+        cloudvision.create_tag(ids["name"], ids["value"])
         # Create mapping from device_name to CloudVision device_id
-        device_ids = {dev["hostname"]: dev["device_id"] for dev in cvutils.get_devices()}
+        device_ids = {dev["hostname"]: dev["device_id"] for dev in cloudvision.get_devices()}
         for device in attrs["devices"]:
             # Exclude devices that are inactive in CloudVision
             if device in device_ids:
-                cvutils.assign_tag_to_device(device_ids[device], ids["name"], ids["value"])
+                cloudvision.assign_tag_to_device(device_ids[device], ids["name"], ids["value"])
             else:
                 tag = f"{ids['name']}:{ids['value']}" if ids["value"] else ids["name"]
                 diffsync.job.log_warning(
@@ -39,13 +39,13 @@ class UserTag(DiffSyncModel):
         remove = set(self.devices) - set(attrs["devices"])
         add = set(attrs["devices"]) - set(self.devices)
         # Create mapping from device_name to CloudVision device_id
-        device_ids = {dev["hostname"]: dev["device_id"] for dev in cvutils.get_devices()}
+        device_ids = {dev["hostname"]: dev["device_id"] for dev in cloudvision.get_devices()}
         for device in remove:
-            cvutils.remove_tag_from_device(device_ids[device], self.name, self.value)
+            cloudvision.remove_tag_from_device(device_ids[device], self.name, self.value)
         for device in add:
             # Exclude devices that are inactive in CloudVision
             if device in device_ids:
-                cvutils.assign_tag_to_device(device_ids[device], self.name, self.value)
+                cloudvision.assign_tag_to_device(device_ids[device], self.name, self.value)
             else:
                 tag = f"{self.name}:{self.value}" if self.value else self.name
                 self.diffsync.job.log_warning(
@@ -56,10 +56,10 @@ class UserTag(DiffSyncModel):
 
     def delete(self):
         """Delete user tag applied to devices in CloudVision."""
-        device_ids = {dev["hostname"]: dev["device_id"] for dev in cvutils.get_devices()}
+        device_ids = {dev["hostname"]: dev["device_id"] for dev in cloudvision.get_devices()}
         for device in self.devices:
-            cvutils.remove_tag_from_device(device_ids[device], self.name, self.value)
-        cvutils.delete_tag(self.name, self.value)
+            cloudvision.remove_tag_from_device(device_ids[device], self.name, self.value)
+        cloudvision.delete_tag(self.name, self.value)
         # Call the super().delete() method to remove the DiffSyncModel instance from its parent DiffSync adapter
         super().delete()
         return self

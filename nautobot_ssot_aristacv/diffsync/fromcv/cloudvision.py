@@ -3,7 +3,7 @@ from diffsync import DiffSync
 from django.forms import ValidationError
 import arista.tag.v1 as TAG
 from diffsync.exceptions import ObjectAlreadyExists
-import nautobot_ssot_aristacv.diffsync.cvutils as cvutils
+from nautobot_ssot_aristacv.utils import cloudvision
 import distutils
 
 from .models import Device, CustomField
@@ -24,8 +24,8 @@ class CloudVision(DiffSync):
 
     def load(self):
         """Load tag data from CloudVision."""
-        devices = cvutils.get_devices()
-        system_tags = cvutils.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
+        devices = cloudvision.get_devices()
+        system_tags = cloudvision.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
 
         for dev in devices:
             new_device = None
@@ -42,7 +42,7 @@ class CloudVision(DiffSync):
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
                 continue
 
-            dev_tags = [tag for tag in cvutils.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
+            dev_tags = [tag for tag in cloudvision.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
 
             # Check if topology_type tag exists
             list_of_tag_names = [value["label"] for value in dev_tags]

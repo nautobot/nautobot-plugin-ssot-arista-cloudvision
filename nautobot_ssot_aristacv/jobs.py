@@ -27,7 +27,7 @@ from nautobot_ssot_aristacv.diffsync.fromcv.models import (
     DEFAULT_DELETE_DEVICES_ON_SYNC,
     APPLY_IMPORT_TAG,
 )
-from nautobot_ssot_aristacv.diffsync import cvutils
+from nautobot_ssot_aristacv.utils import cloudvision
 
 
 name = "SSoT - Arista CloudVision"  # pylint: disable=invalid-name
@@ -122,7 +122,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
             )
         self.log("Connecting to CloudVision")
-        cvutils.connect()
+        cloudvision.connect()
         self.log("Loading data from CloudVision")
         cv = C(job=self)
         cv.load()
@@ -142,7 +142,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete.")
-        cvutils.disconnect()
+        cloudvision.disconnect()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
@@ -194,7 +194,7 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     def sync_data(self):
         """Sync device tags from CloudVision to Nautobot."""
         self.log("Connecting to CloudVision")
-        cvutils.connect()
+        cloudvision.connect()
         self.log("Loading data from CloudVision")
         cv = CloudVision(job=self)
         cv.load()
@@ -216,7 +216,7 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete")
-        cvutils.disconnect()
+        cloudvision.disconnect()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
