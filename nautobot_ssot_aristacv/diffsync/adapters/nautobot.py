@@ -24,20 +24,20 @@ class NautobotAdapter(DiffSync):
         for dev in devices:
             try:
                 if dev.device_type.manufacturer.name.lower() == "arista":
-                    new_device = self.device(name=dev.name)
+                    new_device = self.device(name=dev.name, device_model=dev.device_type.name)
                     self.add(new_device)
                     dev_custom_fields = dev.custom_field_data
 
                     for cf_name, cf_value in dev_custom_fields.items():
                         if cf_value is None:
                             cf_value = ""
-                        self.cf = CustomField(name=cf_name, value=cf_value, device_name=dev.name)
-                        self.add(self.cf)
-                        new_device.add_child(self.cf)
+                        new_cf = self.cf(name=cf_name, value=cf_value, device_name=dev.name)
+                        self.add(new_cf)
+                        new_device.add_child(new_cf)
 
                     # Gets model from device and puts it into CustomField Object.
-                    self.cf = CustomField(name="arista_model", value=str(dev.platform), device_name=dev.name)
-                    self.add(self.cf)
-                    self.device.add_child(self.cf)
+                    new_cf = self.cf(name="arista_model", value=str(dev.platform), device_name=dev.name)
+                    self.add(new_cf)
+                    new_device.add_child(new_cf)
             except AttributeError:
                 continue

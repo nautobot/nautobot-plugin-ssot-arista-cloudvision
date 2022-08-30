@@ -9,7 +9,7 @@ class Device(DiffSyncModel):
     _modelname = "device"
     _identifiers = ("name",)
     _shortname = ()
-    _attributes = ()
+    _attributes = ("device_model",)
     _children = {"cf": "cfs"}
 
     name: str
