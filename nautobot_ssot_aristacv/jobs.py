@@ -12,21 +12,9 @@ from nautobot.extras.models.customfields import CustomField
 
 from nautobot_ssot.jobs.base import DataTarget, DataSource, DataMapping
 
-from nautobot_ssot_aristacv.diffsync.tocv.cloudvision import CloudVision
-from nautobot_ssot_aristacv.diffsync.tocv.nautobot import Nautobot
-
-from nautobot_ssot_aristacv.diffsync.fromcv.cloudvision import CloudVision as C
-from nautobot_ssot_aristacv.diffsync.fromcv.nautobot import Nautobot as N
-
-from nautobot_ssot_aristacv.diffsync.fromcv.models import (
-    DEFAULT_SITE,
-    DEFAULT_DEVICE_ROLE,
-    DEFAULT_DEVICE_ROLE_COLOR,
-    DEFAULT_DEVICE_STATUS,
-    DEFAULT_DEVICE_STATUS_COLOR,
-    DEFAULT_DELETE_DEVICES_ON_SYNC,
-    APPLY_IMPORT_TAG,
-)
+from nautobot_ssot_aristacv.diffsync.adapters.cloudvision import CloudvisionAdapter
+from nautobot_ssot_aristacv.diffsync.adapters.nautobot import NautobotAdapter
+from nautobot_ssot_aristacv.diffsync.models import nautobot
 from nautobot_ssot_aristacv.utils import cloudvision
 
 
@@ -56,35 +44,45 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 "CloudVision host": configs.get("cvp_host"),
                 "Username": configs.get("cvp_user"),
                 "Verify": configs.get("verify"),
-                "Delete devices on sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
-                "New device default site": configs.get("from_cloudvision_default_site", DEFAULT_SITE),
-                "New device default role": configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
+                "Delete devices on sync": configs.get(
+                    "delete_devices_on_sync", str(nautobot.DEFAULT_DELETE_DEVICES_ON_SYNC)
+                ),
+                "New device default site": configs.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
+                "New device default role": configs.get(
+                    "from_cloudvision_default_device_role", nautobot.DEFAULT_DEVICE_ROLE
+                ),
                 "New device default role color": configs.get(
-                    "from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR
+                    "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
                 ),
                 "New device default status": configs.get(
-                    "from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS
+                    "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
                 ),
                 "New device default status color": configs.get(
-                    "from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR
+                    "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
                 ),
-                "Apply import tag": str(configs.get("apply_import_tag", APPLY_IMPORT_TAG))
+                "Apply import tag": str(configs.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG))
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
             "CloudVision host": configs.get("cvaas_url"),
-            "Delete devices on sync": configs.get("delete_devices_on_sync", str(DEFAULT_DELETE_DEVICES_ON_SYNC)),
-            "New device default site": configs.get("from_cloudvision_default_site", DEFAULT_SITE),
-            "New device default role": configs.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
+            "Delete devices on sync": configs.get(
+                "delete_devices_on_sync", str(nautobot.DEFAULT_DELETE_DEVICES_ON_SYNC)
+            ),
+            "New device default site": configs.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
+            "New device default role": configs.get(
+                "from_cloudvision_default_device_role", nautobot.DEFAULT_DEVICE_ROLE
+            ),
             "New device default role color": configs.get(
-                "from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR
+                "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
             ),
-            "New device default status": configs.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
+            "New device default status": configs.get(
+                "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
+            ),
             "New device default status color": configs.get(
-                "from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR
+                "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
             ),
-            "Apply import tag": str(configs.get("apply_import_tag", APPLY_IMPORT_TAG))
+            "Apply import tag": str(configs.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG))
             # Token is intentionally omitted!
         }
 
@@ -124,10 +122,10 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
         self.log("Connecting to CloudVision")
         cloudvision.connect()
         self.log("Loading data from CloudVision")
-        cv = C(job=self)
+        cv = CloudvisionAdapter(job=self)
         cv.load()
         self.log("Loading data from Nautobot")
-        nb = N(job=self)
+        nb = NautobotAdapter(job=self)
         nb.load()
         self.log("Performing diff between Cloudvision and Nautobot.")
         diff = nb.diff_from(cv)
@@ -196,10 +194,10 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
         self.log("Connecting to CloudVision")
         cloudvision.connect()
         self.log("Loading data from CloudVision")
-        cv = CloudVision(job=self)
+        cv = CloudvisionAdapter(job=self)
         cv.load()
         self.log("Loading data from Nautobot")
-        nb = Nautobot()
+        nb = NautobotAdapter()
         nb.load()
         self.log("Performing diff between Nautobot and Cloudvision")
         diff = cv.diff_from(nb)

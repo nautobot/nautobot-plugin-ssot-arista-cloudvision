@@ -3,17 +3,17 @@ from diffsync import DiffSync
 from django.forms import ValidationError
 import arista.tag.v1 as TAG
 from diffsync.exceptions import ObjectAlreadyExists
-from nautobot_ssot_aristacv.utils import cloudvision
 import distutils
 
-from .models import Device, CustomField
+from nautobot_ssot_aristacv.diffsync.models.cloudvision import CloudvisionDevice, CloudvisionCustomField
+from nautobot_ssot_aristacv.utils import cloudvision
 
 
-class CloudVision(DiffSync):
+class CloudvisionAdapter(DiffSync):
     """DiffSync adapter implementation for CloudVision user-defined device tags."""
 
-    device = Device
-    cf = CustomField
+    device = CloudvisionDevice
+    cf = CloudvisionCustomField
 
     top_level = ["device"]
 
