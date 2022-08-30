@@ -22,6 +22,7 @@ class AuthFailure(Exception):
         """Populate exception information."""
         self.expression = error_code
         self.message = message
+        super().__init__(self.message)
 
 
 def connect():
