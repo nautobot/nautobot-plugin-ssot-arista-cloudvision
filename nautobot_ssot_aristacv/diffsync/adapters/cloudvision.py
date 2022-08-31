@@ -6,7 +6,6 @@ from diffsync.exceptions import ObjectAlreadyExists
 import distutils
 
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import CloudvisionDevice, CloudvisionCustomField
-from nautobot_ssot_aristacv.utils import cloudvision
 
 
 class CloudvisionAdapter(DiffSync):
@@ -17,15 +16,16 @@ class CloudvisionAdapter(DiffSync):
 
     top_level = ["device"]
 
-    def __init__(self, *args, job=None, **kwargs):
+    def __init__(self, *args, job=None, conn=None, **kwargs):
         """Initialize the CloudVision DiffSync adapter."""
         super().__init__(*args, **kwargs)
         self.job = job
+        self.conn = conn
 
     def load(self):
         """Load tag data from CloudVision."""
-        devices = cloudvision.get_devices()
-        system_tags = cloudvision.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
+        devices = self.conn.get_devices()
+        system_tags = self.conn.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
 
         for dev in devices:
             new_device = None
@@ -42,7 +42,7 @@ class CloudvisionAdapter(DiffSync):
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
                 continue
 
-            dev_tags = [tag for tag in cloudvision.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
+            dev_tags = [tag for tag in self.conn.get_device_tags(device_id=dev["device_id"]) if tag in system_tags]
 
             # Check if topology_type tag exists
             list_of_tag_names = [value["label"] for value in dev_tags]
