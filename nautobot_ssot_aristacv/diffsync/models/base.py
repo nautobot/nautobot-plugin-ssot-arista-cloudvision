@@ -14,7 +14,7 @@ class Device(DiffSyncModel):
 
     name: str
     cfs: List = list()
-    device_model: Optional[str]
+    device_model: str
 
 
 class CustomField(DiffSyncModel):
