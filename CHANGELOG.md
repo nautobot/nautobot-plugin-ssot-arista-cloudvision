@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.1 - 2022-08-31
+
+## Fixed
+
+- #85 - Refactor project to current SSoT pattern. Addressed various linter complaints.
+
 ## v1.0.3 - 2021-10-21
 
 ### Added
