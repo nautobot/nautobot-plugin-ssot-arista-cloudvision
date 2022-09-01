@@ -5,7 +5,7 @@ from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Platform as OrmPlatform
 from nautobot.extras.models import CustomField as OrmCustomField
 from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField
-from nautobot_ssot_aristacv.utils import nautobot, cloudvision
+from nautobot_ssot_aristacv.utils import nautobot
 import distutils
 
 
@@ -28,9 +28,7 @@ class NautobotDevice(Device):
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
         default_site_object = nautobot.verify_site(configs.get("from_cloudvision_default_site", DEFAULT_SITE))
 
-        cloudvision.connect()
-        device_dict = next((device for device in cloudvision.get_devices() if device["hostname"] == ids["name"]), {})
-        device_type_cv = device_dict.get("model")
+        device_type_cv = attrs["device_model"]
 
         device_type_object = nautobot.verify_device_type_object(device_type_cv)
         device_role_object = nautobot.verify_device_role_object(
