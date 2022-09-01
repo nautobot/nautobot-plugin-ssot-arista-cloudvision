@@ -1,6 +1,6 @@
 """DiffSyncModel subclasses for Nautobot-to-AristaCV data sync."""
 from diffsync import DiffSyncModel
-from typing import List, Optional
+from typing import List
 
 
 class Device(DiffSyncModel):
