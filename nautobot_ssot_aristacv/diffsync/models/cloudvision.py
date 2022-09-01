@@ -1,6 +1,9 @@
 """Cloudvision DiffSync models for AristaCV SSoT."""
+from django.conf import settings
 from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField
-from nautobot_ssot_aristacv.utils import cloudvision
+from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
+
+PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 
 
 class CloudvisionDevice(Device):
@@ -23,16 +26,29 @@ class CloudvisionDevice(Device):
 class CloudvisionCustomField(CustomField):
     """Cloudvision CustomField model."""
 
+    @staticmethod
+    def connect_cvp():
+        """Connect to Cloudvision gRPC endpoint."""
+        return CloudvisionApi(
+            cvp_host=PLUGIN_SETTINGS["cvp_host"],
+            cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
+            verify=PLUGIN_SETTINGS["verify"],
+            username=PLUGIN_SETTINGS["cvp_user"],
+            password=PLUGIN_SETTINGS["cvp_password"],
+            cvp_token=PLUGIN_SETTINGS["cvp_token"],
+        )
+
     @classmethod
     def create(cls, diffsync, ids, attrs):
-        """Create a user tag in CloudVision."""
-        cloudvision.create_tag(ids["name"], attrs["value"])
+        """Create a user tag in cvp."""
+        cvp = cls.connect_cvp()
+        cvp.create_tag(ids["name"], attrs["value"])
         # Create mapping from device_name to CloudVision device_id
-        device_ids = {dev["hostname"]: dev["device_id"] for dev in cloudvision.get_devices()}
+        device_ids = {dev["hostname"]: dev["device_id"] for dev in cvp.get_devices()}
         for device in attrs["devices"]:
             # Exclude devices that are inactive in CloudVision
             if device in device_ids:
-                cloudvision.assign_tag_to_device(device_ids[device], ids["name"], attrs["value"])
+                cvp.assign_tag_to_device(device_ids[device], ids["name"], attrs["value"])
             else:
                 tag = f"{ids['name']}:{attrs['value']}" if attrs["value"] else ids["name"]
                 diffsync.job.log_warning(
@@ -41,17 +57,18 @@ class CloudvisionCustomField(CustomField):
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
-        """Update user tag in Cloudvision."""
+        """Update user tag in cvp."""
+        cvp = self.connect_cvp()
         remove = set(self.device_name) - set(attrs["devices"])
         add = set(attrs["devices"]) - set(self.device_name)
         # Create mapping from device_name to CloudVision device_id
-        device_ids = {dev["hostname"]: dev["device_id"] for dev in cloudvision.get_devices()}
+        device_ids = {dev["hostname"]: dev["device_id"] for dev in cvp.get_devices()}
         for device in remove:
-            cloudvision.remove_tag_from_device(device_ids[device], self.name, self.value)
+            cvp.remove_tag_from_device(device_ids[device], self.name, self.value)
         for device in add:
             # Exclude devices that are inactive in CloudVision
             if device in device_ids:
-                cloudvision.assign_tag_to_device(device_ids[device], self.name, self.value)
+                cvp.assign_tag_to_device(device_ids[device], self.name, self.value)
             else:
                 tag = f"{self.name}:{self.value}" if self.value else self.name
                 self.diffsync.job.log_warning(
@@ -61,11 +78,12 @@ class CloudvisionCustomField(CustomField):
         return super().update(attrs)
 
     def delete(self):
-        """Delete user tag applied to devices in CloudVision."""
-        device_ids = {dev["hostname"]: dev["device_id"] for dev in cloudvision.get_devices()}
+        """Delete user tag applied to devices in cvp."""
+        cvp = self.connect_cvp()
+        device_ids = {dev["hostname"]: dev["device_id"] for dev in cvp.get_devices()}
         for device in self.device_name:
-            cloudvision.remove_tag_from_device(device_ids[device], self.name, self.value)
-        cloudvision.delete_tag(self.name, self.value)
+            cvp.remove_tag_from_device(device_ids[device], self.name, self.value)
+        cvp.delete_tag(self.name, self.value)
         # Call the super().delete() method to remove the DiffSyncModel instance from its parent DiffSync adapter
         super().delete()
         return self
