@@ -62,9 +62,9 @@ class NautobotDevice(Device):
 
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
-    def update(self, diffsync, attrs):
+    def update(self, attrs):
         """Update device object in Nautobot."""
-        return super().update(attrs, diffsync)
+        return super().update(attrs)
 
     def delete(self):
         """Delete device object in Nautobot."""
