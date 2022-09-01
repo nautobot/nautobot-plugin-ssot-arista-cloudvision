@@ -2,9 +2,25 @@
 
 ## v1.2.1 - 2022-08-31
 
-## Fixed
+### Fixed
 
 - #85 - Refactor project to current SSoT pattern. Addressed various linter complaints.
+
+## v1.2.0 - 2022-8-19
+
+### Added
+
+- #79 Add support for Token with On Prem CloudVision
+- #82 Import all devices option
+
+### Changed
+
+- #65 Update Nautobot Job names
+- #70 Update signals.py
+
+### Fixed
+
+- #74 Cloudvision dependency pinned
 
 ## v1.0.3 - 2021-10-21
 
