@@ -39,8 +39,8 @@ def verify_device_type_object(device_type):
     try:
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
-        mf = verify_manufacturer()
-        device_type_obj = DeviceType(manufacturer=mf, model=device_type, slug=device_type.lower())
+        manufacturer = verify_manufacturer()
+        device_type_obj = DeviceType(manufacturer=manufacturer, model=device_type, slug=device_type.lower())
         device_type_obj.validated_save()
     return device_type_obj
 
@@ -94,7 +94,7 @@ def verify_import_tag():
 
 def assign_arista_cf(device):
     """Assigns arista custom fields to device."""
-    for cf in CustomField.objects.filter(name__contains="arista"):
-        device.cf[cf.name] = cf.default
+    for custom_field in CustomField.objects.filter(name__contains="arista"):
+        device.cf[custom_field.name] = custom_field.default
 
     return device
