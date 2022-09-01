@@ -45,6 +45,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         self.username = username
         self.password = password
         self.cvp_token = cvp_token
+        self.cvp_cert = None
 
         self.connect()
 
@@ -52,13 +53,12 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         """Connect shared gRPC channel to the configured CloudVision instance."""
         # If CVP_HOST is defined, we assume an on-prem installation.
         if self.cvp_host:
-            # If we don't want to verify the cert, it will be downloaded from the server and automatically trusted for gRPC.
+            # We need to download the certificate for use for insecure SSL endpoints and also when using the GRPCClient.
+            self.cvp_cert = bytes(ssl.get_server_certificate((self.cvp_host, int(self.cvp_port))), "utf-8")
             if self.verify:
-                # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
                 channel_creds = grpc.ssl_channel_credentials()
             else:
-                cert = bytes(ssl.get_server_certificate((self.cvp_host, int(self.cvp_port))), "utf-8")
-                channel_creds = grpc.ssl_channel_credentials(cert)
+                channel_creds = grpc.ssl_channel_credentials(self.cvp_cert)
             if self.cvp_token:
                 call_creds = grpc.access_token_call_credentials(self.cvp_token)
             elif self.username != "" and self.password != "":  # nosec
