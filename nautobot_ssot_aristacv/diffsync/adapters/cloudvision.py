@@ -32,7 +32,9 @@ class CloudvisionAdapter(DiffSync):
             if dev["hostname"] != "":
                 if self.job.kwargs.get("debug"):
                     self.job.log_debug(message=f"Device being loaded: {dev}")
-                new_device = self.device(name=dev["hostname"], device_id=dev["device_id"], device_model=dev["model"])
+                new_device = self.device(
+                    name=dev["hostname"], serial=dev["device_id"], device_model=dev["model"], uuid=None
+                )
                 try:
                     self.add(new_device)
                 except ValidationError as err:

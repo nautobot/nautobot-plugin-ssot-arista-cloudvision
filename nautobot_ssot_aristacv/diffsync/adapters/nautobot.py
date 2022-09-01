@@ -24,7 +24,9 @@ class NautobotAdapter(DiffSync):
         for dev in devices:
             try:
                 if dev.device_type.manufacturer.name.lower() == "arista":
-                    new_device = self.device(name=dev.name, device_model=dev.device_type.name)
+                    new_device = self.device(
+                        name=dev.name, device_model=dev.device_type.name, serial=dev.serial, uuid=dev.id
+                    )
                     self.add(new_device)
                     dev_custom_fields = dev.custom_field_data
 

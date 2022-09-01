@@ -1,6 +1,7 @@
 """DiffSyncModel subclasses for Nautobot-to-AristaCV data sync."""
+from uuid import UUID
 from diffsync import DiffSyncModel
-from typing import List
+from typing import List, Optional
 
 
 class Device(DiffSyncModel):
@@ -8,13 +9,20 @@ class Device(DiffSyncModel):
 
     _modelname = "device"
     _identifiers = ("name",)
-    _shortname = ()
-    _attributes = ("device_model",)
+    _attributes = (
+        "device_model",
+        "serial",
+    )
     _children = {"cf": "cfs"}
 
     name: str
-    cfs: List = list()
     device_model: str
+    serial: str
+    cfs: List["CustomField"] = list()
+    uuid: Optional[UUID]
+
+
+    uuid: Optional[UUID]
 
 
 class CustomField(DiffSyncModel):
@@ -22,8 +30,8 @@ class CustomField(DiffSyncModel):
 
     _modelname = "cf"
     _identifiers = ("name", "device_name")
-    _shortname = ()
     _attributes = ("value",)
+    _children = {}
 
     name: str
     value: str
