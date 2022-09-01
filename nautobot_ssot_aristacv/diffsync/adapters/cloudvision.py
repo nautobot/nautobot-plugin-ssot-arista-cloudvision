@@ -6,6 +6,7 @@ from diffsync.exceptions import ObjectAlreadyExists
 import distutils
 
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import CloudvisionDevice, CloudvisionCustomField
+from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
 
 
 class CloudvisionAdapter(DiffSync):
@@ -16,7 +17,7 @@ class CloudvisionAdapter(DiffSync):
 
     top_level = ["device"]
 
-    def __init__(self, *args, job=None, conn=None, **kwargs):
+    def __init__(self, *args, job=None, conn: CloudvisionApi, **kwargs):
         """Initialize the CloudVision DiffSync adapter."""
         super().__init__(*args, **kwargs)
         self.job = job
