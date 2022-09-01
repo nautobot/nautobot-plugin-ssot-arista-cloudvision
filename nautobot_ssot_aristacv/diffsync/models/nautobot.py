@@ -49,16 +49,10 @@ class NautobotDevice(Device):
             name=ids["name"],
             serial=attrs["serial"] if attrs.get("serial") else "",
         )
-
-        new_device = nautobot.assign_arista_cf(new_device)
-
-        new_device.validated_save()
-
         if configs.get("apply_import_tag", APPLY_IMPORT_TAG):
             import_tag = nautobot.verify_import_tag()
             new_device.tags.add(import_tag)
-            new_device.validated_save()
-
+        new_device.validated_save()
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
@@ -80,12 +74,6 @@ class NautobotDevice(Device):
             device.delete()
             super().delete()
         return self
-
-    def ensure_default_cf(obj, model):
-        """Update objects's default custom fields."""
-        for cf in OrmCustomField.objects.get_for_model(model):
-            if (cf.default is not None) and (cf.name not in obj.cf):
-                obj.cf[cf.name] = cf.default
 
 
 class NautobotCustomField(CustomField):
