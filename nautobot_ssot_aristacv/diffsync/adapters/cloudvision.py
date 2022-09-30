@@ -41,6 +41,10 @@ class CloudvisionAdapter(DiffSync):
                 except ValidationError as err:
                     self.job.log_warning(message=f"Unable to load Device {dev['hostname']}. {err}")
                     continue
+                except ObjectAlreadyExists as err:
+                    self.job.log_warning(
+                        message=f"Duplicate device {dev['hostname']} {dev['device_id']} found and ignored."
+                    )
             else:
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
                 continue
