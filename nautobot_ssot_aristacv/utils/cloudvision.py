@@ -54,11 +54,11 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         # If CVP_HOST is defined, we assume an on-prem installation.
         if self.cvp_host:
             # We need to download the certificate for use for insecure SSL endpoints and also when using the GRPCClient.
-            self.cvp_cert = bytes(ssl.get_server_certificate((self.cvp_host, int(self.cvp_port))), "utf-8")
+            self.cvp_cert = ssl.get_server_certificate((self.cvp_host, int(self.cvp_port)))
             if self.verify:
                 channel_creds = grpc.ssl_channel_credentials()
             else:
-                channel_creds = grpc.ssl_channel_credentials(self.cvp_cert)
+                channel_creds = grpc.ssl_channel_credentials(bytes(self.cvp_cert, "utf-8"))
             if self.cvp_token:
                 call_creds = grpc.access_token_call_credentials(self.cvp_token)
             elif self.username != "" and self.password != "":  # nosec
