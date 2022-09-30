@@ -13,7 +13,7 @@ class Device(DiffSyncModel):
         "device_model",
         "serial",
     )
-    _children = {"cf": "cfs"}
+    _children = {"cf": "cfs", "port": "ports"}
 
     name: str
     device_model: str
@@ -32,17 +32,20 @@ class Port(DiffSyncModel):
         "device",
     )
     _attributes = (
+        "mac_addr",
+        "mtu",
+        "type",
         "speed",
-        "duplex",
         "status",
     )
     _children = {}
 
     name: str
     device: str
+    mac_addr: str
+    mtu: Optional[int]
     type: Optional[str]
     speed: Optional[str]
-    duplex: Optional[str]
     status: Optional[str]
     uuid: Optional[UUID]
 
