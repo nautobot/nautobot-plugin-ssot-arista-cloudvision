@@ -72,6 +72,8 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                     error_code = response.json().get("errorCode")
                     error_message = response.json().get("errorMessage")
                     raise AuthFailure(error_code, error_message)
+                elif self.cvp_token is None and session_id:
+                    self.cvp_token = session_id
                 call_creds = grpc.access_token_call_credentials(session_id)
             else:
                 raise AuthFailure(
