@@ -1,13 +1,18 @@
 """Utility functions for CloudVision Resource API."""
 import ssl
 
-import requests
 import grpc
+from pprint import pprint as pretty_print
+import requests
 from arista.inventory.v1 import models, services
 from arista.tag.v1 import models as tag_models
 from arista.tag.v1 import services as tag_services
-from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 from django.conf import settings
+from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
+
+from cloudvision.Connector.grpc_client import GRPCClient, create_query
+from cloudvision.Connector.codec.custom_types import FrozenDict
+from cloudvision.Connector.codec import Wildcard, Path
 
 RPC_TIMEOUT = 30
 
@@ -45,6 +50,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         self.username = username
         self.password = password
         self.cvp_token = cvp_token
+        self.cvp_cert = None
 
         self.connect()
 
@@ -57,8 +63,8 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                 # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
                 channel_creds = grpc.ssl_channel_credentials()
             else:
-                cert = bytes(ssl.get_server_certificate((self.cvp_host, int(self.cvp_port))), "utf-8")
-                channel_creds = grpc.ssl_channel_credentials(cert)
+                self.cvp_cert = ssl.get_server_certificate((self.cvp_host, int(self.cvp_port)))
+                channel_creds = grpc.ssl_channel_credentials(bytes(self.cvp_cert, "utf-8"))
             if self.cvp_token:
                 call_creds = grpc.access_token_call_credentials(self.cvp_token)
             elif self.username != "" and self.password != "":  # nosec
@@ -72,6 +78,8 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                     error_code = response.json().get("errorCode")
                     error_message = response.json().get("errorMessage")
                     raise AuthFailure(error_code, error_message)
+                elif self.cvp_token is None:
+                    self.cvp_token = session_id
                 call_creds = grpc.access_token_call_credentials(session_id)
             else:
                 raise AuthFailure(
@@ -225,3 +233,158 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
             )
         )
         tag_stub.Delete(req, timeout=RPC_TIMEOUT)
+
+    # This section is based off example code from Arista: https://github.com/aristanetworks/cloudvision-python/blob/trunk/examples/Connector/get_intf_status.py
+
+    @staticmethod
+    def get_query(client, dataset, pathElts):
+        """Returns a query on a path element.
+
+        Args:
+            client (obj): GRPC client connection.
+            dataset (dict): Data related to query.
+            pathElts (List[str]): List of strings denoting path elements for query.
+
+        Returns:
+            _type_: _description_
+        """
+        result = {}
+        query = [create_query([(pathElts, [])], dataset)]
+
+        for batch in client.get(query):
+            for notif in batch["notifications"]:
+                if debug:
+                    pretty_print(notif["updates"])
+                result.update(notif["updates"])
+        return result
+
+    def unfreeze_frozen_dict(self, frozen_dict):
+        """Used to unfreeze Frozen dictionaries.
+
+        Args:
+            frozen_dict (FrozenDict|dict|str): Potentially frozen dict to be unfrozen.
+
+        Returns:
+            dict|str|list: Unfrozen contents of FrozenDict that was passed in.
+        """
+        if isinstance(frozen_dict, (dict, FrozenDict)):
+            return dict({k: self.unfreeze_frozen_dict(v) for k, v in frozen_dict.items()})
+
+        if isinstance(frozen_dict, (str)):
+            return frozen_dict
+
+        try:
+            return [self.unfreeze_frozen_dict(i) for i in frozen_dict]
+        except TypeError:
+            pass
+
+        return frozen_dict
+
+    def get_device_type(self, client, dId):
+        """Returns the type of the device: modular/fixed.
+
+        Args:
+            client (GRPCClient): GRPCClient connection.
+            dId (str): Device ID to determine type for.
+
+        Returns:
+            str: Type of device, either modular or fixed.
+        """
+        pathElts = ["Sysdb", "hardware", "entmib"]
+        query = self.get_query(client, dId, pathElts)
+        query = self.unfreeze_frozen_dict(query)
+        if query["fixedSystem"] is None:
+            dType = "modular"
+        else:
+            dType = "fixedSystem"
+        return dType
+
+    @staticmethod
+    def printIntfStatus(intfStatus: list, deviceId: str):
+        """Helper function to print the interface statuses.
+
+        Args:
+            intfStatus (list): List of dictionaries the status of all interfaces on device.
+        """
+        print(f"{'Interface Name':<25}{'status'}\n")
+        connected = 0
+        down = 0
+        for interface in intfStatus:
+            print(f"{interface['interface']:<25}{interface['status']}")
+            if interface["active"] is True:
+                if interface["status"] == "linkUp":
+                    connected += 1
+                else:
+                    down += 1
+        print(f"\nEthernet Status on {deviceId}:")
+        print(f"{connected:>10} interfaces connected (including Management)")
+        print(f"{down:>10} interfaces down")
+
+    def getIntfStatusChassis(self, client, dId):
+        """Returns the interfaces report for a modular device.
+
+        Args:
+            client (_type_): _description_
+            dId (_type_): _description_
+        """
+        # Fetch the list of slices/linecards
+        pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice"]
+        dataset = dId
+        query = self.get_query(client, dataset, pathElts)
+        queryLC = self.unfreeze_frozen_dict(query).keys()
+        intfStatusChassis = []
+
+        # Go through each linecard and get the state of all interfaces
+        for lc in queryLC:
+            pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", lc, "intfStatus", Wildcard()]
+
+            query = [create_query([(pathElts, [])], dataset)]
+
+            for batch in client.get(query):
+                for notif in batch["notifications"]:
+                    intfStatusChassis.append(
+                        {
+                            "interface": notif["path_elements"][-1],
+                            "status": notif["updates"]["linkStatus"]["Name"],
+                            "active": notif["updates"]["active"],
+                        }
+                    )
+        self.printIntfStatus(intfStatusChassis, dId)
+
+    def getIntfStatusFixed(self, client, dId):
+        """Returns the interfaces report for a fixed system device.
+
+        Args:
+            client (_type_): _description_
+            dId (_type_): _description_
+        """
+        pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", "1", "intfStatus", Wildcard()]
+        query = [create_query([(pathElts, [])], dId)]
+        query = self.unfreeze_frozen_dict(query)
+
+        intfStatusFixed = []
+        for batch in client.get(query):
+            for notif in batch["notifications"]:
+                try:
+                    intfStatusFixed.append(
+                        {
+                            "interface": notif["path_elements"][-1],
+                            "status": notif["updates"]["linkStatus"]["Name"],
+                            "active": notif["updates"]["active"],
+                        }
+                    )
+                except KeyError as e:
+                    print(e)
+                    continue
+        self.printIntfStatus(intfStatusFixed, dId)
+
+    def get_interface_status(self, dId):
+
+        with GRPCClient(self.cvp_url, tokenValue=self.cvp_token, key=None, ca=None, certsValue=self.cvp_cert) as client:
+            entmibType = self.get_device_type(client, dId)
+            if entmibType == "modular":
+                self.getIntfStatusChassis(client, dId)
+            else:
+                self.getIntfStatusFixed(client, dId)
+
+        return 0
