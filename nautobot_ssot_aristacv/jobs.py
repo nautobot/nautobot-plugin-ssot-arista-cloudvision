@@ -122,7 +122,14 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
             )
         self.log("Connecting to CloudVision")
-        with CloudvisionApi(cvp_host=PLUGIN_SETTINGS["cvp_host"], cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"), verify=PLUGIN_SETTINGS["verify"], username=PLUGIN_SETTINGS["cvp_user"], password=PLUGIN_SETTINGS["cvp_password"], cvp_token=PLUGIN_SETTINGS["cvp_token"]) as cvp:
+        with CloudvisionApi(
+            cvp_host=PLUGIN_SETTINGS["cvp_host"],
+            cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
+            verify=PLUGIN_SETTINGS["verify"],
+            username=PLUGIN_SETTINGS["cvp_user"],
+            password=PLUGIN_SETTINGS["cvp_password"],
+            cvp_token=PLUGIN_SETTINGS["cvp_token"],
+        ) as cvp:
             self.log("Loading data from CloudVision")
             cv = CloudvisionAdapter(job=self, conn=cvp)
             cv.load()
@@ -193,7 +200,14 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     def sync_data(self):
         """Sync device tags from CloudVision to Nautobot."""
         self.log("Connecting to CloudVision")
-        with CloudvisionApi(cvp_host=PLUGIN_SETTINGS["cvp_host"],cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"), verify=PLUGIN_SETTINGS["verify"],username=PLUGIN_SETTINGS["cvp_user"], password=PLUGIN_SETTINGS["cvp_password"], cvp_token=PLUGIN_SETTINGS["cvp_token"]) as cvp:
+        with CloudvisionApi(
+            cvp_host=PLUGIN_SETTINGS["cvp_host"],
+            cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
+            verify=PLUGIN_SETTINGS["verify"],
+            username=PLUGIN_SETTINGS["cvp_user"],
+            password=PLUGIN_SETTINGS["cvp_password"],
+            cvp_token=PLUGIN_SETTINGS["cvp_token"],
+        ) as cvp:
             self.log("Loading data from CloudVision")
             cv = CloudvisionAdapter(job=self, conn=cvp)
             cv.load()
