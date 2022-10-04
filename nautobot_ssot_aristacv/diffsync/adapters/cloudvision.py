@@ -25,7 +25,7 @@ class CloudvisionAdapter(DiffSync):
 
     def load(self):
         """Load tag data from CloudVision."""
-        devices = cloudvision.get_devices(client=self.conn)
+        devices = cloudvision.get_devices(client=self.conn.comm_channel)
         system_tags = cloudvision.get_tags_by_type(TAG.models.CREATOR_TYPE_SYSTEM)
 
         for dev in devices:
@@ -51,7 +51,7 @@ class CloudvisionAdapter(DiffSync):
 
             dev_tags = [
                 tag
-                for tag in cloudvision.get_device_tags(client=self.conn, device_id=dev["device_id"])
+                for tag in cloudvision.get_device_tags(client=self.conn.comm_channel, device_id=dev["device_id"])
                 if tag in system_tags
             ]
 
