@@ -122,17 +122,10 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
             )
         self.log("Connecting to CloudVision")
-        cvp = CloudvisionApi(
-            cvp_host=PLUGIN_SETTINGS["cvp_host"],
-            cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
-            verify=PLUGIN_SETTINGS["verify"],
-            username=PLUGIN_SETTINGS["cvp_user"],
-            password=PLUGIN_SETTINGS["cvp_password"],
-            cvp_token=PLUGIN_SETTINGS["cvp_token"],
-        )
-        self.log("Loading data from CloudVision")
-        cv = CloudvisionAdapter(job=self, conn=cvp)
-        cv.load()
+        with CloudvisionApi(cvp_host=PLUGIN_SETTINGS["cvp_host"], cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"), verify=PLUGIN_SETTINGS["verify"], username=PLUGIN_SETTINGS["cvp_user"], password=PLUGIN_SETTINGS["cvp_password"], cvp_token=PLUGIN_SETTINGS["cvp_token"]) as cvp:
+            self.log("Loading data from CloudVision")
+            cv = CloudvisionAdapter(job=self, conn=cvp)
+            cv.load()
         self.log("Loading data from Nautobot")
         nb = NautobotAdapter(job=self)
         nb.load()
@@ -149,7 +142,6 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete.")
-        cvp.disconnect()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
@@ -201,17 +193,10 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     def sync_data(self):
         """Sync device tags from CloudVision to Nautobot."""
         self.log("Connecting to CloudVision")
-        cvp = CloudvisionApi(
-            cvp_host=PLUGIN_SETTINGS["cvp_host"],
-            cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
-            verify=PLUGIN_SETTINGS["verify"],
-            username=PLUGIN_SETTINGS["cvp_user"],
-            password=PLUGIN_SETTINGS["cvp_password"],
-            cvp_token=PLUGIN_SETTINGS["cvp_token"],
-        )
-        self.log("Loading data from CloudVision")
-        cv = CloudvisionAdapter(job=self, conn=cvp)
-        cv.load()
+        with CloudvisionApi(cvp_host=PLUGIN_SETTINGS["cvp_host"],cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"), verify=PLUGIN_SETTINGS["verify"],username=PLUGIN_SETTINGS["cvp_user"], password=PLUGIN_SETTINGS["cvp_password"], cvp_token=PLUGIN_SETTINGS["cvp_token"]) as cvp:
+            self.log("Loading data from CloudVision")
+            cv = CloudvisionAdapter(job=self, conn=cvp)
+            cv.load()
         self.log("Loading data from Nautobot")
         nb = NautobotAdapter()
         nb.load()
@@ -230,7 +215,6 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
                 self.log_failure("Sync failed.")
                 raise e
             self.log_success(message="Sync complete")
-        cvp.disconnect()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
