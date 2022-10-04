@@ -6,6 +6,7 @@ from diffsync.exceptions import ObjectAlreadyExists
 import distutils
 
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import CloudvisionDevice, CloudvisionCustomField
+from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
 
 
 class CloudvisionAdapter(DiffSync):
@@ -16,7 +17,7 @@ class CloudvisionAdapter(DiffSync):
 
     top_level = ["device"]
 
-    def __init__(self, *args, job=None, conn=None, **kwargs):
+    def __init__(self, *args, job=None, conn: CloudvisionApi, **kwargs):
         """Initialize the CloudVision DiffSync adapter."""
         super().__init__(*args, **kwargs)
         self.job = job
@@ -32,12 +33,18 @@ class CloudvisionAdapter(DiffSync):
             if dev["hostname"] != "":
                 if self.job.kwargs.get("debug"):
                     self.job.log_debug(message=f"Device being loaded: {dev}")
-                new_device = self.device(name=dev["hostname"], device_id=dev["device_id"], device_model=dev["model"])
+                new_device = self.device(
+                    name=dev["hostname"], serial=dev["device_id"], device_model=dev["model"], uuid=None
+                )
                 try:
                     self.add(new_device)
                 except ValidationError as err:
                     self.job.log_warning(message=f"Unable to load Device {dev['hostname']}. {err}")
                     continue
+                except ObjectAlreadyExists as err:
+                    self.job.log_warning(
+                        message=f"Duplicate device {dev['hostname']} {dev['device_id']} found and ignored."
+                    )
             else:
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
                 continue

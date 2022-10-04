@@ -47,21 +47,22 @@ class NautobotDevice(Device):
             device_role=device_role_object,
             site=default_site_object,
             name=ids["name"],
+            serial=attrs["serial"] if attrs.get("serial") else "",
         )
-
-        new_device = nautobot.assign_arista_cf(new_device)
-
-        new_device.validated_save()
-
         if configs.get("apply_import_tag", APPLY_IMPORT_TAG):
             import_tag = nautobot.verify_import_tag()
             new_device.tags.add(import_tag)
-            new_device.validated_save()
-
+        new_device.validated_save()
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
     def update(self, attrs):
         """Update device object in Nautobot."""
+        dev = OrmDevice.objects.get(id=self.uuid)
+        if "device_model" in attrs:
+            dev.device_type = nautobot.verify_device_type_object(attrs["device_model"])
+        if "serial" in attrs:
+            dev.serial = attrs["serial"]
+        dev.validated_save()
         return super().update(attrs)
 
     def delete(self):
@@ -69,16 +70,10 @@ class NautobotDevice(Device):
         configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
         if configs.get("delete_devices_on_sync", DEFAULT_DELETE_DEVICES_ON_SYNC):
             self.diffsync.job.log_warning(message=f"Device {self.name} will be deleted per plugin settings.")
-            device = OrmDevice.objects.get(name=self.name)
+            device = OrmDevice.objects.get(id=self.uuid)
             device.delete()
             super().delete()
         return self
-
-    def ensure_default_cf(obj, model):
-        """Update objects's default custom fields."""
-        for cf in OrmCustomField.objects.get_for_model(model):
-            if (cf.default is not None) and (cf.name not in obj.cf):
-                obj.cf[cf.name] = cf.default
 
 
 class NautobotCustomField(CustomField):

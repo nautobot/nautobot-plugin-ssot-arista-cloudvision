@@ -65,9 +65,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
 
         # If CVP_HOST is defined, we assume an on-prem installation.
         if self.cvp_host:
-            # If we don't want to verify the cert, it will be downloaded from the server and automatically trusted for gRPC.
             if self.verify:
-                # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
                 channel_creds = grpc.ssl_channel_credentials()
             else:
                 channel_creds = grpc.ssl_channel_credentials(

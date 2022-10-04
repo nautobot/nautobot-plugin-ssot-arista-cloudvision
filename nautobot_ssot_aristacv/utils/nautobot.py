@@ -90,11 +90,3 @@ def verify_import_tag():
         import_tag = Tag(name="cloudvision_imported", slug="cloudvision_imported", color="ff0000")
         import_tag.validated_save()
     return import_tag
-
-
-def assign_arista_cf(device):
-    """Assigns arista custom fields to device."""
-    for custom_field in CustomField.objects.filter(name__contains="arista"):
-        device.cf[custom_field.name] = custom_field.default
-
-    return device
