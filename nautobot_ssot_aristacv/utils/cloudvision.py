@@ -1,8 +1,12 @@
 """Utility functions for CloudVision Resource API."""
+from datetime import datetime
 import ssl
 
 import grpc
+import google.protobuf.timestamp_pb2 as pbts
+
 from pprint import pprint as pretty_print
+from typing import Iterable, List, Optional, Any, Tuple, Union
 import requests
 from arista.inventory.v1 import models, services
 from arista.tag.v1 import models as tag_models
@@ -10,13 +14,19 @@ from arista.tag.v1 import services as tag_services
 from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 
-from cloudvision.Connector.grpc_client import GRPCClient, create_query
+import cloudvision.Connector.codec as codec
 from cloudvision.Connector.codec.custom_types import FrozenDict
-from cloudvision.Connector.codec import Wildcard, Path
+from cloudvision.Connector.codec import Wildcard
+import cloudvision.Connector.gen.notification_pb2 as ntf
+import cloudvision.Connector.gen.router_pb2 as rtr
+import cloudvision.Connector.gen.router_pb2_grpc as rtr_client
+from cloudvision.Connector.grpc_client.grpcClient import to_pbts, create_query
 
 RPC_TIMEOUT = 30
-
 PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+TIME_TYPE = Union[pbts.Timestamp, datetime]
+UPDATE_TYPE = Tuple[Any, Any]
+UPDATES_TYPE = List[UPDATE_TYPE]
 
 
 class AuthFailure(Exception):
@@ -251,292 +261,301 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         )
         res = self.__search_client.Search(req)
         return (self.decode_batch(nb) for nb in res)
-        device_stub = services.DeviceServiceStub(self.comm_channel)
-        if PLUGIN_SETTINGS.get("import_active"):
-            req = services.DeviceStreamRequest(
-                partial_eq_filter=[models.Device(streaming_status=models.STREAMING_STATUS_ACTIVE)]
-            )
-        else:
-            req = services.DeviceStreamRequest()
-        responses = device_stub.GetAll(req)
-        devices = []
-        for resp in responses:
-            device = {
-                "device_id": resp.value.key.device_id.value,
-                "hostname": resp.value.hostname.value,
-                "fqdn": resp.value.fqdn.value,
-                "sw_ver": resp.value.software_version.value,
-                "model": resp.value.model_name.value,
-                "system_mac_address": resp.value.system_mac_address.value,
-            }
-            devices.append(device)
-        return devices
 
-    def get_device_id(self, device_name: str):
-        """Get device_id for device_name from CloudVision inventory."""
-        device_stub = services.DeviceServiceStub(self.comm_channel)
+
+def get_devices(client):
+    """Get active devices from CloudVision inventory."""
+    device_stub = services.DeviceServiceStub(client)
+    if PLUGIN_SETTINGS.get("import_active"):
         req = services.DeviceStreamRequest(
-            partial_eq_filter=[models.Device(hostname=device_name, streaming_status=models.STREAMING_STATUS_ACTIVE)]
+            partial_eq_filter=[models.Device(streaming_status=models.STREAMING_STATUS_ACTIVE)]
         )
-        resp = device_stub.GetOne(req)
-        return resp.value.key.device_id.value
+    else:
+        req = services.DeviceStreamRequest()
+    responses = device_stub.GetAll(req)
+    devices = []
+    for resp in responses:
+        device = {
+            "device_id": resp.value.key.device_id.value,
+            "hostname": resp.value.hostname.value,
+            "fqdn": resp.value.fqdn.value,
+            "sw_ver": resp.value.software_version.value,
+            "model": resp.value.model_name.value,
+            "system_mac_address": resp.value.system_mac_address.value,
+        }
+        devices.append(device)
+    return devices
 
-    def get_tags(self):
-        """Get all tags from CloudVision."""
-        tag_stub = tag_services.DeviceTagServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagStreamRequest()
-        responses = tag_stub.GetAll(req)
-        tags = []
-        for resp in responses:
-            dev_tag = {
-                "label": resp.value.key.label.value,
-                "value": resp.value.key.value.value,
-                "creator_type": resp.value.creator_type,
-            }
-            tags.append(dev_tag)
-        return tags
 
-    def get_tags_by_type(self, creator_type: int = tag_models.CREATOR_TYPE_USER):
-        """Get tags by creator type from CloudVision."""
-        tag_stub = tag_services.DeviceTagServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagStreamRequest(partial_eq_filter=[tag_models.DeviceTag(creator_type=creator_type)])
-        responses = tag_stub.GetAll(req)
-        tags = []
-        for resp in responses:
-            dev_tag = {
-                "label": resp.value.key.label.value,
-                "value": resp.value.key.value.value,
-            }
-            tags.append(dev_tag)
-        return tags
+# def get_device_id(self, device_name: str):
+#     """Get device_id for device_name from CloudVision inventory."""
+#     device_stub = services.DeviceServiceStub(self.comm_channel)
+#     req = services.DeviceStreamRequest(
+#         partial_eq_filter=[models.Device(hostname=device_name, streaming_status=models.STREAMING_STATUS_ACTIVE)]
+#     )
+#     resp = device_stub.GetOne(req)
+#     return resp.value.key.device_id.value
 
-    def get_device_tags(self, device_id: str):
-        """Get tags for specific device."""
-        tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagAssignmentConfigStreamRequest(
-            partial_eq_filter=[
-                tag_models.DeviceTagAssignmentConfig(
-                    key=tag_models.DeviceTagAssignmentKey(
-                        device_id=StringValue(value=device_id),
-                    )
-                )
-            ]
-        )
-        responses = tag_stub.GetAll(req)
-        tags = []
-        for resp in responses:
-            dev_tag = {
-                "label": resp.value.key.label.value,
-                "value": resp.value.key.value.value,
-            }
-            tags.append(dev_tag)
-        return tags
 
-    def create_tag(self, label: str, value: str):
-        """Create user-defined tag in CloudVision."""
-        tag_stub = tag_services.DeviceTagConfigServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagConfigSetRequest(
-            value=tag_models.DeviceTagConfig(
-                key=tag_models.TagKey(label=StringValue(value=label), value=StringValue(value=value))
-            )
-        )
-        try:
-            tag_stub.Set(req)
-        except grpc.RpcError as err:
-            # Ignore RPC error if tag already exists for idempotency
-            print(f"Failure to create tag: {err}")
-            raise err
+def get_tags(client):
+    """Get all tags from CloudVision."""
+    tag_stub = tag_services.DeviceTagServiceStub(client)
+    req = tag_services.DeviceTagStreamRequest()
+    responses = tag_stub.GetAll(req)
+    tags = []
+    for resp in responses:
+        dev_tag = {
+            "label": resp.value.key.label.value,
+            "value": resp.value.key.value.value,
+            "creator_type": resp.value.creator_type,
+        }
+        tags.append(dev_tag)
+    return tags
 
-    def delete_tag(self, label: str, value: str):
-        """Delete user-defined tag in CloudVision."""
-        tag_stub = tag_services.DeviceTagConfigServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagConfigDeleteRequest(
-            key=tag_models.TagKey(label=StringValue(value=label), value=StringValue(value=value))
-        )
-        try:
-            tag_stub.Delete(req)
-        # Skip error of tags that may be assigned to devices manually in CloudVision
-        except grpc.RpcError as err:
-            print(f"Failure to delete tag: {err}")
-            raise err
 
-    def assign_tag_to_device(self, device_id: str, label: str, value: str):
-        """Assign user-defined tag to device in CloudVision."""
-        tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagAssignmentConfigSetRequest(
-            value=tag_models.DeviceTagAssignmentConfig(
+def get_tags_by_type(client, creator_type: int = tag_models.CREATOR_TYPE_USER):
+    """Get tags by creator type from CloudVision."""
+    tag_stub = tag_services.DeviceTagServiceStub(client)
+    req = tag_services.DeviceTagStreamRequest(partial_eq_filter=[tag_models.DeviceTag(creator_type=creator_type)])
+    responses = tag_stub.GetAll(req)
+    tags = []
+    for resp in responses:
+        dev_tag = {
+            "label": resp.value.key.label.value,
+            "value": resp.value.key.value.value,
+        }
+        tags.append(dev_tag)
+    return tags
+
+
+def get_device_tags(client, device_id: str):
+    """Get tags for specific device."""
+    tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(client)
+    req = tag_services.DeviceTagAssignmentConfigStreamRequest(
+        partial_eq_filter=[
+            tag_models.DeviceTagAssignmentConfig(
                 key=tag_models.DeviceTagAssignmentKey(
-                    label=StringValue(value=label),
-                    value=StringValue(value=value),
                     device_id=StringValue(value=device_id),
                 )
             )
-        )
-        tag_stub.Set(req)
+        ]
+    )
+    responses = tag_stub.GetAll(req)
+    tags = []
+    for resp in responses:
+        dev_tag = {
+            "label": resp.value.key.label.value,
+            "value": resp.value.key.value.value,
+        }
+        tags.append(dev_tag)
+    return tags
 
-    def remove_tag_from_device(self, device_id: str, label: str, value: str):
-        """Unassign a tag from a device in CloudVision."""
-        tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(self.comm_channel)
-        req = tag_services.DeviceTagAssignmentConfigDeleteRequest(
+
+def create_tag(client, label: str, value: str):
+    """Create user-defined tag in CloudVision."""
+    tag_stub = tag_services.DeviceTagConfigServiceStub(client)
+    req = tag_services.DeviceTagConfigSetRequest(
+        value=tag_models.DeviceTagConfig(
+            key=tag_models.TagKey(label=StringValue(value=label), value=StringValue(value=value))
+        )
+    )
+    try:
+        tag_stub.Set(req)
+    except grpc.RpcError as err:
+        # Ignore RPC error if tag already exists for idempotency
+        print(f"Failure to create tag: {err}")
+        raise err
+
+
+def delete_tag(client, label: str, value: str):
+    """Delete user-defined tag in CloudVision."""
+    tag_stub = tag_services.DeviceTagConfigServiceStub(client)
+    req = tag_services.DeviceTagConfigDeleteRequest(
+        key=tag_models.TagKey(label=StringValue(value=label), value=StringValue(value=value))
+    )
+    try:
+        tag_stub.Delete(req)
+    # Skip error of tags that may be assigned to devices manually in CloudVision
+    except grpc.RpcError as err:
+        print(f"Failure to delete tag: {err}")
+        raise err
+
+
+def assign_tag_to_device(client, device_id: str, label: str, value: str):
+    """Assign user-defined tag to device in CloudVision."""
+    tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(client)
+    req = tag_services.DeviceTagAssignmentConfigSetRequest(
+        value=tag_models.DeviceTagAssignmentConfig(
             key=tag_models.DeviceTagAssignmentKey(
                 label=StringValue(value=label),
                 value=StringValue(value=value),
                 device_id=StringValue(value=device_id),
             )
         )
-        tag_stub.Delete(req, timeout=RPC_TIMEOUT)
+    )
+    tag_stub.Set(req)
 
-    # This section is based off example code from Arista: https://github.com/aristanetworks/cloudvision-python/blob/trunk/examples/Connector/get_intf_status.py
 
-    @staticmethod
-    def get_query(client, dataset, pathElts):
-        """Returns a query on a path element.
+def remove_tag_from_device(client, device_id: str, label: str, value: str):
+    """Unassign a tag from a device in CloudVision."""
+    tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(client)
+    req = tag_services.DeviceTagAssignmentConfigDeleteRequest(
+        key=tag_models.DeviceTagAssignmentKey(
+            label=StringValue(value=label),
+            value=StringValue(value=value),
+            device_id=StringValue(value=device_id),
+        )
+    )
+    tag_stub.Delete(req, timeout=RPC_TIMEOUT)
 
-        Args:
-            client (obj): GRPC client connection.
-            dataset (dict): Data related to query.
-            pathElts (List[str]): List of strings denoting path elements for query.
 
-        Returns:
-            _type_: _description_
-        """
-        result = {}
+# This section is based off example code from Arista: https://github.com/aristanetworks/cloudvision-python/blob/trunk/examples/Connector/get_intf_status.py
+
+
+def get_query(diffsync, client, dataset, pathElts):
+    """Returns a query on a path element.
+
+    Args:
+        diffsync (obj): DiffSync Job for logging
+        client (obj): GRPC client connection.
+        dataset (dict): Data related to query.
+        pathElts (List[str]): List of strings denoting path elements for query.
+
+    Returns:
+        dict: Query from dataset and path elements.
+    """
+    result = {}
+    query = [create_query([(pathElts, [])], dataset)]
+
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            if diffsync.job.kwargs.get("debug"):
+                pretty_print(notif["updates"])
+            result.update(notif["updates"])
+    return result
+
+
+def unfreeze_frozen_dict(frozen_dict):
+    """Used to unfreeze Frozen dictionaries.
+
+    Args:
+        frozen_dict (FrozenDict|dict|str): Potentially frozen dict to be unfrozen.
+
+    Returns:
+        dict|str|list: Unfrozen contents of FrozenDict that was passed in.
+    """
+    if isinstance(frozen_dict, (dict, FrozenDict)):
+        return dict({k: unfreeze_frozen_dict(v) for k, v in frozen_dict.items()})
+
+    if isinstance(frozen_dict, (str)):
+        return frozen_dict
+
+    try:
+        return [unfreeze_frozen_dict(i) for i in frozen_dict]
+    except TypeError:
+        pass
+
+    return frozen_dict
+
+
+def get_device_type(diffsync, client, dId):
+    """Returns the type of the device: modular/fixed.
+
+    Args:
+        diffsync (obj): DiffSync Job for logging
+        client (GRPCClient): GRPCClient connection.
+        dId (str): Device ID to determine type for.
+
+    Returns:
+        str: Type of device, either modular or fixed.
+    """
+    pathElts = ["Sysdb", "hardware", "entmib"]
+    query = get_query(diffsync, client, dId, pathElts)
+    query = unfreeze_frozen_dict(query)
+    if query["fixedSystem"] is None:
+        dType = "modular"
+    else:
+        dType = "fixedSystem"
+    return dType
+
+
+def printIntfStatus(intfStatus: list, deviceId: str):
+    """Helper function to print the interface statuses.
+
+    Args:
+        intfStatus (list): List of dictionaries the status of all interfaces on device.
+    """
+    print(f"{'Interface Name':<25}{'status'}\n")
+    connected = 0
+    down = 0
+    for interface in intfStatus:
+        print(f"{interface['interface']:<25}{interface['status']}")
+        if interface["active"] is True:
+            if interface["status"] == "linkUp":
+                connected += 1
+            else:
+                down += 1
+    print(f"\nEthernet Status on {deviceId}:")
+    print(f"{connected:>10} interfaces connected (including Management)")
+    print(f"{down:>10} interfaces down")
+
+
+def getIntfStatusChassis(diffsync, client, dId):
+    """Returns the interfaces report for a modular device.
+
+    Args:
+        diffsync (obj): DiffSync Job for logging
+        client (GRPCClient): GRPCClient connection.
+        dId (str): Device ID to determine type for.
+    """
+    # Fetch the list of slices/linecards
+    pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice"]
+    dataset = dId
+    query = get_query(diffsync, client, dataset, pathElts)
+    queryLC = unfreeze_frozen_dict(query).keys()
+    intfStatusChassis = []
+
+    # Go through each linecard and get the state of all interfaces
+    for lc in queryLC:
+        pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", lc, "intfStatus", Wildcard()]
+
         query = [create_query([(pathElts, [])], dataset)]
 
         for batch in client.get(query):
             for notif in batch["notifications"]:
-                if debug:
-                    pretty_print(notif["updates"])
-                result.update(notif["updates"])
-        return result
+                intfStatusChassis.append(
+                    {
+                        "interface": notif["path_elements"][-1],
+                        "status": notif["updates"]["linkStatus"]["Name"],
+                        "active": notif["updates"]["active"],
+                    }
+                )
+    printIntfStatus(intfStatusChassis, dId)
 
-    def unfreeze_frozen_dict(self, frozen_dict):
-        """Used to unfreeze Frozen dictionaries.
 
-        Args:
-            frozen_dict (FrozenDict|dict|str): Potentially frozen dict to be unfrozen.
+def getIntfStatusFixed(client, dId):
+    """Returns the interfaces report for a fixed system device.
 
-        Returns:
-            dict|str|list: Unfrozen contents of FrozenDict that was passed in.
-        """
-        if isinstance(frozen_dict, (dict, FrozenDict)):
-            return dict({k: self.unfreeze_frozen_dict(v) for k, v in frozen_dict.items()})
+    Args:
+        client (GRPCClient): GRPCClient connection.
+        dId (str): Device ID to determine type for.
+    """
+    pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", "1", "intfStatus", Wildcard()]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
 
-        if isinstance(frozen_dict, (str)):
-            return frozen_dict
-
-        try:
-            return [self.unfreeze_frozen_dict(i) for i in frozen_dict]
-        except TypeError:
-            pass
-
-        return frozen_dict
-
-    def get_device_type(self, client, dId):
-        """Returns the type of the device: modular/fixed.
-
-        Args:
-            client (GRPCClient): GRPCClient connection.
-            dId (str): Device ID to determine type for.
-
-        Returns:
-            str: Type of device, either modular or fixed.
-        """
-        pathElts = ["Sysdb", "hardware", "entmib"]
-        query = self.get_query(client, dId, pathElts)
-        query = self.unfreeze_frozen_dict(query)
-        if query["fixedSystem"] is None:
-            dType = "modular"
-        else:
-            dType = "fixedSystem"
-        return dType
-
-    @staticmethod
-    def printIntfStatus(intfStatus: list, deviceId: str):
-        """Helper function to print the interface statuses.
-
-        Args:
-            intfStatus (list): List of dictionaries the status of all interfaces on device.
-        """
-        print(f"{'Interface Name':<25}{'status'}\n")
-        connected = 0
-        down = 0
-        for interface in intfStatus:
-            print(f"{interface['interface']:<25}{interface['status']}")
-            if interface["active"] is True:
-                if interface["status"] == "linkUp":
-                    connected += 1
-                else:
-                    down += 1
-        print(f"\nEthernet Status on {deviceId}:")
-        print(f"{connected:>10} interfaces connected (including Management)")
-        print(f"{down:>10} interfaces down")
-
-    def getIntfStatusChassis(self, client, dId):
-        """Returns the interfaces report for a modular device.
-
-        Args:
-            client (_type_): _description_
-            dId (_type_): _description_
-        """
-        # Fetch the list of slices/linecards
-        pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice"]
-        dataset = dId
-        query = self.get_query(client, dataset, pathElts)
-        queryLC = self.unfreeze_frozen_dict(query).keys()
-        intfStatusChassis = []
-
-        # Go through each linecard and get the state of all interfaces
-        for lc in queryLC:
-            pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", lc, "intfStatus", Wildcard()]
-
-            query = [create_query([(pathElts, [])], dataset)]
-
-            for batch in client.get(query):
-                for notif in batch["notifications"]:
-                    intfStatusChassis.append(
-                        {
-                            "interface": notif["path_elements"][-1],
-                            "status": notif["updates"]["linkStatus"]["Name"],
-                            "active": notif["updates"]["active"],
-                        }
-                    )
-        self.printIntfStatus(intfStatusChassis, dId)
-
-    def getIntfStatusFixed(self, client, dId):
-        """Returns the interfaces report for a fixed system device.
-
-        Args:
-            client (_type_): _description_
-            dId (_type_): _description_
-        """
-        pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", "1", "intfStatus", Wildcard()]
-        query = [create_query([(pathElts, [])], dId)]
-        query = self.unfreeze_frozen_dict(query)
-
-        intfStatusFixed = []
-        for batch in client.get(query):
-            for notif in batch["notifications"]:
-                try:
-                    intfStatusFixed.append(
-                        {
-                            "interface": notif["path_elements"][-1],
-                            "status": notif["updates"]["linkStatus"]["Name"],
-                            "active": notif["updates"]["active"],
-                        }
-                    )
-                except KeyError as e:
-                    print(e)
-                    continue
-        self.printIntfStatus(intfStatusFixed, dId)
-
-    def get_interface_status(self, dId):
-
-        with GRPCClient(self.cvp_url, tokenValue=self.cvp_token, key=None, ca=None, certsValue=self.cvp_cert) as client:
-            entmibType = self.get_device_type(client, dId)
-            if entmibType == "modular":
-                self.getIntfStatusChassis(client, dId)
-            else:
-                self.getIntfStatusFixed(client, dId)
-
-        return 0
+    intfStatusFixed = []
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            try:
+                intfStatusFixed.append(
+                    {
+                        "interface": notif["path_elements"][-1],
+                        "status": notif["updates"]["linkStatus"]["Name"],
+                        "active": notif["updates"]["active"],
+                    }
+                )
+            except KeyError as e:
+                print(e)
+                continue
+    printIntfStatus(intfStatusFixed, dId)
