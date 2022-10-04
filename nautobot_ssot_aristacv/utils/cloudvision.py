@@ -30,7 +30,9 @@ class AuthFailure(Exception):
 
 
 class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-arguments
-    """Arista Cloudvision Api."""
+    """Arista Cloudvision gRPC client."""
+
+    AUTH_KEY_PATH = "access_token"
 
     def __init__(
         self,
@@ -42,7 +44,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         cvp_token: str = None,
     ):
         """Create Cloudvision API connection."""
-        self.comm_channel = None
+        self.metadata = None
         self.cvp_host = cvp_host
         self.cvp_port = cvp_port
         self.cvp_url = f"{cvp_host}:{cvp_port}"
@@ -50,12 +52,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         self.username = username
         self.password = password
         self.cvp_token = cvp_token
-        self.cvp_cert = None
 
-        self.connect()
-
-    def connect(self):
-        """Connect shared gRPC channel to the configured CloudVision instance."""
         # If CVP_HOST is defined, we assume an on-prem installation.
         if self.cvp_host:
             # If we don't want to verify the cert, it will be downloaded from the server and automatically trusted for gRPC.
@@ -63,8 +60,9 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                 # Otherwise, the server is expected to have a valid certificate signed by a well-known CA.
                 channel_creds = grpc.ssl_channel_credentials()
             else:
-                self.cvp_cert = ssl.get_server_certificate((self.cvp_host, int(self.cvp_port)))
-                channel_creds = grpc.ssl_channel_credentials(bytes(self.cvp_cert, "utf-8"))
+                channel_creds = grpc.ssl_channel_credentials(
+                    bytes(ssl.get_server_certificate((self.cvp_host, int(self.cvp_port))), "utf-8")
+                )
             if self.cvp_token:
                 call_creds = grpc.access_token_call_credentials(self.cvp_token)
             elif self.username != "" and self.password != "":  # nosec
@@ -78,13 +76,14 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                     error_code = response.json().get("errorCode")
                     error_message = response.json().get("errorMessage")
                     raise AuthFailure(error_code, error_message)
-                elif self.cvp_token == "":
+                elif not self.cvp_token:
                     self.cvp_token = session_id
                 call_creds = grpc.access_token_call_credentials(session_id)
             else:
                 raise AuthFailure(
                     error_code="Missing Credentials", message="Unable to authenticate due to missing credentials."
                 )
+            self.metadata = ((self.AUTH_KEY_PATH, self.cvp_token),)
         # Set up credentials for CVaaS using supplied token.
         else:
             self.cvp_url = PLUGIN_SETTINGS.get("cvaas_url", "www.arista.io:443")
@@ -92,13 +91,166 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
             channel_creds = grpc.ssl_channel_credentials()
         conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
         self.comm_channel = grpc.secure_channel(self.cvp_url, conn_creds)
+        self.__client = rtr_client.RouterV1Stub(self.comm_channel)
+        self.__auth_client = rtr_client.AuthStub(self.comm_channel)
+        self.__search_client = rtr_client.SearchStub(self.comm_channel)
+        self.encoder = codec.Encoder()
+        self.decoder = codec.Decoder()
 
-    def disconnect(self):
+    # Make CloudvisionApi usable with `with` statement
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return self.comm_channel.__exit__(type, value, traceback)
+
+    def close(self):
         """Close the shared gRPC channel."""
         self.comm_channel.close()
 
-    def get_devices(self):
-        """Get active devices from CloudVision inventory."""
+    def get(
+        self,
+        queries: List[rtr.Query],
+        start: Optional[TIME_TYPE] = None,
+        end: Optional[TIME_TYPE] = None,
+        versions=0,
+        sharding=None,
+        exact_range=False,
+    ):
+        """
+        Get creates and executes a Get protobuf message, returning a stream of
+        notificationBatch.
+        queries must be a list of querry protobuf messages.
+        start and end, if present, must be nanoseconds timestamps (uint64).
+        sharding, if present must be a protobuf sharding message.
+        """
+        end_ts = 0
+        start_ts = 0
+        if end:
+            end_ts = to_pbts(end).ToNanoseconds()
+
+        if start:
+            start_ts = to_pbts(start).ToNanoseconds()
+
+        request = rtr.GetRequest(
+            query=queries,
+            start=start_ts,
+            end=end_ts,
+            versions=versions,
+            sharded_sub=sharding,
+            exact_range=exact_range,
+        )
+        stream = self.__client.Get(request, metadata=self.metadata)
+        return (self.decode_batch(nb) for nb in stream)
+
+    def subscribe(self, queries, sharding=None):
+        """
+        Subscribe creates and executes a Subscribe protobuf message,
+        returning a stream of notificationBatch.
+        queries must be a list of querry protobuf messages.
+        sharding, if present must be a protobuf sharding message.
+        """
+
+        req = rtr.SubscribeRequest(query=queries, sharded_sub=sharding)
+        stream = self.__client.Subscribe(req, metadata=self.metadata)
+        return (self.decode_batch(nb) for nb in stream)
+
+    def publish(
+        self,
+        dId,
+        notifs: List[ntf.Notification],
+        dtype: str = "device",
+        sync: bool = True,
+        compare: Optional[UPDATE_TYPE] = None,
+    ) -> None:
+        """
+        Publish creates and executes a Publish protobuf message.
+        refer to cloudvision/Connector/protobufs/router.proto:124
+        default to sync publish being true so that changes are reflected
+        """
+        comp_pb = None
+        if compare:
+            key = compare[0]
+            value = compare[1]
+            comp_pb = ntf.Notification.Update(key=self.encoder.encode(key), value=self.encoder.encode(value))
+
+        req = rtr.PublishRequest(
+            batch=ntf.NotificationBatch(d="device", dataset=ntf.Dataset(type=dtype, name=dId), notifications=notifs),
+            sync=sync,
+            compare=comp_pb,
+        )
+        self.__client.Publish(req, metadata=self.metadata)
+
+    def get_datasets(self, types: Optional[List[str]] = None):
+        """
+        GetDatasets retrieves all the datasets streaming on CloudVision.
+        types, if present, filter the queried dataset by types
+        """
+        req = rtr.DatasetsRequest(types=types)
+        stream = self.__client.GetDatasets(req, metadata=self.metadata)
+        return stream
+
+    def create_dataset(self, dtype, dId) -> None:
+        req = rtr.CreateDatasetRequest(dataset=ntf.Dataset(type=dtype, name=dId))
+        self.__auth_client.CreateDataset(req, metadata=self.metadata)
+
+    def decode_batch(self, batch):
+        res = {
+            "dataset": {"name": batch.dataset.name, "type": batch.dataset.type},
+            "notifications": [self.decode_notification(n) for n in batch.notifications],
+        }
+        return res
+
+    def decode_notification(self, notif):
+        res = {
+            "timestamp": notif.timestamp,
+            "deletes": [self.decoder.decode(d) for d in notif.deletes],
+            "updates": {self.decoder.decode(u.key): self.decoder.decode(u.value) for u in notif.updates},
+            "retracts": [self.decoder.decode(r) for r in notif.retracts],
+            "path_elements": [self.decoder.decode(elt) for elt in notif.path_elements],
+        }
+        return res
+
+    def search(
+        self,
+        search_type=rtr.SearchRequest.CUSTOM,
+        d_type: str = "device",
+        d_name: str = "",
+        result_size: int = 1,
+        start: Optional[TIME_TYPE] = None,
+        end: Optional[TIME_TYPE] = None,
+        path_elements=[],
+        key_filters: Iterable[rtr.Filter] = [],
+        value_filters: Iterable[rtr.Filter] = [],
+        exact_range: bool = False,
+        offset: int = 0,
+        exact_term: bool = False,
+        sort: Iterable[rtr.Sort] = [],
+        count_only: bool = False,
+    ):
+        start_ts = to_pbts(start).ToNanoseconds() if start else 0
+        end_ts = to_pbts(end).ToNanoseconds() if end else 0
+        encoded_path_elements = [self.encoder.encode(x) for x in path_elements]
+        req = rtr.SearchRequest(
+            search_type=search_type,
+            start=start_ts,
+            end=end_ts,
+            query=[
+                rtr.Query(
+                    dataset=ntf.Dataset(type=d_type, name=d_name), paths=[rtr.Path(path_elements=encoded_path_elements)]
+                )
+            ],
+            result_size=result_size,
+            key_filters=key_filters,
+            value_filters=value_filters,
+            exact_range=exact_range,
+            offset=offset,
+            exact_term=exact_term,
+            sort=sort,
+            count_only=count_only,
+        )
+        res = self.__search_client.Search(req)
+        return (self.decode_batch(nb) for nb in res)
         device_stub = services.DeviceServiceStub(self.comm_channel)
         if PLUGIN_SETTINGS.get("import_active"):
             req = services.DeviceStreamRequest(
