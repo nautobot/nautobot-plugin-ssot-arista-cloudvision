@@ -1,12 +1,12 @@
+# pylint: disable=invalid-name, no-member
 """Utility functions for CloudVision Resource API."""
-from datetime import datetime
 import ssl
-
-import grpc
-import google.protobuf.timestamp_pb2 as pbts
-
+from datetime import datetime
 from pprint import pprint as pretty_print
-from typing import Iterable, List, Optional, Any, Tuple, Union
+from typing import Any, Iterable, List, Optional, Tuple, Union
+
+import google.protobuf.timestamp_pb2 as pbts
+import grpc
 import requests
 from arista.inventory.v1 import models, services
 from arista.tag.v1 import models as tag_models
@@ -14,13 +14,13 @@ from arista.tag.v1 import services as tag_services
 from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 
-import cloudvision.Connector.codec as codec
-from cloudvision.Connector.codec.custom_types import FrozenDict
-from cloudvision.Connector.codec import Wildcard
 import cloudvision.Connector.gen.notification_pb2 as ntf
 import cloudvision.Connector.gen.router_pb2 as rtr
 import cloudvision.Connector.gen.router_pb2_grpc as rtr_client
-from cloudvision.Connector.grpc_client.grpcClient import to_pbts, create_query
+from cloudvision.Connector import codec
+from cloudvision.Connector.codec import Wildcard
+from cloudvision.Connector.codec.custom_types import FrozenDict
+from cloudvision.Connector.grpc_client.grpcClient import create_query, to_pbts
 
 RPC_TIMEOUT = 30
 PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
@@ -84,7 +84,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                     error_code = response.json().get("errorCode")
                     error_message = response.json().get("errorMessage")
                     raise AuthFailure(error_code, error_message)
-                elif not self.cvp_token:
+                if not self.cvp_token:
                     self.cvp_token = session_id
                 call_creds = grpc.access_token_call_credentials(session_id)
             else:
@@ -109,9 +109,9 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         """Magic method to enable use of class with `with` statement."""
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exit_type, value, traceback):
         """Magic method for exiting context manager when using with `with` statement."""
-        return self.comm_channel.__exit__(type, value, traceback)
+        return self.comm_channel.__exit__(exit_type, value, traceback)
 
     def close(self):
         """Close the shared gRPC channel."""
@@ -220,7 +220,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         }
         return res
 
-    def search(
+    def search(  # pylint:disable=dangerous-default-value, too-many-locals
         self,
         search_type=rtr.SearchRequest.CUSTOM,
         d_type: str = "device",
@@ -506,7 +506,7 @@ def get_interfaces_chassis(diffsync, client: CloudvisionApi, dId):
                     {
                         "interface": notif["updates"]["name"],
                         "status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
-                        "enabled": True if notif["updates"]["enabledStated"]["Name"] == "enabled" else False,
+                        "enabled": bool(notif["updates"]["enabledStated"]["Name"] == "enabled"),
                         "mac_addr": notif["updates"]["burnedInAddr"],
                         "duplex": "full" if notif["updates"]["duplex"]["Name"] == "duplexFull" else "half",
                         "mtu": notif["updates"]["mtu"],
@@ -535,7 +535,7 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
                     {
                         "interface": notif["updates"]["name"],
                         "status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
-                        "enabled": True if notif["updates"]["enabledStated"]["Name"] == "enabled" else False,
+                        "enabled": bool(notif["updates"]["enabledStated"]["Name"] == "enabled"),
                         "mac_addr": notif["updates"]["burnedInAddr"],
                         "duplex": "full" if notif["updates"]["duplex"]["Name"] == "duplexFull" else "half",
                         "mtu": notif["updates"]["mtu"],
@@ -564,3 +564,4 @@ def get_interface_transceiver(client: CloudvisionApi, dId: str, interface: str):
         for notif in batch["notifications"]:
             if notif["updates"].get("detectedMediaTypeData"):
                 return notif["updates"]["detectedMediaTypeData"]["Name"]
+    return "Unknown"
