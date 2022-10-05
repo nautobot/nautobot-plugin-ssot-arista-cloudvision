@@ -477,29 +477,8 @@ def get_device_type(diffsync, client, dId):
     return dType
 
 
-def printIntfStatus(intfStatus: list, deviceId: str):
-    """Helper function to print the interface statuses.
-
-    Args:
-        intfStatus (list): List of dictionaries the status of all interfaces on device.
-    """
-    print(f"{'Interface Name':<25}{'status'}\n")
-    connected = 0
-    down = 0
-    for interface in intfStatus:
-        print(f"{interface['interface']:<25}{interface['status']}")
-        if interface["active"] is True:
-            if interface["status"] == "linkUp":
-                connected += 1
-            else:
-                down += 1
-    print(f"\nEthernet Status on {deviceId}:")
-    print(f"{connected:>10} interfaces connected (including Management)")
-    print(f"{down:>10} interfaces down")
-
-
-def getIntfStatusChassis(diffsync, client, dId):
-    """Returns the interfaces report for a modular device.
+def get_interfaces_chassis(diffsync, client, dId):
+    """Gets information about interfaces for a modular device.
 
     Args:
         diffsync (obj): DiffSync Job for logging
@@ -523,16 +502,20 @@ def getIntfStatusChassis(diffsync, client, dId):
             for notif in batch["notifications"]:
                 intfStatusChassis.append(
                     {
-                        "interface": notif["path_elements"][-1],
-                        "status": notif["updates"]["linkStatus"]["Name"],
-                        "active": notif["updates"]["active"],
+                        "interface": notif["updates"]["name"],
+                        "status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
+                        "enabled": True if notif["updates"]["enabledStated"]["Name"] == "enabled" else False,
+                        "mac_addr": notif["updates"]["burnedInAddr"],
+                        "duplex": "full" if notif["updates"]["duplex"]["Name"] == "duplexFull" else "half",
+                        "mtu": notif["updates"]["mtu"],
+                        "speed": notif["updates"]["speed"]["Name"].replace("speed", ""),
                     }
                 )
-    printIntfStatus(intfStatusChassis, dId)
+    return intfStatusChassis
 
 
-def getIntfStatusFixed(client, dId):
-    """Returns the interfaces report for a fixed system device.
+def get_interfaces_fixed(client, dId):
+    """Gets information about interfaces for a fixed system device.
 
     Args:
         client (GRPCClient): GRPCClient connection.
@@ -548,12 +531,16 @@ def getIntfStatusFixed(client, dId):
             try:
                 intfStatusFixed.append(
                     {
-                        "interface": notif["path_elements"][-1],
-                        "status": notif["updates"]["linkStatus"]["Name"],
-                        "active": notif["updates"]["active"],
+                        "interface": notif["updates"]["name"],
+                        "status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
+                        "enabled": True if notif["updates"]["enabledStated"]["Name"] == "enabled" else False,
+                        "mac_addr": notif["updates"]["burnedInAddr"],
+                        "duplex": "full" if notif["updates"]["duplex"]["Name"] == "duplexFull" else "half",
+                        "mtu": notif["updates"]["mtu"],
+                        "speed": notif["updates"]["speed"]["Name"].replace("speed", ""),
                     }
                 )
             except KeyError as e:
                 print(e)
                 continue
-    printIntfStatus(intfStatusFixed, dId)
+    return intfStatusFixed
