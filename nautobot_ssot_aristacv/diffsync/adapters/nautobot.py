@@ -1,14 +1,17 @@
 """DiffSync adapter for Nautobot."""
 from nautobot.dcim.models import Device as OrmDevice
+from nautobot.dcim.models import Interface as OrmInterface
 from diffsync import DiffSync
+from diffsync.exceptions import ObjectNotFound
 
-from nautobot_ssot_aristacv.diffsync.models.nautobot import NautobotDevice, NautobotCustomField
+from nautobot_ssot_aristacv.diffsync.models.nautobot import NautobotDevice, NautobotCustomField, NautobotPort
 
 
 class NautobotAdapter(DiffSync):
     """DiffSync adapter implementation for Nautobot custom fields."""
 
     device = NautobotDevice
+    port = NautobotPort
     cf = NautobotCustomField
 
     top_level = ["device"]
@@ -43,3 +46,24 @@ class NautobotAdapter(DiffSync):
                     new_device.add_child(new_cf)
             except AttributeError:
                 continue
+
+        for intf in OrmInterface.objects.all():
+            new_port = self.port(
+                name=intf.name,
+                device=intf.device.name,
+                mac_addr=intf.mac_address,
+                enabled=intf.enabled,
+                mtu=intf.mtu,
+                type=intf.type,
+                speed=intf.speed,
+                status=intf.status.name,
+                uuid=intf.uuid,
+            )
+            self.add(new_port)
+            try:
+                dev = self.get(self.device, intf.assigned_object.device.name)
+                dev.add_child(new_port)
+            except ObjectNotFound as err:
+                self.job.log_warning(
+                    message=f"Unable to find Device {intf.device.name} in diff to assign to port {intf.name}. {err}"
+                )

@@ -5,7 +5,11 @@ import arista.tag.v1 as TAG
 from diffsync.exceptions import ObjectAlreadyExists
 import distutils
 
-from nautobot_ssot_aristacv.diffsync.models.cloudvision import CloudvisionDevice, CloudvisionCustomField
+from nautobot_ssot_aristacv.diffsync.models.cloudvision import (
+    CloudvisionDevice,
+    CloudvisionCustomField,
+    CloudvisionPort,
+)
 from nautobot_ssot_aristacv.utils import cloudvision
 
 
@@ -13,6 +17,7 @@ class CloudvisionAdapter(DiffSync):
     """DiffSync adapter implementation for CloudVision user-defined device tags."""
 
     device = CloudvisionDevice
+    port = CloudvisionPort
     cf = CloudvisionCustomField
 
     top_level = ["device"]
@@ -33,6 +38,16 @@ class CloudvisionAdapter(DiffSync):
         for dev in devices:
             new_device = None
             if dev["hostname"] != "":
+                chassis_type = cloudvision.get_device_type(
+                    diffsync=self, client=self.conn.comm_channel, dId=dev["device_id"]
+                )
+                port_info = []
+                if chassis_type == "modular":
+                    port_info = cloudvision.get_interfaces_chassis(
+                        diffsync=self, client=self.conn.comm_channel, dId=dev["device_id"]
+                    )
+                elif chassis_type == "fixedSystem":
+                    port_info = cloudvision.get_interfaces_fixed(client=self.conn.comm_channel, dId=dev["device_id"])
                 if self.job.kwargs.get("debug"):
                     self.job.log_debug(message=f"Device being loaded: {dev}")
                 new_device = self.device(
@@ -45,8 +60,28 @@ class CloudvisionAdapter(DiffSync):
                     continue
                 except ObjectAlreadyExists as err:
                     self.job.log_warning(
-                        message=f"Duplicate device {dev['hostname']} {dev['device_id']} found and ignored."
+                        message=f"Duplicate device {dev['hostname']} {dev['device_id']} found and ignored. {err}"
                     )
+
+                for port in port_info:
+                    new_port = self.port(
+                        name=port["interface"],
+                        device=dev["hostname"],
+                        mac_addr=port["mac_addr"],
+                        mtu=port["mtu"],
+                        enabled=port["enabled"],
+                        speed=port["speed"],
+                        status=port["status"],
+                        type=port["type"],
+                        uuid=None,
+                    )
+                    try:
+                        self.add(new_port)
+                        new_device.add_child(new_port)
+                    except ObjectAlreadyExists as err:
+                        self.job.log_warning(
+                            message=f"Duplicate port {port['interface']} found for {dev['hostname']} and ignored. {err}"
+                        )
             else:
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
                 continue
