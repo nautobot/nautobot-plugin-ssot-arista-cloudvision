@@ -2,7 +2,6 @@
 from nautobot.dcim.models import DeviceType, DeviceRole, Site, Manufacturer
 from nautobot.extras.models.statuses import Status
 from nautobot.extras.models.tags import Tag
-from nautobot.extras.models.customfields import CustomField
 from django.contrib.contenttypes.models import ContentType
 
 
