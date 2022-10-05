@@ -105,11 +105,12 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         self.encoder = codec.Encoder()
         self.decoder = codec.Decoder()
 
-    # Make CloudvisionApi usable with `with` statement
     def __enter__(self):
+        """Magic method to enable use of class with `with` statement."""
         return self
 
     def __exit__(self, type, value, traceback):
+        """Magic method for exiting context manager when using with `with` statement."""
         return self.comm_channel.__exit__(type, value, traceback)
 
     def close(self):
@@ -125,9 +126,8 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         sharding=None,
         exact_range=False,
     ):
-        """
-        Get creates and executes a Get protobuf message, returning a stream of
-        notificationBatch.
+        """Get creates and executes a Get protobuf message, returning a stream of notificationBatch.
+
         queries must be a list of querry protobuf messages.
         start and end, if present, must be nanoseconds timestamps (uint64).
         sharding, if present must be a protobuf sharding message.
@@ -152,13 +152,11 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         return (self.decode_batch(nb) for nb in stream)
 
     def subscribe(self, queries, sharding=None):
-        """
-        Subscribe creates and executes a Subscribe protobuf message,
-        returning a stream of notificationBatch.
+        """Subscribe creates and executes a Subscribe protobuf message, returning a stream of notificationBatch.
+
         queries must be a list of querry protobuf messages.
         sharding, if present must be a protobuf sharding message.
         """
-
         req = rtr.SubscribeRequest(query=queries, sharded_sub=sharding)
         stream = self.__client.Subscribe(req, metadata=self.metadata)
         return (self.decode_batch(nb) for nb in stream)
@@ -171,8 +169,8 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         sync: bool = True,
         compare: Optional[UPDATE_TYPE] = None,
     ) -> None:
-        """
-        Publish creates and executes a Publish protobuf message.
+        """Publish creates and executes a Publish protobuf message.
+
         refer to cloudvision/Connector/protobufs/router.proto:124
         default to sync publish being true so that changes are reflected
         """
@@ -190,8 +188,8 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         self.__client.Publish(req, metadata=self.metadata)
 
     def get_datasets(self, types: Optional[List[str]] = None):
-        """
-        GetDatasets retrieves all the datasets streaming on CloudVision.
+        """Get Datasets retrieves all the datasets streaming on CloudVision.
+
         types, if present, filter the queried dataset by types
         """
         req = rtr.DatasetsRequest(types=types)
@@ -199,10 +197,12 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         return stream
 
     def create_dataset(self, dtype, dId) -> None:
+        """Create Datasets will create a dataset request on CloudVision."""
         req = rtr.CreateDatasetRequest(dataset=ntf.Dataset(type=dtype, name=dId))
         self.__auth_client.CreateDataset(req, metadata=self.metadata)
 
     def decode_batch(self, batch):
+        """Decode a batch of notifications from CloudVision."""
         res = {
             "dataset": {"name": batch.dataset.name, "type": batch.dataset.type},
             "notifications": [self.decode_notification(n) for n in batch.notifications],
@@ -210,6 +210,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         return res
 
     def decode_notification(self, notif):
+        """Decode notifications into standardize format."""
         res = {
             "timestamp": notif.timestamp,
             "deletes": [self.decoder.decode(d) for d in notif.deletes],
@@ -236,6 +237,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
         sort: Iterable[rtr.Sort] = [],
         count_only: bool = False,
     ):
+        """Format a search request to CloudVision."""
         start_ts = to_pbts(start).ToNanoseconds() if start else 0
         end_ts = to_pbts(end).ToNanoseconds() if end else 0
         encoded_path_elements = [self.encoder.encode(x) for x in path_elements]
@@ -262,7 +264,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
 
 
 def get_devices(client):
-    """Get active devices from CloudVision inventory."""
+    """Get devices from CloudVision inventory."""
     device_stub = services.DeviceServiceStub(client)
     if PLUGIN_SETTINGS.get("import_active"):
         req = services.DeviceStreamRequest(
