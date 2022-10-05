@@ -544,3 +544,21 @@ def get_interfaces_fixed(client, dId):
                 print(e)
                 continue
     return intfStatusFixed
+
+
+def get_interface_transceiver(client: CloudvisionApi, dId: str, interface: str):
+    """Gets transceiver information for specified interface on specific device.
+
+    Args:
+        client (CloudvisionApi): Cloudvision connection.
+        dId (str): Device ID to determine type for.
+        interface (str): Name of interface to get transceiver information for.
+    """
+    pathElts = ["Sysdb", "hardware", "archer", "xcvr", "status", "all", interface]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
+
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            if notif["updates"].get("detectedMediaTypeData"):
+                return notif["updates"]["detectedMediaTypeData"]["Name"]
