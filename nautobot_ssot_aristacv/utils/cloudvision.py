@@ -456,12 +456,12 @@ def unfreeze_frozen_dict(frozen_dict):
     return frozen_dict
 
 
-def get_device_type(diffsync, client, dId):
+def get_device_type(diffsync, client: CloudvisionApi, dId: str):
     """Returns the type of the device: modular/fixed.
 
     Args:
         diffsync (obj): DiffSync Job for logging
-        client (GRPCClient): GRPCClient connection.
+        client (CloudvisionApi): Cloudvision connection.
         dId (str): Device ID to determine type for.
 
     Returns:
@@ -477,12 +477,12 @@ def get_device_type(diffsync, client, dId):
     return dType
 
 
-def get_interfaces_chassis(diffsync, client, dId):
+def get_interfaces_chassis(diffsync, client: CloudvisionApi, dId):
     """Gets information about interfaces for a modular device.
 
     Args:
         diffsync (obj): DiffSync Job for logging
-        client (GRPCClient): GRPCClient connection.
+        client (CloudvisionApi): Cloudvision connection.
         dId (str): Device ID to determine type for.
     """
     # Fetch the list of slices/linecards
@@ -514,11 +514,11 @@ def get_interfaces_chassis(diffsync, client, dId):
     return intfStatusChassis
 
 
-def get_interfaces_fixed(client, dId):
+def get_interfaces_fixed(client: CloudvisionApi, dId: str):
     """Gets information about interfaces for a fixed system device.
 
     Args:
-        client (GRPCClient): GRPCClient connection.
+        client (CloudvisionApi): Cloudvision connection.
         dId (str): Device ID to determine type for.
     """
     pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice", "1", "intfStatus", Wildcard()]
