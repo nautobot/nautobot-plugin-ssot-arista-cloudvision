@@ -613,3 +613,23 @@ def get_port_type(port_info: dict, transceiver: str) -> str:
 
     return "other"
 
+
+def get_interface_status(port_info: dict) -> str:
+    """Returns the status of Interface based on link and operational status.
+
+    Args:
+        port_info (dict): Information about port including link and operational status.
+
+    Returns:
+        str: The status of a port: active|decommissioned|maintenance|planned.
+    """
+    status = "decommissioned"
+    if port_info["oper_status"] == "up" and port_info["link_status"] == "up":
+        status = "active"
+    
+    if port_info["oper_status"] == "up" and port_info["link_status"] == "down":
+        status = "planned"
+    
+    if port_info["oper_status"] == "down" and port_info["link_status"] == "down":
+        status = "maintenance"
+    return status
