@@ -565,3 +565,23 @@ def get_interface_transceiver(client: CloudvisionApi, dId: str, interface: str):
             if notif["updates"].get("localMediaType"):
                 return notif["updates"]["localMediaType"]["Name"]
     return "Unknown"
+
+
+def get_interface_mode(client: CloudvisionApi, dId: str, interface str):
+    """Gets interface mode, ie access/trunked.
+
+    Args:
+        client (CloudvisionApi): Cloudvision connection.
+        dId (str): Device ID to determine type for.
+        interface (str): Name of interface to get mode information for.
+    """
+    pathElts = ["Sysdb", "bridging", "switchIntfConfig", "switchIntfConfig", interface]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
+
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            if notif["updates"].get("switchportMode"):
+                return notif["updates"]["switchportMode"]["Name"]
+    return "Unknown"
+
