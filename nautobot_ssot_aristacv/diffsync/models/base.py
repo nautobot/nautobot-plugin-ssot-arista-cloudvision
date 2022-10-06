@@ -36,8 +36,7 @@ class Port(DiffSyncModel):
         "enabled",
         "mode",
         "mtu",
-        "type",
-        "speed",
+        "port_type",
         "status",
     )
     _children = {}
@@ -48,9 +47,8 @@ class Port(DiffSyncModel):
     enabled: bool
     mode: str
     mtu: Optional[int]
-    type: Optional[str]
-    speed: Optional[str]
-    status: Optional[str]
+    port_type: str
+    status: str
     uuid: Optional[UUID]
 
 
