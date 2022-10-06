@@ -38,16 +38,14 @@ class CloudvisionAdapter(DiffSync):
         for dev in devices:
             new_device = None
             if dev["hostname"] != "":
-                chassis_type = cloudvision.get_device_type(
-                    diffsync=self, client=self.conn.comm_channel, dId=dev["device_id"]
-                )
+                chassis_type = cloudvision.get_device_type(diffsync=self, client=self.conn, dId=dev["device_id"])
                 port_info = []
                 if chassis_type == "modular":
                     port_info = cloudvision.get_interfaces_chassis(
-                        diffsync=self, client=self.conn.comm_channel, dId=dev["device_id"]
+                        diffsync=self, client=self.conn, dId=dev["device_id"]
                     )
                 elif chassis_type == "fixedSystem":
-                    port_info = cloudvision.get_interfaces_fixed(client=self.conn.comm_channel, dId=dev["device_id"])
+                    port_info = cloudvision.get_interfaces_fixed(client=self.conn, dId=dev["device_id"])
                 if self.job.kwargs.get("debug"):
                     self.job.log_debug(message=f"Device being loaded: {dev}")
                 new_device = self.device(
@@ -64,11 +62,9 @@ class CloudvisionAdapter(DiffSync):
                     )
 
                 for port in port_info:
-                    port_mode = cloudvision.get_interface_mode(
-                        client=self.conn.comm_channel, dId=dev["device_id"], interface=port
-                    )
+                    port_mode = cloudvision.get_interface_mode(client=self.conn, dId=dev["device_id"], interface=port)
                     transceiver = cloudvision.get_interface_transceiver(
-                        client=self.conn.comm_channel, dId=dev["device_id"], interface=port
+                        client=self.conn, dId=dev["device_id"], interface=port
                     )
                     port_status = cloudvision.get_interface_status(port_info=port)
                     port_type = cloudvision.get_port_type(port_info=port, transceiver=transceiver)
