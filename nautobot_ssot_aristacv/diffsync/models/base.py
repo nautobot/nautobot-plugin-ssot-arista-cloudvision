@@ -34,6 +34,7 @@ class Port(DiffSyncModel):
     _attributes = (
         "mac_addr",
         "enabled",
+        "mode",
         "mtu",
         "type",
         "speed",
@@ -45,6 +46,7 @@ class Port(DiffSyncModel):
     device: str
     mac_addr: str
     enabled: bool
+    mode: str
     mtu: Optional[int]
     type: Optional[str]
     speed: Optional[str]
