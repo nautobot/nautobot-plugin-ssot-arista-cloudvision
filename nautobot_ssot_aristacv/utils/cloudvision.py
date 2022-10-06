@@ -22,6 +22,8 @@ from cloudvision.Connector.codec import Wildcard
 from cloudvision.Connector.codec.custom_types import FrozenDict
 from cloudvision.Connector.grpc_client.grpcClient import create_query, to_pbts
 
+from nautobot_ssot_aristacv.constant import PORT_TYPE_MAP
+
 RPC_TIMEOUT = 30
 PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 TIME_TYPE = Union[pbts.Timestamp, datetime]
@@ -584,4 +586,30 @@ def get_interface_mode(client: CloudvisionApi, dId: str, interface str):
             if notif["updates"].get("switchportMode"):
                 return notif["updates"]["switchportMode"]["Name"]
     return "Unknown"
+
+
+def get_port_type(port_info: dict, transceiver: str) -> str:
+    """Returns the type of port mapping CVP to Nautobot.
+
+    This attempts to determine what the port type is by looking at transceiver or speed.
+
+    Args:
+        port_info (dict): Data required to determine the port type.
+
+    Returns:
+        str: The Nautobot string for port type.
+    """
+    if transceiver != "Unknown" and transceiver in PORT_TYPE_MAP.keys():
+        return PORT_TYPE_MAP[transceiver]
+
+    if "Management" in port_info["interface"]:
+        return "1000base-t"
+
+    if "Vlan" in port_info["interface"] or "Loopback" in port_info["interface"]:
+        return "virtual"
+
+    if "Port-Channel" in port_info["interface"]:
+        return "lag"
+
+    return "other"
 
