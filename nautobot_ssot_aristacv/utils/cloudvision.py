@@ -569,7 +569,7 @@ def get_interface_transceiver(client: CloudvisionApi, dId: str, interface: str):
     return "Unknown"
 
 
-def get_interface_mode(client: CloudvisionApi, dId: str, interface str):
+def get_interface_mode(client: CloudvisionApi, dId: str, interface: str):
     """Gets interface mode, ie access/trunked.
 
     Args:
@@ -626,10 +626,10 @@ def get_interface_status(port_info: dict) -> str:
     status = "decommissioned"
     if port_info["oper_status"] == "up" and port_info["link_status"] == "up":
         status = "active"
-    
+
     if port_info["oper_status"] == "up" and port_info["link_status"] == "down":
         status = "planned"
-    
+
     if port_info["oper_status"] == "down" and port_info["link_status"] == "down":
         status = "maintenance"
     return status
