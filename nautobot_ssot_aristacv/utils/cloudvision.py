@@ -505,12 +505,11 @@ def get_interfaces_chassis(diffsync, client: CloudvisionApi, dId):
                 intfStatusChassis.append(
                     {
                         "interface": notif["updates"]["name"],
-                        "status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
+                        "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
+                        "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
                         "enabled": bool(notif["updates"]["enabledStated"]["Name"] == "enabled"),
                         "mac_addr": notif["updates"]["burnedInAddr"],
-                        "duplex": "full" if notif["updates"]["duplex"]["Name"] == "duplexFull" else "half",
                         "mtu": notif["updates"]["mtu"],
-                        "speed": notif["updates"]["speed"]["Name"].replace("speed", ""),
                     }
                 )
     return intfStatusChassis
@@ -534,12 +533,11 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
                 intfStatusFixed.append(
                     {
                         "interface": notif["updates"]["name"],
-                        "status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
+                        "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
+                        "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
                         "enabled": bool(notif["updates"]["enabledStated"]["Name"] == "enabled"),
                         "mac_addr": notif["updates"]["burnedInAddr"],
-                        "duplex": "full" if notif["updates"]["duplex"]["Name"] == "duplexFull" else "half",
                         "mtu": notif["updates"]["mtu"],
-                        "speed": notif["updates"]["speed"]["Name"].replace("speed", ""),
                     }
                 )
             except KeyError as e:
