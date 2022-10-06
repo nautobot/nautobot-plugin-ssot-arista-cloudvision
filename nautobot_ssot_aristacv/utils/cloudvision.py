@@ -599,7 +599,7 @@ def get_port_type(port_info: dict, transceiver: str) -> str:
     Returns:
         str: The Nautobot string for port type.
     """
-    if transceiver != "Unknown" and transceiver in PORT_TYPE_MAP.keys():
+    if transceiver != "Unknown" and transceiver in PORT_TYPE_MAP:
         return PORT_TYPE_MAP[transceiver]
 
     if "Management" in port_info["interface"]:
