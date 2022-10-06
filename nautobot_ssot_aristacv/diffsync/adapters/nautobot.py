@@ -61,7 +61,7 @@ class NautobotAdapter(DiffSync):
             )
             self.add(new_port)
             try:
-                dev = self.get(self.device, intf.assigned_object.device.name)
+                dev = self.get(self.device, intf.device.name)
                 dev.add_child(new_port)
             except ObjectNotFound as err:
                 self.job.log_warning(
