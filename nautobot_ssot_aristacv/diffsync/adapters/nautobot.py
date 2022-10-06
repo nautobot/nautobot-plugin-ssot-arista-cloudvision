@@ -53,10 +53,10 @@ class NautobotAdapter(DiffSync):
                 device=intf.device.name,
                 mac_addr=intf.mac_address,
                 enabled=intf.enabled,
+                mode=intf.mode,
                 mtu=intf.mtu,
-                type=intf.type,
-                speed=intf.speed,
-                status=intf.status.name,
+                port_type=intf.type,
+                status=intf.status.slug,
                 uuid=intf.uuid,
             )
             self.add(new_port)
