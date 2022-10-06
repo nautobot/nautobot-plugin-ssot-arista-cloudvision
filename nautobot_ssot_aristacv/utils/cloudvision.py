@@ -551,7 +551,7 @@ def get_interface_transceiver(client: CloudvisionApi, dId: str, interface: str):
 
     Args:
         client (CloudvisionApi): Cloudvision connection.
-        dId (str): Device ID to determine type for.
+        dId (str): Device ID to determine transceiver type for.
         interface (str): Name of interface to get transceiver information for.
     """
     pathElts = ["Sysdb", "hardware", "archer", "xcvr", "status", "all", interface]
