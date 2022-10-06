@@ -20,7 +20,7 @@ class CloudvisionAdapter(DiffSync):
     port = CloudvisionPort
     cf = CloudvisionCustomField
 
-    top_level = ["device"]
+    top_level = ["device", "cf"]
 
     def __init__(self, *args, job=None, conn: cloudvision.CloudvisionApi, **kwargs):
         """Initialize the CloudVision DiffSync adapter."""
@@ -110,8 +110,6 @@ class CloudvisionAdapter(DiffSync):
                 new_cf = self.cf(name=f"arista_{tag['label']}", value=tag["value"], device_name=dev["hostname"])
                 try:
                     self.add(new_cf)
-                    if new_device:
-                        new_device.add_child(new_cf)
                 except ObjectAlreadyExists:
                     self.job.log_warning(
                         message=f"Duplicate object encountered for {tag['label']} on device {dev['hostname']}"

@@ -14,7 +14,7 @@ class NautobotAdapter(DiffSync):
     port = NautobotPort
     cf = NautobotCustomField
 
-    top_level = ["device"]
+    top_level = ["device", "cf"]
 
     def __init__(self, *args, job=None, **kwargs):
         """Initialize the Nautobot DiffSync adapter."""
@@ -38,12 +38,10 @@ class NautobotAdapter(DiffSync):
                             cf_value = ""
                         new_cf = self.cf(name=cf_name, value=cf_value, device_name=dev.name)
                         self.add(new_cf)
-                        new_device.add_child(new_cf)
 
                     # Gets model from device and puts it into CustomField Object.
                     new_cf = self.cf(name="arista_model", value=str(dev.platform), device_name=dev.name)
                     self.add(new_cf)
-                    new_device.add_child(new_cf)
             except AttributeError:
                 continue
 

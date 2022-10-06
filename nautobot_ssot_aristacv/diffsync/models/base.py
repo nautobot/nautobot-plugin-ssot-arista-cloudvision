@@ -13,12 +13,11 @@ class Device(DiffSyncModel):
         "device_model",
         "serial",
     )
-    _children = {"cf": "cfs", "port": "ports"}
+    _children = {"port": "ports"}
 
     name: str
     device_model: str
     serial: str
-    cfs: List["CustomField"] = list()
     ports: List["Port"] = list()
     uuid: Optional[UUID]
 
