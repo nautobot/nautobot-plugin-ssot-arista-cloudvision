@@ -5,6 +5,7 @@ from nautobot.core.settings_funcs import is_truthy
 from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Interface as OrmInterface
 from nautobot.dcim.models import Platform as OrmPlatform
+from nautobot.extras.models import Status as OrmStatus
 from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, Port
 from nautobot_ssot_aristacv.utils import nautobot
 import distutils
@@ -89,6 +90,7 @@ class NautobotPort(Port):
             enabled=is_truthy(attrs["enabled"]),
             mtu=attrs["mtu"],
             mode=attrs["mode"],
+            status=attrs["status"],
         )
         try:
             new_port.validated_save()
@@ -102,10 +104,14 @@ class NautobotPort(Port):
         _port = OrmInterface.objects.get(id=self.uuid)
         if "mac_addr" in attrs:
             _port.mac_address = attrs["mac_addr"]
+        if "mode" in attrs:
+            _port.mode = attrs["mode"]
         if "enabled" in attrs:
             _port.enabled = is_truthy(attrs["enabled"])
         if "mtu" in attrs:
             _port.mtu = attrs["mtu"]
+        if "status" in attrs:
+            _port.status = OrmStatus.objects.get(slug=attrs["status"])
         if "type" in attrs:
             _port.type = attrs["type"]
         try:
