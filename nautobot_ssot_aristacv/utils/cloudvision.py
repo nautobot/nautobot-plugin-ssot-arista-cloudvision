@@ -509,7 +509,7 @@ def get_interfaces_chassis(diffsync, client: CloudvisionApi, dId):
                         "interface": notif["updates"]["name"],
                         "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
                         "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
-                        "enabled": bool(notif["updates"]["enabledStated"]["Name"] == "enabled"),
+                        "enabled": bool(notif["updates"]["enabledState"]["Name"] == "enabled"),
                         "mac_addr": notif["updates"]["burnedInAddr"],
                         "mtu": notif["updates"]["mtu"],
                     }
@@ -537,7 +537,7 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
                         "interface": notif["updates"]["name"],
                         "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
                         "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
-                        "enabled": bool(notif["updates"]["enabledStated"]["Name"] == "enabled"),
+                        "enabled": bool(notif["updates"]["enabledState"]["Name"] == "enabled"),
                         "mac_addr": notif["updates"]["burnedInAddr"],
                         "mtu": notif["updates"]["mtu"],
                     }
