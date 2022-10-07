@@ -90,7 +90,7 @@ class NautobotPort(Port):
             enabled=is_truthy(attrs["enabled"]),
             mtu=attrs["mtu"],
             mode=attrs["mode"],
-            status=attrs["status"],
+            status=OrmStatus.objects.get(slug=attrs["status"]),
         )
         try:
             new_port.validated_save()
