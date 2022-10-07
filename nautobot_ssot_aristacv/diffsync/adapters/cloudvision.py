@@ -60,8 +60,11 @@ class CloudvisionAdapter(DiffSync):
                     self.job.log_warning(
                         message=f"Duplicate device {dev['hostname']} {dev['device_id']} found and ignored. {err}"
                     )
+                    continue
 
                 for port in port_info:
+                    if self.job.kwargs.get("debug"):
+                        self.job.log_debug(message=f"Port {port['interface']} being loaded for {dev['hostname']}.")
                     port_mode = cloudvision.get_interface_mode(client=self.conn, dId=dev["device_id"], interface=port)
                     transceiver = cloudvision.get_interface_transceiver(
                         client=self.conn, dId=dev["device_id"], interface=port
@@ -112,5 +115,5 @@ class CloudvisionAdapter(DiffSync):
                     self.add(new_cf)
                 except ObjectAlreadyExists:
                     self.job.log_warning(
-                        message=f"Duplicate object encountered for {tag['label']} on device {dev['hostname']}"
+                        message=f"Duplicate tag encountered for {tag['label']} on device {dev['hostname']}"
                     )
