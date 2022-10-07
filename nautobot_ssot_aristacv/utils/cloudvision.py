@@ -529,7 +529,7 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
             try:
                 intfStatusFixed.append(
                     {
-                        "interface": notif["updates"]["name"],
+                        "interface": notif["updates"]["intfId"],
                         "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
                         "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
                         "enabled": bool(notif["updates"]["enabledState"]["Name"] == "enabled"),
