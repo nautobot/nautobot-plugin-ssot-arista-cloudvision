@@ -538,7 +538,7 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
                     }
                 )
             except KeyError as e:
-                print(e)
+                print(f"Unknown key {e} for intfStatusFixed.")
                 continue
     return intfStatusFixed
 
