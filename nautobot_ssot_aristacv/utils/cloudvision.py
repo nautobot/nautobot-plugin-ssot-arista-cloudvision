@@ -618,7 +618,7 @@ def get_interface_status(port_info: dict) -> str:
     Returns:
         str: The status of a port: active|decommissioned|maintenance|planned.
     """
-    status = "decommissioned"
+    status = "decommissioning"
     if port_info["oper_status"] == "up" and port_info["link_status"] == "up":
         status = "active"
 
