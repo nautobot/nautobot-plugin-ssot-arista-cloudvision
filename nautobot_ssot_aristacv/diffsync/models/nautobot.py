@@ -54,8 +54,12 @@ class NautobotDevice(Device):
         if PLUGIN_SETTINGS.get("apply_import_tag", APPLY_IMPORT_TAG):
             import_tag = nautobot.verify_import_tag()
             new_device.tags.add(import_tag)
-        new_device.validated_save()
-        return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
+        try:
+            new_device.validated_save()
+            return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
+        except ValidationError as err:
+            diffsync.job.log_warning(message=f"Unable to create Device {ids['name']}. {err}")
+            return None
 
     def update(self, attrs):
         """Update device object in Nautobot."""
