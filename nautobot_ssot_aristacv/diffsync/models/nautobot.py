@@ -91,6 +91,7 @@ class NautobotPort(Port):
             mtu=attrs["mtu"],
             mode=attrs["mode"],
             status=OrmStatus.objects.get(slug=attrs["status"]),
+            type=attrs["port_type"],
         )
         try:
             new_port.validated_save()
@@ -112,8 +113,8 @@ class NautobotPort(Port):
             _port.mtu = attrs["mtu"]
         if "status" in attrs:
             _port.status = OrmStatus.objects.get(slug=attrs["status"])
-        if "type" in attrs:
-            _port.type = attrs["type"]
+        if "port_type" in attrs:
+            _port.type = attrs["port_type"]
         try:
             _port.validated_save()
             return super().update(attrs)
