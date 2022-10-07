@@ -499,14 +499,19 @@ def get_interfaces_chassis(client: CloudvisionApi, dId):
 
         for batch in client.get(query):
             for notif in batch["notifications"]:
+                results = notif["updates"]
                 intfStatusChassis.append(
                     {
-                        "interface": notif["updates"]["name"],
-                        "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
-                        "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
-                        "enabled": bool(notif["updates"]["enabledState"]["Name"] == "enabled"),
-                        "mac_addr": notif["updates"]["burnedInAddr"],
-                        "mtu": notif["updates"]["mtu"],
+                        "interface": results["intfId"] if results.get("intfId") else results.get("name"),
+                        "link_status": "up"
+                        if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
+                        else "down",
+                        "oper_status": "up"
+                        if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
+                        else "down",
+                        "enabled": bool(results["enabledState"]["Name"] == "enabled"),
+                        "mac_addr": results["burnedInAddr"],
+                        "mtu": results["mtu"],
                     }
                 )
     return intfStatusChassis
@@ -527,18 +532,25 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
     for batch in client.get(query):
         for notif in batch["notifications"]:
             try:
+                results = notif["updates"]
                 intfStatusFixed.append(
                     {
-                        "interface": notif["updates"]["intfId"],
-                        "link_status": "up" if notif["updates"]["linkStatus"]["Name"] == "linkUp" else "down",
-                        "oper_status": "up" if notif["updates"]["operStatus"]["Name"] == "intfOperUp" else "down",
-                        "enabled": bool(notif["updates"]["enabledState"]["Name"] == "enabled"),
-                        "mac_addr": notif["updates"]["burnedInAddr"],
-                        "mtu": notif["updates"]["mtu"],
+                        "interface": results["intfId"] if results.get("intfId") else results.get("name"),
+                        "link_status": "up"
+                        if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
+                        else "down",
+                        "oper_status": "up"
+                        if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
+                        else "down",
+                        "enabled": bool(results["enabledState"]["Name"] == "enabled"),
+                        "mac_addr": results["burnedInAddr"],
+                        "mtu": results["mtu"],
                     }
                 )
             except KeyError as e:
-                print(f"Unknown key {e} for intfStatusFixed.")
+                print(
+                    f"Unknown key {e} for intfStatusFixed on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates']['name']}."
+                )
                 continue
     return intfStatusFixed
 
