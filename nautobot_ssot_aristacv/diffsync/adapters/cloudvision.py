@@ -39,6 +39,8 @@ class CloudvisionAdapter(DiffSync):
             new_device = None
             if dev["hostname"] != "":
                 chassis_type = cloudvision.get_device_type(diffsync=self, client=self.conn, dId=dev["device_id"])
+                if self.job.kwargs.get("debug"):
+                    self.job.log_debug(message=f"Chassis type for {dev['hostname']} is {chassis_type}.")
                 port_info = []
                 if chassis_type == "modular":
                     port_info = cloudvision.get_interfaces_chassis(
@@ -47,7 +49,7 @@ class CloudvisionAdapter(DiffSync):
                 elif chassis_type == "fixedSystem":
                     port_info = cloudvision.get_interfaces_fixed(client=self.conn, dId=dev["device_id"])
                 if self.job.kwargs.get("debug"):
-                    self.job.log_debug(message=f"Device being loaded: {dev}")
+                    self.job.log_debug(message=f"Device being loaded: {dev}. Port: {port_info}.")
                 new_device = self.device(
                     name=dev["hostname"], serial=dev["device_id"], device_model=dev["model"], uuid=None
                 )
