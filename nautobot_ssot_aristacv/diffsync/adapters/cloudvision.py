@@ -71,24 +71,25 @@ class CloudvisionAdapter(DiffSync):
                     )
                     port_status = cloudvision.get_interface_status(port_info=port)
                     port_type = cloudvision.get_port_type(port_info=port, transceiver=transceiver)
-                    new_port = self.port(
-                        name=port["interface"],
-                        device=dev["hostname"],
-                        mac_addr=port["mac_addr"],
-                        mode="tagged" if port_mode == "trunk" else "access",
-                        mtu=port["mtu"],
-                        enabled=port["enabled"],
-                        status=port_status,
-                        port_type=port_type,
-                        uuid=None,
-                    )
-                    try:
-                        self.add(new_port)
-                        new_device.add_child(new_port)
-                    except ObjectAlreadyExists as err:
-                        self.job.log_warning(
-                            message=f"Duplicate port {port['interface']} found for {dev['hostname']} and ignored. {err}"
+                    if port["interface"] != "":
+                        new_port = self.port(
+                            name=port["interface"],
+                            device=dev["hostname"],
+                            mac_addr=port["mac_addr"],
+                            mode="tagged" if port_mode == "trunk" else "access",
+                            mtu=port["mtu"],
+                            enabled=port["enabled"],
+                            status=port_status,
+                            port_type=port_type,
+                            uuid=None,
                         )
+                        try:
+                            self.add(new_port)
+                            new_device.add_child(new_port)
+                        except ObjectAlreadyExists as err:
+                            self.job.log_warning(
+                                message=f"Duplicate port {port['interface']} found for {dev['hostname']} and ignored. {err}"
+                            )
             else:
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
                 continue
