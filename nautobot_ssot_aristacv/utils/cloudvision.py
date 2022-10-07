@@ -542,14 +542,16 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
                         "oper_status": "up"
                         if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
                         else "down",
-                        "enabled": bool(results["enabledState"]["Name"] == "enabled"),
+                        "enabled": bool(
+                            results["enabledState"]["Name"] == "enabled" if results.get("enabledState") else False
+                        ),
                         "mac_addr": results["burnedInAddr"],
                         "mtu": results["mtu"],
                     }
                 )
             except KeyError as e:
                 print(
-                    f"Unknown key {e} for intfStatusFixed on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates']['name']}."
+                    f"Unknown key {e} for intfStatusFixed on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}."
                 )
                 continue
     return intfStatusFixed
