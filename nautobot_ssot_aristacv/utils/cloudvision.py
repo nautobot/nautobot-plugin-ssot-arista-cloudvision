@@ -414,11 +414,10 @@ def remove_tag_from_device(client, device_id: str, label: str, value: str):
 # This section is based off example code from Arista: https://github.com/aristanetworks/cloudvision-python/blob/trunk/examples/Connector/get_intf_status.py
 
 
-def get_query(diffsync, client, dataset, pathElts):
+def get_query(client, dataset, pathElts):
     """Returns a query on a path element.
 
     Args:
-        diffsync (obj): DiffSync Job for logging
         client (obj): GRPC client connection.
         dataset (dict): Data related to query.
         pathElts (List[str]): List of strings denoting path elements for query.
@@ -431,8 +430,6 @@ def get_query(diffsync, client, dataset, pathElts):
 
     for batch in client.get(query):
         for notif in batch["notifications"]:
-            if diffsync.job.kwargs.get("debug"):
-                pretty_print(notif["updates"])
             result.update(notif["updates"])
     return result
 
@@ -460,11 +457,10 @@ def unfreeze_frozen_dict(frozen_dict):
     return frozen_dict
 
 
-def get_device_type(diffsync, client: CloudvisionApi, dId: str):
+def get_device_type(client: CloudvisionApi, dId: str):
     """Returns the type of the device: modular/fixed.
 
     Args:
-        diffsync (obj): DiffSync Job for logging
         client (CloudvisionApi): Cloudvision connection.
         dId (str): Device ID to determine type for.
 
@@ -472,7 +468,7 @@ def get_device_type(diffsync, client: CloudvisionApi, dId: str):
         str: Type of device, either modular or fixed.
     """
     pathElts = ["Sysdb", "hardware", "entmib"]
-    query = get_query(diffsync, client, dId, pathElts)
+    query = get_query(client, dId, pathElts)
     query = unfreeze_frozen_dict(query)
     if query["fixedSystem"] is None:
         dType = "modular"
@@ -481,18 +477,17 @@ def get_device_type(diffsync, client: CloudvisionApi, dId: str):
     return dType
 
 
-def get_interfaces_chassis(diffsync, client: CloudvisionApi, dId):
+def get_interfaces_chassis(client: CloudvisionApi, dId):
     """Gets information about interfaces for a modular device.
 
     Args:
-        diffsync (obj): DiffSync Job for logging
         client (CloudvisionApi): Cloudvision connection.
         dId (str): Device ID to determine type for.
     """
     # Fetch the list of slices/linecards
     pathElts = ["Sysdb", "interface", "status", "eth", "phy", "slice"]
     dataset = dId
-    query = get_query(diffsync, client, dataset, pathElts)
+    query = get_query(client, dataset, pathElts)
     queryLC = unfreeze_frozen_dict(query).keys()
     intfStatusChassis = []
 
