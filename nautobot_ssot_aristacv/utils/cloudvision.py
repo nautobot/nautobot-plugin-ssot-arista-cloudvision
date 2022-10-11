@@ -2,7 +2,6 @@
 """Utility functions for CloudVision Resource API."""
 import ssl
 from datetime import datetime
-from pprint import pprint as pretty_print
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
 import google.protobuf.timestamp_pb2 as pbts
