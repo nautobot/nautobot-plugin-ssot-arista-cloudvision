@@ -37,6 +37,7 @@ flake8 = "*"
 coverage = "*"
 mkdocs = "*"
 markdown-include = "*"
+parameterized = "^0.8.1"
 
 [tool.black]
 line-length = 120
