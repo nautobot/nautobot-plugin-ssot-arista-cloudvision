@@ -1,20 +1,10 @@
 """Tests of Cloudvision utility methods."""
-import json
-
 from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 
 from nautobot.utilities.testing import TestCase
 from nautobot_ssot_aristacv.utils import cloudvision
-
-
-def load_json(path):
-    """Load a json file."""
-    with open(path, encoding="utf-8") as file:
-        return json.loads(file.read())
-
-
-DEVICE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_devices_response.json")
+from nautobot_ssot_aristacv.tests.fixtures import fixtures
 
 
 class TestCloudvisionUtils(TestCase):
@@ -51,7 +41,7 @@ class TestCloudvisionUtils(TestCase):
 
         with patch("nautobot_ssot_aristacv.utils.cloudvision.services", device_svc_stub):
             results = cloudvision.get_devices(client=self.client)
-        expected = DEVICE_FIXTURE
+        expected = fixtures.DEVICE_FIXTURE
         self.assertEqual(results, expected)
 
     def test_get_tags(self):
@@ -89,11 +79,9 @@ class TestCloudvisionUtils(TestCase):
 
         with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
             self.client.get = MagicMock()
-            self.client.get.return_value = load_json(
-                "./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_client_query.json"
-            )
+            self.client.get.return_value = fixtures.FIXED_INTF_QUERY
             results = cloudvision.get_interfaces_fixed(client=self.client, dId="JPE12345678")
-        expected = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_response.json")
+        expected = fixtures.INTERFACE_FIXTURE
         self.assertEqual(results, expected)
 
     port_types = [
