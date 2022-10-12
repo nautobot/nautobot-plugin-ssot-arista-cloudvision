@@ -52,3 +52,20 @@ class TestCloudvisionUtils(TestCase):
             results = cloudvision.get_devices(client=self.client)
         expected = DEVICE_FIXTURE
         self.assertEqual(results, expected)
+
+    port_types = [
+        ("built_in_gig", {"port_info": {}, "transceiver": "xcvr1000BaseT"}, "1000base-t"),
+        ("build_in_10g_sr", {"port_info": {}, "transceiver": "xcvr10GBaseSr"}, "10gbase-x-xfp"),
+        ("management_port", {"port_info": {"interface": "Management1"}, "transceiver": "Unknown"}, "1000base-t"),
+        ("vlan_port", {"port_info": {"interface": "Vlan100"}, "transceiver": "Unknown"}, "virtual"),
+        ("loopback_port", {"port_info": {"interface": "Loopback0"}, "transceiver": "Unknown"}, "virtual"),
+        ("port_channel_port", {"port_info": {"interface": "Port-Channel10"}, "transceiver": "Unknown"}, "lag"),
+        ("unknown_ethernet_port", {"port_info": {"interface": "Ethernet1"}, "transceiver": "Unknown"}, "other"),
+    ]
+
+    @parameterized.expand(port_types, skip_on_empty=True)
+    def test_get_port_type(self, name, sent, received):  # pylint: disable=unused-argument
+        """Test the get_port_type method."""
+        self.assertEqual(
+            cloudvision.get_port_type(port_info=sent["port_info"], transceiver=sent["transceiver"]), received
+        )
