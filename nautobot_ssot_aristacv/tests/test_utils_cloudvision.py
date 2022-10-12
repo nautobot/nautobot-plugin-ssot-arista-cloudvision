@@ -16,6 +16,7 @@ def load_json(path):
 
 DEVICE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_devices_response.json")
 
+
 class TestCloudvisionUtils(TestCase):
     """Test Cloudvision utility methods."""
 
@@ -69,3 +70,15 @@ class TestCloudvisionUtils(TestCase):
         self.assertEqual(
             cloudvision.get_port_type(port_info=sent["port_info"], transceiver=sent["transceiver"]), received
         )
+
+    port_statuses = [
+        ("active_port", {"link_status": "up", "oper_status": "up"}, "active"),
+        ("planned_port", {"link_status": "down", "oper_status": "up"}, "planned"),
+        ("maintenance_port", {"link_status": "down", "oper_status": "down"}, "maintenance"),
+        ("decommissioning_port", {"link_status": "up", "oper_status": "down"}, "decommissioning"),
+    ]
+
+    @parameterized.expand(port_statuses, skip_on_empty=True)
+    def test_get_interface_status(self, name, sent, received):  # pylint: disable=unused-argument
+        """Test the get_interface_status method."""
+        self.assertEqual(cloudvision.get_interface_status(port_info=sent), received)
