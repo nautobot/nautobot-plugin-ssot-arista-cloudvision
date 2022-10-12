@@ -5,7 +5,6 @@ import re
 import arista.tag.v1 as TAG
 from diffsync import DiffSync
 from diffsync.exceptions import ObjectAlreadyExists
-from django.forms import ValidationError
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import (
     CloudvisionCustomField,
     CloudvisionDevice,

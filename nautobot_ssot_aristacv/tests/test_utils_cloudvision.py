@@ -70,6 +70,32 @@ class TestCloudvisionUtils(TestCase):
         expected = [{"label": "test", "value": "test", "creator_type": 1}]
         self.assertEqual(results, expected)
 
+    def test_get_interfaces_fixed(self):
+        """Test get_interfaces_fixed method."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\tinterface",
+            "\304\006status",
+            "\304\003eth",
+            "\304\003phy",
+            "\304\005slice",
+            "\304\0011",
+            "\304\nintfStatus",
+            "\304\00\001",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = load_json(
+                "./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_client_query.json"
+            )
+            results = cloudvision.get_interfaces_fixed(client=self.client, dId="JPE12345678")
+        expected = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_response.json")
+        self.assertEqual(results, expected)
+
     port_types = [
         ("built_in_gig", {"port_info": {}, "transceiver": "xcvr1000BaseT"}, "1000base-t"),
         ("build_in_10g_sr", {"port_info": {}, "transceiver": "xcvr10GBaseSr"}, "10gbase-x-xfp"),
