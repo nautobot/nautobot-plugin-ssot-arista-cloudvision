@@ -54,9 +54,6 @@ class CloudvisionAdapter(DiffSync):
                 )
                 try:
                     self.add(new_device)
-                except ValidationError as err:
-                    self.job.log_warning(message=f"Unable to load Device {dev['hostname']}. {err}")
-                    continue
                 except ObjectAlreadyExists as err:
                     self.job.log_warning(
                         message=f"Duplicate device {dev['hostname']} {dev['device_id']} found and ignored. {err}"
