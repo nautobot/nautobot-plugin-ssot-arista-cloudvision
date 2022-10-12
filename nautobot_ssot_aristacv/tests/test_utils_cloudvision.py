@@ -54,6 +54,22 @@ class TestCloudvisionUtils(TestCase):
         expected = DEVICE_FIXTURE
         self.assertEqual(results, expected)
 
+    def test_get_tags(self):
+        """Test get_tags method."""
+
+        mock_tag = MagicMock()
+        mock_tag.value.key.label.value = "test"
+        mock_tag.value.key.value.value = "test"
+        mock_tag.value.creator_type = 1
+
+        device_tag_stub = MagicMock()
+        device_tag_stub.DeviceTagServiceStub.return_value.GetAll.return_value = [mock_tag]
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.tag_services", device_tag_stub):
+            results = cloudvision.get_tags(client=self.client)
+        expected = [{"label": "test", "value": "test", "creator_type": 1}]
+        self.assertEqual(results, expected)
+
     port_types = [
         ("built_in_gig", {"port_info": {}, "transceiver": "xcvr1000BaseT"}, "1000base-t"),
         ("build_in_10g_sr", {"port_info": {}, "transceiver": "xcvr10GBaseSr"}, "10gbase-x-xfp"),
