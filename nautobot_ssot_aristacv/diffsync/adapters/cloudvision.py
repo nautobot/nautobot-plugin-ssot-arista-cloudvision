@@ -72,7 +72,7 @@ class CloudvisionAdapter(DiffSync):
                     )
                     if transceiver == "Unknown":
                         # Breakout transceivers, ie 40G -> 4x10G, shows up as 4 interfaces and requires looking at base interface to find transceiver, ie Ethernet1 if Ethernet1/1
-                        base_port_name = re.sub(r"/\d", "", port)
+                        base_port_name = re.sub(r"/\d", "", port["interface"])
                         transceiver = cloudvision.get_interface_transceiver(
                             client=self.conn, dId=dev["device_id"], interface=base_port_name
                         )
