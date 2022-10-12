@@ -1,13 +1,14 @@
 """DiffSync adapter for Arista CloudVision."""
-from diffsync import DiffSync
-from django.forms import ValidationError
-import arista.tag.v1 as TAG
-from diffsync.exceptions import ObjectAlreadyExists
 import distutils
+import re
 
+import arista.tag.v1 as TAG
+from diffsync import DiffSync
+from diffsync.exceptions import ObjectAlreadyExists
+from django.forms import ValidationError
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import (
-    CloudvisionDevice,
     CloudvisionCustomField,
+    CloudvisionDevice,
     CloudvisionPort,
 )
 from nautobot_ssot_aristacv.utils import cloudvision
