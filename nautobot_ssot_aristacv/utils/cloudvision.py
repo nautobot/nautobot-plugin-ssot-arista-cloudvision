@@ -572,7 +572,9 @@ def get_interface_transceiver(client: CloudvisionApi, dId: str, interface: str):
 
     for batch in client.get(query):
         for notif in batch["notifications"]:
-            if notif["updates"].get("actualIdEepromContents"):
+            if notif["updates"].get("actualIdEepromContents") and notif["updates"]["actualIdEepromContents"].get(
+                "mediaType"
+            ):
                 return notif["updates"]["actualIdEepromContents"]["mediaType"]
             if notif["updates"].get("localMediaType"):
                 return notif["updates"]["localMediaType"]["Name"]
