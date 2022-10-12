@@ -129,7 +129,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
     ):
         """Get creates and executes a Get protobuf message, returning a stream of notificationBatch.
 
-        queries must be a list of querry protobuf messages.
+        queries must be a list of query protobuf messages.
         start and end, if present, must be nanoseconds timestamps (uint64).
         sharding, if present must be a protobuf sharding message.
         """
@@ -155,7 +155,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
     def subscribe(self, queries, sharding=None):
         """Subscribe creates and executes a Subscribe protobuf message, returning a stream of notificationBatch.
 
-        queries must be a list of querry protobuf messages.
+        queries must be a list of query protobuf messages.
         sharding, if present must be a protobuf sharding message.
         """
         req = rtr.SubscribeRequest(query=queries, sharded_sub=sharding)
