@@ -1,6 +1,6 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while importing devices and their interfaces and system tags from CloudVision into Nautobot.  Here is a table showing the data mappings when syncing from CloudVision.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. From Nautobot into CloudVision, it synchronizes user device tags. From CloudVision into Nautobot, it synchronizes devices, their interfaces and their system tags. Here is a table showing the data mappings when syncing from CloudVision.
 
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
