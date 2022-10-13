@@ -55,7 +55,7 @@ class NautobotAdapter(DiffSync):
                 mtu=intf.mtu,
                 port_type=intf.type,
                 status=intf.status.slug,
-                uuid=intf.uuid,
+                uuid=intf.id,
             )
             self.add(new_port)
             try:
