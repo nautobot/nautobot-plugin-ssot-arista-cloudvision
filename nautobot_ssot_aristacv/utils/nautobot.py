@@ -2,7 +2,6 @@
 from nautobot.dcim.models import DeviceType, DeviceRole, Site, Manufacturer
 from nautobot.extras.models.statuses import Status
 from nautobot.extras.models.tags import Tag
-from nautobot.extras.models.customfields import CustomField
 from django.contrib.contenttypes.models import ContentType
 
 
@@ -39,8 +38,8 @@ def verify_device_type_object(device_type):
     try:
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
-        mf = verify_manufacturer()
-        device_type_obj = DeviceType(manufacturer=mf, model=device_type, slug=device_type.lower())
+        manufacturer = verify_manufacturer()
+        device_type_obj = DeviceType(manufacturer=manufacturer, model=device_type, slug=device_type.lower())
         device_type_obj.validated_save()
     return device_type_obj
 
@@ -90,11 +89,3 @@ def verify_import_tag():
         import_tag = Tag(name="cloudvision_imported", slug="cloudvision_imported", color="ff0000")
         import_tag.validated_save()
     return import_tag
-
-
-def assign_arista_cf(device):
-    """Assigns arista custom fields to device."""
-    for cf in CustomField.objects.filter(name__contains="arista"):
-        device.cf[cf.name] = cf.default
-
-    return device

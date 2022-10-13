@@ -1,6 +1,6 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. It synchronizes user device tags from Nautobot into CloudVision while using devices and system tags from CloudVision to ensure device synchronization and populate device metadata.  Here is a table showing the data mappings when syncing from CloudVision.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. From Nautobot into CloudVision, it synchronizes user device tags. From CloudVision into Nautobot, it synchronizes devices, their interfaces and their system tags. Here is a table showing the data mappings when syncing from CloudVision.
 
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
@@ -26,6 +26,8 @@ When syncing User tags from Nautobot to CloudVision the data mappings are as fol
 
 | Nautobot | CloudVision |
 |----------|-------------|
+| Interface| Interface   |
+|----------|-------------|
 | Tags     | Device Tags |
 
 > This plugin is an extension of the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) and you must have that plugin installed before installing this extension.
@@ -42,7 +44,7 @@ This screenshow shows the Nautobot to CloudVision home page. It also contains da
 
 ## Installation
 
-The plugin is available as a Python package in pypi and can be installed with pip
+The plugin is available as a Python package in PyPI and can be installed with pip
 
 ```shell
 pip install nautobot_ssot_aristacv
@@ -116,18 +118,18 @@ The plugin can connect to either on-premise or a cloud instance of CloudVision. 
 |------------------------|---------|--------------------------------------------------------------------------------------------------|
 | cvp_host               | string  | Hostname or ip address of the onprem instance of CloudVision.                                    |
 | cvp_port               | string  | gRPC port (defaults to 8443, but this port has changed to 443 as of CVP 2021.3.0)                |
-| cvp_user               | string  | The username used to connect to the onprem instance of CloudVision.                              |
+| cvp_user               | string  | The username used to connect to the on-prem instance of CloudVision.                              |
 | cvp_password           | string  | The password used by the user specified above.                                                   |
-| verify               | boolean | If False, the plugin will download the certificate from CloudVision and trust it for gRPC calls.  |
+| cvp_token              | string  | Token to be used when connecting to CloudVision.                                                 |
+| verify                 | boolean | If False, the plugin will download the certificate from CloudVision and trust it for gRPC calls. |
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
 | Configuration Variable | Type   | Usage                                                         | Default            |
 |------------------------|--------|---------------------------------------------------------------|--------------------|
 | cvaas_url              | string | URL used to connect to your CvaaS instance.                   | www.arista.io:443  |
-| cvaas_token            | string | Token to be used when connecting to CloudVision as a Service. | No default set     |
 
-When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. When creating new devices in Nautobot, a site, device role, device role color, device status, and device are required. You may define which values to use by configuring the following values in your nautobot config file. If you define a `default_device_role` and `default_device_status` that already exist, the default color value for both of those will be ignored as it will pull that information from Nautobot.
+When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. When creating new devices in Nautobot, a site, device role, device role color, device status, and device are required. You may define which values to use by configuring the following values in your `nautobot_config.py` file. If you define a `default_device_role` and `default_device_status` that already exist, the default color value for both of those will be ignored as it will pull that information from Nautobot.
 
 | Configuration Variable                       | Type   | Usage                                                      | Default              |
 |----------------------------------------------|--------|------------------------------------------------------------|----------------------|
@@ -139,7 +141,7 @@ When syncing from CloudVision, this plugin will create new Arista devices that d
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
-When an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the nautobot config file.
+When an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the `nautobot_config.py` file.
 
 | Configuration Variable           | Type    | Usage                                                                                                                                                              | Default |
 |----------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
@@ -163,16 +165,17 @@ Lastly, you can control whether only active devices are imported or whether all 
 
 ## Usage
 
-This extension can sync data both `to` and `from` Nautobot. Once the plugin has been installed succesfully two new options are available under the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) plugin.
+This extension can sync data both `to` and `from` Nautobot. Once the plugin has been installed successfully two new options are available under the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) plugin.
 
 ![Arista Extension](https://user-images.githubusercontent.com/38091261/124857275-9a6c0100-df71-11eb-8ace-2ddf67a2471f.PNG)
+
+Please be aware that interfaces that are part of a breakout bundle, ie a 40G port broken out into 4x10G ports, will show the base interface SFP transceiver as the interface type. This is due to the way interfaces and transceivers are returned from CloudVision.
 
 ### Syncing From CloudVision
 
 > When loading Nautobot data, this tool only loads devices with a device type that has a manufacturer of "Arista"
 
-When syncing data from CloudVision to Nautobot, system tags as well as devices are synced.  When a device exists in CloudVision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file.
-When a device exists in Nautobot that does not exist in CloudVision, this tool can be configured to either delete or skip that device.
+When syncing data from CloudVision to Nautobot, devices along with their interfaces and tags are synchronized.  When a device exists in CloudVision that doesn't exist in Nautobot, this tool creates the device in Nautobot with the default values specified in the configuration file. When a device exists in Nautobot that does not exist in CloudVision, this tool can be configured to either delete or skip that device.
 You can watch the below video for an example.
 
 ![fromcv_sync](https://user-images.githubusercontent.com/38091261/126499331-e41946c4-4e61-4b5e-8b7f-73efb9cd8d3f.gif)
@@ -183,11 +186,11 @@ When syncing data from Nautobot to CloudVision, the tag data in Nautobot is copi
 
 ## Contributing
 
-Pull requests are welcomed and automatically built and tested against multiple version of Python and multiple version of Nautobot through TravisCI.
+Pull requests are welcomed and automatically built and tested against multiple versions of Python and multiple versions of Nautobot through GitHub Actions.
 
-The project is packaged with a light development environment based on `docker-compose` to help with the local development of the project and to run the tests within TravisCI.
+The project is packaged with a light development environment based on `docker-compose` to help with the local development of the project and to run the tests within a Docker container.
 
-The project is following Network to Code software development guideline and is leveraging:
+The project is following Network to Code software development guidelines and is leveraging:
 
 - Black, Pylint, Bandit and pydocstyle for Python linting and formatting.
 - Django unit test to ensure the plugin is working properly.
@@ -198,7 +201,7 @@ The development environment can be used in 2 ways. First, with a local poetry en
 
 #### Invoke tasks
 
-The [PyInvoke](http://www.pyinvoke.org/) library is used to provide some helper commands based on the environment.  There are a few configuration parameters which can be passed to PyInvoke to override the default configuration:
+The [PyInvoke](http://www.pyinvoke.org/) library is used to provide some helper commands based on the environment.  There are a few configuration parameters that can be passed to PyInvoke to override the default configuration:
 
 - `nautobot_ver`: the version of Nautobot to use as a base for any built docker containers (default: develop-latest)
 - `project_name`: the default docker compose project name (default: aristacv-sync)
@@ -207,7 +210,7 @@ The [PyInvoke](http://www.pyinvoke.org/) library is used to provide some helper 
 - `compose_dir`: the full path to a directory containing the project compose files
 - `compose_files`: a list of compose files applied in order (see [Multiple Compose files](https://docs.docker.com/compose/extends/#multiple-compose-files) for more information)
 
-Using PyInvoke these configuration options can be overridden using [several methods](http://docs.pyinvoke.org/en/stable/concepts/configuration.html).  Perhaps the simplest is simply setting an environment variable `INVOKE_ARISTACV-SYNC_VARIABLE_NAME` where `VARIABLE_NAME` is the variable you are trying to override.  The only exception is `compose_files`, because it is a list it must be overridden in a yaml file.  There is an example `invoke.yml` in this directory which can be used as a starting point.
+Using PyInvoke these configuration options can be overridden using [several methods](http://docs.pyinvoke.org/en/stable/concepts/configuration.html).  Perhaps the simplest is simply setting an environment variable `INVOKE_ARISTACV-SYNC_VARIABLE_NAME` where `VARIABLE_NAME` is the variable you are trying to override.  The only exception is `compose_files`, because it is a list it must be overridden in a YAML file.  There is an example `invoke.yml` in this directory which can be used as a starting point.
 
 #### Local Poetry Development Environment
 
@@ -259,7 +262,7 @@ Nautobot server can now be accessed at [http://localhost:8080](http://localhost:
 
 ### CLI Helper Commands
 
-The project is coming with a CLI helper based on [invoke](http://www.pyinvoke.org/) to help setup the development environment. The commands are listed below in 3 categories `dev environment`, `utility` and `testing`.
+The project is coming with a CLI helper based on [invoke](http://www.pyinvoke.org/) to help set up the development environment. The commands are listed below in 3 categories `dev environment`, `utility` and `testing`.
 
 Each command can be executed with `invoke <command>`. Environment variables `INVOKE_ARISTACV-SYNC_PYTHON_VER` and `INVOKE_ARISTACV-SYNC_NAUTOBOT_VER` may be specified to override the default versions. Each command also has its own help `invoke <command> --help`
 
