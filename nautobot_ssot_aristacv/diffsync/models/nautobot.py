@@ -68,8 +68,12 @@ class NautobotDevice(Device):
             dev.device_type = nautobot.verify_device_type_object(attrs["device_model"])
         if "serial" in attrs:
             dev.serial = attrs["serial"]
-        dev.validated_save()
-        return super().update(attrs)
+        try:
+            dev.validated_save()
+            return super().update(attrs)
+        except ValidationError as err:
+            self.diffsync.job.log_warning(message=f"Unable to update Device {self.name}. {err}")
+            return None
 
     def delete(self):
         """Delete device object in Nautobot."""
