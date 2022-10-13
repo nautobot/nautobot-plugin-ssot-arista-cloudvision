@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.0 - 2022-10-13
+
+### Added
+
+- #94 - Added support for importing interfaces from CloudVision.
+- #94 - Added support for CloudvisionApi to be used as context manager.
+- #94 - Added unit tests covering multiple CloudVision utility methods an
+
+### Fixed
+
+- #94 - Ensured that device ID is imported as the Nautobot Device serial.
+
 ## v1.2.1 - 2022-08-31
 
 ### Fixed
