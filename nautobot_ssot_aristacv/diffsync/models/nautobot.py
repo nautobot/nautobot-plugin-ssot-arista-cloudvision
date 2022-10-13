@@ -96,6 +96,7 @@ class NautobotPort(Port):
             name=ids["name"],
             device=device,
             enabled=is_truthy(attrs["enabled"]),
+            mac_address=attrs["mac_addr"],
             mtu=attrs["mtu"],
             mode=attrs["mode"],
             status=OrmStatus.objects.get(slug=attrs["status"]),
