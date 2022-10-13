@@ -77,7 +77,7 @@ class CloudvisionAdapter(DiffSync):
                 new_port = self.port(
                     name=port["interface"],
                     device=device.name,
-                    mac_addr=port["mac_addr"],
+                    mac_addr=port["mac_addr"] if port.get("mac_addr") else "",
                     mode="tagged" if port_mode == "trunk" else "access",
                     mtu=port["mtu"],
                     enabled=port["enabled"],
