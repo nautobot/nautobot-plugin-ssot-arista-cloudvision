@@ -1,5 +1,9 @@
 [
     {
+        "dataset": {
+            "name": "JPE12345678",
+            "type": "device"
+        },
         "notifications": [
             {
                 "updates": {

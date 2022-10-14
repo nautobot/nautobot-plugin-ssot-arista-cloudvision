@@ -33,6 +33,8 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
         self.cloudvision.get_interface_mode.return_value = "access"
         self.cloudvision.get_interface_transceiver = MagicMock()
         self.cloudvision.get_interface_transceiver.return_value = "1000BASE-T"
+        self.cloudvision.get_interface_description = MagicMock()
+        self.cloudvision.get_interface_description.return_value = "Uplink to DC1"
 
         self.job = CloudVisionDataSource()
         self.job.job_result = JobResult.objects.create(
@@ -74,7 +76,11 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
                         "nautobot_ssot_aristacv.utils.cloudvision.get_interface_transceiver",
                         self.cloudvision.get_interface_transceiver,
                     ):
-                        self.cvp.load_interfaces(mock_device)
+                        with patch(
+                            "nautobot_ssot_aristacv.utils.cloudvision.get_interface_description",
+                            self.cloudvision.get_interface_description,
+                        ):
+                            self.cvp.load_interfaces(mock_device)
         self.assertEqual(
             {f"{port['interface']}__mock_device" for port in fixtures.INTERFACE_FIXTURE},
             {port.get_unique_id() for port in self.cvp.get_all("port")},
