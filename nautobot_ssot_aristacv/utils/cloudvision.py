@@ -645,3 +645,22 @@ def get_interface_status(port_info: dict) -> str:
     if port_info["oper_status"] == "down" and port_info["link_status"] == "down":
         status = "maintenance"
     return status
+
+
+def get_interface_description(client: CloudvisionApi, dId: str, interface: str):
+    """Gets interface description.
+
+    Args:
+        client (CloudvisionApi): Cloudvision connection.
+        dId (str): Device ID to get description for.
+        interface (str): Name of interface to get description for.
+    """
+    pathElts = ["Sysdb", "interface", "config", "eth", "phy", "slice", "1", "intfConfig", interface]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
+
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            if notif["updates"].get("description") and notif["updates"]["description"] is not None:
+                return notif["updates"]["description"]
+    return ""

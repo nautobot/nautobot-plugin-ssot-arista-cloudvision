@@ -95,6 +95,7 @@ class NautobotPort(Port):
         new_port = OrmInterface(
             name=ids["name"],
             device=device,
+            description=attrs["description"],
             enabled=is_truthy(attrs["enabled"]),
             mac_address=attrs["mac_addr"],
             mtu=attrs["mtu"],
@@ -112,6 +113,11 @@ class NautobotPort(Port):
     def update(self, attrs):
         """Update Interface in Nautobot."""
         _port = OrmInterface.objects.get(id=self.uuid)
+        if "description" in attrs:
+            description = ""
+            if attrs.get("description"):
+                description = attrs["description"]
+            _port.description = description
         if "mac_addr" in attrs:
             _port.mac_address = attrs["mac_addr"]
         if "mode" in attrs:
