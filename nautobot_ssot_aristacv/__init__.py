@@ -41,9 +41,13 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
 
         from .signals import (  # pylint: disable=import-outside-toplevel
             post_migrate_create_custom_fields,
+            post_migrate_create_manufacturer,
+            post_migrate_create_platform,
         )
 
         post_migrate.connect(post_migrate_create_custom_fields)
+        post_migrate.connect(post_migrate_create_manufacturer)
+        post_migrate.connect(post_migrate_create_platform)
 
 
 config = NautobotSSOTAristaCVConfig  # pylint:disable=invalid-name
