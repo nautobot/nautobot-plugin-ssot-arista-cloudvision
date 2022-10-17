@@ -107,7 +107,7 @@ class NautobotDevice(Device):
         """Add OS Version as SoftwareLCM if Device Lifecycle Plugin found."""
         _platform = OrmPlatform.objects.get(slug="arista_eos")
         try:
-            os_ver = SoftwareLCM.objects.get(platform=_platform, version=version)
+            os_ver = SoftwareLCM.objects.get(device_platform=_platform, version=version)
         except SoftwareLCM.DoesNotExist:
             os_ver = SoftwareLCM(
                 device_platform=_platform,
