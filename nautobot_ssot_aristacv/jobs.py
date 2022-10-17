@@ -96,7 +96,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             DataMapping("topology_network_type", None, "Topology Network Type", None),
             DataMapping("mlag", None, "MLAG", None),
             DataMapping("mpls", None, "mpls", None),
-            DataMapping("model", None, "Device Type", get_route_for_model(DeviceType, "list")),
+            DataMapping("model", None, "Device Type", reverse(get_route_for_model(DeviceType, "list"))),
             DataMapping("systype", None, "systype", None),
             DataMapping("serialnumber", None, "Device Serial Number", None),
             DataMapping("pimbidir", None, "pimbidir", None),
