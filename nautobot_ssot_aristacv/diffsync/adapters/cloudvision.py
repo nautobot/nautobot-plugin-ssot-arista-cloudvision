@@ -33,7 +33,11 @@ class CloudvisionAdapter(DiffSync):
         for dev in cloudvision.get_devices(client=self.conn.comm_channel):
             if dev["hostname"] != "":
                 new_device = self.device(
-                    name=dev["hostname"], serial=dev["device_id"], device_model=dev["model"], uuid=None
+                    name=dev["hostname"],
+                    serial=dev["device_id"],
+                    device_model=dev["model"],
+                    version=dev["sw_ver"],
+                    uuid=None,
                 )
                 try:
                     self.add(new_device)
