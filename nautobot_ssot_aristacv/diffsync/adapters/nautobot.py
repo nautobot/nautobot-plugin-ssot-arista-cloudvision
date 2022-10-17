@@ -55,7 +55,7 @@ class NautobotAdapter(DiffSync):
                 name=intf.name,
                 device=intf.device.name,
                 description=intf.description,
-                mac_addr=intf.mac_address if intf.mac_address else "",
+                mac_addr=str(intf.mac_address) if intf.mac_address else "",
                 enabled=intf.enabled,
                 mode=intf.mode,
                 mtu=intf.mtu,
