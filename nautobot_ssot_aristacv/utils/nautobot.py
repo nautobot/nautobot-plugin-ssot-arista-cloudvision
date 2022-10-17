@@ -5,7 +5,7 @@ from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
 from nautobot.extras.models import Status, Tag, Relationship
 
 try:
-    from nautobot_device_lifecycle_mgmt.models import SoftwareLCM
+    from nautobot_device_lifecycle_mgmt.models import SoftwareLCM  # noqa: F401 # pylint: disable=unused-import
 
     LIFECYCLE_MGMT = True
 except ImportError:
@@ -114,5 +114,5 @@ def get_device_version(device):
         except KeyError:
             pass
     else:
-        version = device._custom_field_data["eos_version"]
+        version = device.custom_field_data["eos_version"]
     return version
