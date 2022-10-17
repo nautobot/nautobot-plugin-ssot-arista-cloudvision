@@ -111,6 +111,7 @@ class NautobotDevice(Device):
         except SoftwareLCM.DoesNotExist:
             os_ver = SoftwareLCM(
                 device_platform=_platform,
+                manufacturer=nautobot.verify_manufacturer(),
                 version=version,
             )
             os_ver.validated_save()
