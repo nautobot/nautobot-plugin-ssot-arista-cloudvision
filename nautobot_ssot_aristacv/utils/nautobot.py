@@ -27,16 +27,6 @@ def verify_site(site_name):
     return site_obj
 
 
-def verify_manufacturer():
-    """Verifies whether Arista manufactere exists in Nautobot. If not, creates Arista Manufacturer."""
-    try:
-        arista_mf = Manufacturer.objects.get(name="Arista")
-    except Manufacturer.DoesNotExist:
-        arista_mf = Manufacturer(name="Arista", slug="arista")
-        arista_mf.validated_save()
-    return arista_mf
-
-
 def verify_device_type_object(device_type):
     """Verifies whether device type object already exists in Nautobot. If not, creates specified device type.
 
@@ -46,8 +36,9 @@ def verify_device_type_object(device_type):
     try:
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
-        manufacturer = verify_manufacturer()
-        device_type_obj = DeviceType(manufacturer=manufacturer, model=device_type, slug=device_type.lower())
+        device_type_obj = DeviceType(
+            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=device_type.lower()
+        )
         device_type_obj.validated_save()
     return device_type_obj
 
