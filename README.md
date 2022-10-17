@@ -7,7 +7,7 @@ A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchr
 | topology_network_type   | Topology Network Type        |
 | mlag                    | mlag                         |
 | mpls                    | mpls                         |
-| model                   | Device Platform*             |
+| model                   | Device Type*                 |
 | systype                 | systype                      |
 | serialnumber            | Device Serial Number         |
 | pimbidir                | pimbidir                     |
@@ -20,7 +20,7 @@ A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchr
 | ztp                     | ztp                          |
 | eos                     | EOS Version                  |
 | topology_type           | Topology Type                |
-> The model system tag is mapped to the device platform model in Nautobot.
+> The model system tag is mapped to the device type model in Nautobot.
 
 When syncing User tags from Nautobot to CloudVision the data mappings are as follows:
 

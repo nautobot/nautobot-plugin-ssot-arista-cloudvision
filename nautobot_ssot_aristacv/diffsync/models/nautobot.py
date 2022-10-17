@@ -47,6 +47,7 @@ class NautobotDevice(Device):
             status=device_status,
             device_type=device_type_object,
             device_role=device_role_object,
+            platform=OrmPlatform.objects.get(slug="arista_eos"),
             site=default_site_object,
             name=ids["name"],
             serial=attrs["serial"] if attrs.get("serial") else "",
@@ -156,23 +157,6 @@ class NautobotCustomField(CustomField):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create Custom Field in Nautobot."""
-        if ids["name"] == "arista_model":
-            try:
-                # Try to create new platform
-                new_platform = OrmPlatform(name=attrs["value"], slug=attrs["value"].lower())
-                new_platform.validated_save()
-                # Assign new platform to device.
-                device = OrmDevice.objects.get(name=ids["device_name"])
-                device.platform = new_platform
-                device.validated_save()
-                return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
-            except ValidationError:
-                # Assign existing platform to device.
-                existing_platform = OrmPlatform.objects.get(name=attrs["value"])
-                device = OrmDevice.objects.get(name=ids["device_name"])
-                device.platform = existing_platform
-                device.validated_save()
-                return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
         try:
             attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
         except ValueError:
@@ -193,23 +177,6 @@ class NautobotCustomField(CustomField):
 
     def update(self, attrs):
         """Update Custom Field in Nautobot."""
-        if self.name == "arista_model":
-            try:
-                # Try to create new platform
-                new_platform = OrmPlatform(name=attrs["value"], slug=attrs["value"].lower())
-                new_platform.validated_save()
-                # Assign new platform to device.
-                device = OrmDevice.objects.get(name=self.device_name)
-                device.platform = new_platform
-                device.validated_save()
-                return super().update(attrs)
-            except ValidationError:
-                # Assign existing platform to device.
-                existing_platform = OrmPlatform.objects.get(name=attrs["value"])
-                device = OrmDevice.objects.get(name=self.device_name)
-                device.platform = existing_platform
-                device.validated_save()
-                return super().update(attrs)
         try:
             attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
         except ValueError:

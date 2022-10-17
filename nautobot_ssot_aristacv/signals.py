@@ -81,3 +81,7 @@ def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
     ]:
         field, _ = CustomField.objects.get_or_create(name=device_cf_dict["name"], defaults=device_cf_dict)
         field.content_types.set([ContentType.objects.get_for_model(Device)])
+
+    # Ensure that the Arista Platform has been created for assignment to Devices and with DLC plug-in integration
+    Platform = apps.get_model("dcim", "Platform")
+    Platform.objects.get_or_create(name="arista.eos.eos", slug="arista_eos", napalm_driver="eos")
