@@ -49,6 +49,7 @@ class NautobotAdapter(DiffSync):
             new_port = self.port(
                 name=intf.name,
                 device=intf.device.name,
+                description=intf.description,
                 mac_addr=intf.mac_address if intf.mac_address else "",
                 enabled=intf.enabled,
                 mode=intf.mode,

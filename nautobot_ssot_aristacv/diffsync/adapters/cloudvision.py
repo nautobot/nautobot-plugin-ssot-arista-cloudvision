@@ -71,12 +71,16 @@ class CloudvisionAdapter(DiffSync):
                 transceiver = cloudvision.get_interface_transceiver(
                     client=self.conn, dId=device.serial, interface=base_port_name
                 )
+            port_description = cloudvision.get_interface_description(
+                client=self.conn, dId=device.serial, interface=port["interface"]
+            )
             port_status = cloudvision.get_interface_status(port_info=port)
             port_type = cloudvision.get_port_type(port_info=port, transceiver=transceiver)
             if port["interface"] != "":
                 new_port = self.port(
                     name=port["interface"],
                     device=device.name,
+                    description=port_description,
                     mac_addr=port["mac_addr"] if port.get("mac_addr") else "",
                     mode="tagged" if port_mode == "trunk" else "access",
                     mtu=port["mtu"],

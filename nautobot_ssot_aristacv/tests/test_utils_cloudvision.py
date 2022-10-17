@@ -112,3 +112,29 @@ class TestCloudvisionUtils(TestCase):
     def test_get_interface_status(self, name, sent, received):  # pylint: disable=unused-argument
         """Test the get_interface_status method."""
         self.assertEqual(cloudvision.get_interface_status(port_info=sent), received)
+
+    def test_get_interface_description(self):
+        """Test get_interface_description method."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\tinterface",
+            "\304\006config",
+            "\304\003eth",
+            "\304\003phy",
+            "\304\005slice",
+            "\304\0011",
+            "\304\nintfStatus",
+            "\304\tEthernet1",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.INTF_DESCRIPTION_QUERY
+            results = cloudvision.get_interface_description(
+                client=self.client, dId="JPE12345678", interface="Ethernet1"
+            )
+        expected = "Uplink to DC1"
+        self.assertEqual(results, expected)
