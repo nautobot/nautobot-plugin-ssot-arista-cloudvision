@@ -13,6 +13,6 @@ RUN poetry install --no-interaction --no-ansi --no-root
 
 # Copy in the rest of the source code and install local Nautobot plugin
 COPY . /source
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi --no-root --extras "nautobot-device-lifecycle-mgmt"
 
 COPY development/nautobot_config.py /opt/nautobot/nautobot_config.py
