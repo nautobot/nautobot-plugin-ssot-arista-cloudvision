@@ -55,6 +55,24 @@ class Port(DiffSyncModel):
     uuid: Optional[UUID]
 
 
+class IPAddress(DiffSyncModel):
+    """IPAddress Model."""
+
+    _modelname = "ipaddr"
+    _identifiers = (
+        "address",
+        "device",
+        "interface",
+    )
+    _attributes = ()
+    _children = {}
+
+    address: str
+    device: str
+    interface: str
+    uuid: Optional[str]
+
+
 class CustomField(DiffSyncModel):
     """Custom Field model."""
 
