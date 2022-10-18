@@ -105,5 +105,5 @@ def get_device_version(device):
         except KeyError:
             pass
     else:
-        version = device.custom_field_data["eos_version"]
+        version = device.custom_field_data["arista_eos"]
     return version

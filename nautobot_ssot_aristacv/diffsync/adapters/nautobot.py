@@ -39,7 +39,7 @@ class NautobotAdapter(DiffSync):
                 continue
 
             for cf_name, cf_value in dev.custom_field_data.items():
-                if cf_name.starts_with("arista_"):
+                if cf_name.startswith("arista_"):
                     try:
                         new_cf = self.cf(
                             name=cf_name, value=cf_value if cf_value is not None else "", device_name=dev.name
