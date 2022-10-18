@@ -28,7 +28,7 @@ class NautobotAdapter(DiffSync):
             try:
                 new_device = self.device(
                     name=dev.name,
-                    device_model=dev.device_type.name,
+                    device_model=dev.device_type.model,
                     serial=dev.serial,
                     version=nautobot.get_device_version(dev),
                     uuid=dev.id,
@@ -50,7 +50,7 @@ class NautobotAdapter(DiffSync):
                         continue
 
                 # Gets model from device type and puts it into CustomField Object.
-                new_cf = self.cf(name="arista_model", value=str(dev.device_type.name), device_name=dev.name)
+                new_cf = self.cf(name="arista_model", value=str(dev.device_type.model), device_name=dev.name)
                 self.add(new_cf)
 
         for intf in OrmInterface.objects.all():
