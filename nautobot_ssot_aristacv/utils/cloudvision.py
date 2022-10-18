@@ -684,12 +684,12 @@ def get_ip_interfaces(client: CloudvisionApi, dId: str):
         for notif in batch["notifications"]:
             try:
                 results = notif["updates"]
-                if results.get("intfId"):
+                if results.get("intfId") and results.get("addrWithMask"):
                     ip_intfs.append(
                         {
                             "interface": results["intfId"],
                             "address": results["addrWithMask"]
-                            if results.get("addrWithMask") != "0.0.0.0/0"
+                            if results["addrWithMask"] != "0.0.0.0/0"
                             else results.get("virtualAddrWithMask"),
                         }
                     )
