@@ -18,9 +18,11 @@ A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchr
 | bgp                     | bgp                          |
 | terminattr              | TerminAttr Version           |
 | ztp                     | ztp                          |
-| eos                     | EOS Version                  |
+| eos                     | EOS Version**                |
 | topology_type           | Topology Type                |
-> The model system tag is mapped to the device type model in Nautobot.
+> *The model system tag is mapped to the device type model in Nautobot.
+
+> **If the [Device Lifecycle plug-in](https://github.com/nautobot/nautobot-plugin-device-lifecycle-mgmt) is found to be installed, a matching Version will be created with a RelationshipAssociation connecting the device and that Version.
 
 When syncing User tags from Nautobot to CloudVision the data mappings are as follows:
 
