@@ -49,7 +49,7 @@ class NautobotAdapter(DiffSync):
                         self.job.log_warning(message=f"Unable to load {cf_name}. {err}")
                         continue
 
-        for intf in OrmInterface.objects.all():
+        for intf in OrmInterface.objects.filter(device__device_type__manufacturer__slug="arista"):
             new_port = self.port(
                 name=intf.name,
                 device=intf.device.name,
