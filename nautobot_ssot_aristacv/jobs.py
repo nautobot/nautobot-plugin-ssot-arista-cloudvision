@@ -6,10 +6,11 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 
+from nautobot.dcim.models import DeviceType
 from nautobot.extras.jobs import Job, BooleanVar
 from nautobot.extras.models.tags import Tag
 from nautobot.extras.models.customfields import CustomField
-
+from nautobot.utilities.utils import get_route_for_model
 from nautobot_ssot.jobs.base import DataTarget, DataSource, DataMapping
 
 from nautobot_ssot_aristacv.diffsync.adapters.cloudvision import CloudvisionAdapter
@@ -95,7 +96,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             DataMapping("topology_network_type", None, "Topology Network Type", None),
             DataMapping("mlag", None, "MLAG", None),
             DataMapping("mpls", None, "mpls", None),
-            DataMapping("model", None, "Platform", reverse("dcim:platform_list")),
+            DataMapping("model", None, "Device Type", reverse(get_route_for_model(DeviceType, "list"))),
             DataMapping("systype", None, "systype", None),
             DataMapping("serialnumber", None, "Device Serial Number", None),
             DataMapping("pimbidir", None, "pimbidir", None),

@@ -81,3 +81,21 @@ def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
     ]:
         field, _ = CustomField.objects.get_or_create(name=device_cf_dict["name"], defaults=device_cf_dict)
         field.content_types.set([ContentType.objects.get_for_model(Device)])
+
+
+def post_migrate_create_manufacturer(apps=global_apps, **kwargs):
+    """Callback function for post_migrate() -- create Arista Manufacturer."""
+    Manufacturer = apps.get_model("dcim", "Manufacturer")
+    Manufacturer.objects.get_or_create(name="Arista", slug="arista")
+
+
+def post_migrate_create_platform(apps=global_apps, **kwargs):
+    """Callback function for post_migrate() -- create Arista Platform."""
+    Platform = apps.get_model("dcim", "Platform")
+    Manufacturer = apps.get_model("dcim", "Manufacturer")
+    Platform.objects.get_or_create(
+        name="arista.eos.eos",
+        slug="arista_eos",
+        napalm_driver="eos",
+        manufacturer=Manufacturer.objects.get(slug="arista"),
+    )

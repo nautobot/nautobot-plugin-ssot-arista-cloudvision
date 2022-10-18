@@ -1,8 +1,16 @@
 """Utility functions for Nautobot ORM."""
-from nautobot.dcim.models import DeviceType, DeviceRole, Site, Manufacturer
-from nautobot.extras.models.statuses import Status
-from nautobot.extras.models.tags import Tag
 from django.contrib.contenttypes.models import ContentType
+
+from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
+from nautobot.extras.models import Status, Tag, Relationship
+
+try:
+    from nautobot_device_lifecycle_mgmt.models import SoftwareLCM  # noqa: F401 # pylint: disable=unused-import
+
+    LIFECYCLE_MGMT = True
+except ImportError:
+    print("Device Lifecycle plugin isn't installed so will revert to CustomField for OS version.")
+    LIFECYCLE_MGMT = False
 
 
 def verify_site(site_name):
@@ -19,16 +27,6 @@ def verify_site(site_name):
     return site_obj
 
 
-def verify_manufacturer():
-    """Verifies whether Arista manufactere exists in Nautobot. If not, creates Arista Manufacturer."""
-    try:
-        arista_mf = Manufacturer.objects.get(name="Arista")
-    except Manufacturer.DoesNotExist:
-        arista_mf = Manufacturer(name="Arista", slug="arista")
-        arista_mf.validated_save()
-    return arista_mf
-
-
 def verify_device_type_object(device_type):
     """Verifies whether device type object already exists in Nautobot. If not, creates specified device type.
 
@@ -38,8 +36,9 @@ def verify_device_type_object(device_type):
     try:
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
-        manufacturer = verify_manufacturer()
-        device_type_obj = DeviceType(manufacturer=manufacturer, model=device_type, slug=device_type.lower())
+        device_type_obj = DeviceType(
+            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=device_type.lower()
+        )
         device_type_obj.validated_save()
     return device_type_obj
 
@@ -89,3 +88,22 @@ def verify_import_tag():
         import_tag = Tag(name="cloudvision_imported", slug="cloudvision_imported", color="ff0000")
         import_tag.validated_save()
     return import_tag
+
+
+def get_device_version(device):
+    """Determines Device version from Custom Field or RelationshipAssociation.
+
+    Args:
+        device (Device): The Device object to determine software version for.
+    """
+    version = ""
+    if LIFECYCLE_MGMT:
+        software_relation = Relationship.objects.get(name="Software on Device")
+        relations = device.get_relationships()
+        try:
+            version = relations["destination"][software_relation][0].source.version
+        except KeyError:
+            pass
+    else:
+        version = device.custom_field_data["arista_eos"]
+    return version

@@ -1,14 +1,25 @@
 """Nautobot DiffSync models for AristaCV SSoT."""
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from nautobot.core.settings_funcs import is_truthy
 from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Interface as OrmInterface
 from nautobot.dcim.models import Platform as OrmPlatform
+from nautobot.extras.models import Relationship as OrmRelationship
+from nautobot.extras.models import RelationshipAssociation as OrmRelationshipAssociation
 from nautobot.extras.models import Status as OrmStatus
 from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, Port
 from nautobot_ssot_aristacv.utils import nautobot
 import distutils
+
+try:
+    from nautobot_device_lifecycle_mgmt.models import SoftwareLCM
+
+    LIFECYCLE_MGMT = True
+except ImportError:
+    print("Device Lifecycle plugin isn't installed so will revert to CustomField for OS version.")
+    LIFECYCLE_MGMT = False
 
 
 DEFAULT_SITE = "cloudvision_imported"
@@ -47,6 +58,7 @@ class NautobotDevice(Device):
             status=device_status,
             device_type=device_type_object,
             device_role=device_role_object,
+            platform=OrmPlatform.objects.get(slug="arista_eos"),
             site=default_site_object,
             name=ids["name"],
             serial=attrs["serial"] if attrs.get("serial") else "",
@@ -56,6 +68,9 @@ class NautobotDevice(Device):
             new_device.tags.add(import_tag)
         try:
             new_device.validated_save()
+            if LIFECYCLE_MGMT and attrs.get("version"):
+                software_lcm = cls._add_software_lcm(version=attrs["version"])
+                cls._assign_version_to_device(diffsync=diffsync, device=new_device, software_lcm=software_lcm)
             return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
         except ValidationError as err:
             diffsync.job.log_warning(message=f"Unable to create Device {ids['name']}. {err}")
@@ -68,6 +83,9 @@ class NautobotDevice(Device):
             dev.device_type = nautobot.verify_device_type_object(attrs["device_model"])
         if "serial" in attrs:
             dev.serial = attrs["serial"]
+        if "version" in attrs and LIFECYCLE_MGMT:
+            software_lcm = self._add_software_lcm(version=attrs["version"])
+            self._assign_version_to_device(diffsync=self.diffsync, device=dev, software_lcm=software_lcm)
         try:
             dev.validated_save()
             return super().update(attrs)
@@ -83,6 +101,43 @@ class NautobotDevice(Device):
             device.delete()
             super().delete()
         return self
+
+    @staticmethod
+    def _add_software_lcm(version: str):
+        """Add OS Version as SoftwareLCM if Device Lifecycle Plugin found."""
+        _platform = OrmPlatform.objects.get(slug="arista_eos")
+        try:
+            os_ver = SoftwareLCM.objects.get(device_platform=_platform, version=version)
+        except SoftwareLCM.DoesNotExist:
+            os_ver = SoftwareLCM(
+                device_platform=_platform,
+                version=version,
+            )
+            os_ver.validated_save()
+        return os_ver
+
+    @staticmethod
+    def _assign_version_to_device(diffsync, device, software_lcm):
+        """Add Relationship between Device and SoftwareLCM."""
+        software_relation = OrmRelationship.objects.get(name="Software on Device")
+        relations = device.get_relationships()
+        for _, relationships in relations.items():
+            for relationship, queryset in relationships.items():
+                if relationship.id == software_relation:
+                    if diffsync.job.kwargs.get("debug"):
+                        diffsync.job.log_warning(
+                            message=f"Deleting Software Version Relationships for {device.name} to assign a new version."
+                        )
+                    queryset.delete()
+
+        new_assoc = OrmRelationshipAssociation(
+            relationship=software_relation,
+            source_type=ContentType.objects.get_for_model(SoftwareLCM),
+            source=software_lcm,
+            destination_type=ContentType.objects.get_for_model(OrmDevice),
+            destination=device,
+        )
+        new_assoc.validated_save()
 
 
 class NautobotPort(Port):
@@ -156,23 +211,6 @@ class NautobotCustomField(CustomField):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create Custom Field in Nautobot."""
-        if ids["name"] == "arista_model":
-            try:
-                # Try to create new platform
-                new_platform = OrmPlatform(name=attrs["value"], slug=attrs["value"].lower())
-                new_platform.validated_save()
-                # Assign new platform to device.
-                device = OrmDevice.objects.get(name=ids["device_name"])
-                device.platform = new_platform
-                device.validated_save()
-                return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
-            except ValidationError:
-                # Assign existing platform to device.
-                existing_platform = OrmPlatform.objects.get(name=attrs["value"])
-                device = OrmDevice.objects.get(name=ids["device_name"])
-                device.platform = existing_platform
-                device.validated_save()
-                return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
         try:
             attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
         except ValueError:
@@ -193,23 +231,6 @@ class NautobotCustomField(CustomField):
 
     def update(self, attrs):
         """Update Custom Field in Nautobot."""
-        if self.name == "arista_model":
-            try:
-                # Try to create new platform
-                new_platform = OrmPlatform(name=attrs["value"], slug=attrs["value"].lower())
-                new_platform.validated_save()
-                # Assign new platform to device.
-                device = OrmDevice.objects.get(name=self.device_name)
-                device.platform = new_platform
-                device.validated_save()
-                return super().update(attrs)
-            except ValidationError:
-                # Assign existing platform to device.
-                existing_platform = OrmPlatform.objects.get(name=attrs["value"])
-                device = OrmDevice.objects.get(name=self.device_name)
-                device.platform = existing_platform
-                device.validated_save()
-                return super().update(attrs)
         try:
             attrs["value"] = bool(distutils.util.strtobool(attrs["value"]))
         except ValueError:
@@ -224,10 +245,7 @@ class NautobotCustomField(CustomField):
         """Delete Custom Field in Nautobot."""
         try:
             device = OrmDevice.objects.get(name=self.device_name)
-            if self.name == "arista_model":
-                device.platform = None
-            else:
-                device.custom_field_data.update({self.name: None})
+            device.custom_field_data.update({self.name: None})
             device.validated_save()
             super().delete()
             return self

@@ -509,7 +509,9 @@ def get_interfaces_chassis(client: CloudvisionApi, dId):
                             "oper_status": "up"
                             if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
                             else "down",
-                            "enabled": bool(results["enabledState"]["Name"] == "enabled"),
+                            "enabled": bool(results["enabledState"]["Name"] == "enabled")
+                            if results.get("enabledState")
+                            else False,
                             "mac_addr": results["burnedInAddr"],
                             "mtu": results["mtu"],
                         }
