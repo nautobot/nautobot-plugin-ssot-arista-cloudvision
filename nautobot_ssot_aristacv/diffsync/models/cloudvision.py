@@ -1,6 +1,6 @@
 """Cloudvision DiffSync models for AristaCV SSoT."""
 from django.conf import settings
-from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, Port
+from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, IPAddress, Port
 from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
 
 PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
@@ -24,7 +24,7 @@ class CloudvisionDevice(Device):
 
 
 class CloudvisionPort(Port):
-    """Nautobot Port model."""
+    """Cloudvision Port model."""
 
     @classmethod
     def create(cls, diffsync, ids, attrs):
@@ -37,6 +37,26 @@ class CloudvisionPort(Port):
 
     def delete(self):
         """Delete Interface in AristaCV from Port object."""
+        return self
+
+
+class CloudvisionIPAddress(IPAddress):
+    """Cloudvision IPAdress model."""
+
+    @classmethod
+    def create(cls, diffsync, ids, attrs):
+        """Create IPAddress in AristaCV from IPAddress object."""
+        ...
+        return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
+
+    def update(self, attrs):
+        """Update IPAddress in AristaCV from IPAddress object."""
+        ...
+        return super().update(attrs)
+
+    def delete(self):
+        """Delete IPAddress in AristaCV from IPAddress object."""
+        ...
         return self
 
 

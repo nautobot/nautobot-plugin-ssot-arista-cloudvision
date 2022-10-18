@@ -9,7 +9,8 @@ from nautobot.dcim.models import Platform as OrmPlatform
 from nautobot.extras.models import Relationship as OrmRelationship
 from nautobot.extras.models import RelationshipAssociation as OrmRelationshipAssociation
 from nautobot.extras.models import Status as OrmStatus
-from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, Port
+from nautobot.ipam.models import IPAddress as OrmIPAddress
+from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, IPAddress, Port
 from nautobot_ssot_aristacv.utils import nautobot
 import distutils
 
@@ -202,6 +203,47 @@ class NautobotPort(Port):
                 self.diffsync.job.log_warning(message=f"Interface {self.name} for {self.device} will be deleted.")
             _port = OrmInterface.objects.get(id=self.uuid)
             _port.delete()
+        return self
+
+
+class NautobotIPAddress(IPAddress):
+    """Nautobot IPAddress model."""
+
+    @classmethod
+    def create(cls, diffsync, ids, attrs):
+        """Create IPAddress in Nautobot."""
+        dev = OrmDevice.objects.get(name=ids["device"])
+        new_ip = OrmIPAddress(
+            address=ids["address"],
+            status=OrmStatus.objects.get(name="Active"),
+        )
+        if "loopback" in ids["interface"]:
+            new_ip.role = "loopback"
+        new_ip.validated_save()
+        try:
+            intf = OrmInterface.objects.get(device=dev, name=ids["interface"])
+            new_ip.assigned_object_type = (ContentType.objects.get(app_label="dcim", model="interface"),)
+            new_ip.assigned_object = intf
+            new_ip.validated_save()
+            if "Management" in ids["interface"]:
+                if ":" in ids["address"]:
+                    dev.primary_ip6 = new_ip
+                else:
+                    dev.primary_ip4 = new_ip
+                dev.validated_save()
+        except OrmInterface.DoesNotExist as err:
+            diffsync.job.log_warning(message=f"Unable to find Interface {ids['interface']} for {ids['device']}. {err}")
+        return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
+
+    def delete(self):
+        """Delete IPAddress in Nautobot."""
+        if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
+            super().delete()
+            self.diffsync.job.log_warning(
+                message=f"IP Address {self.address} for {self.interface} on {self.device} will be deleted."
+            )
+            _ip = OrmIPAddress.objects.get(id=self.uuid)
+            _ip.delete()
         return self
 
 
