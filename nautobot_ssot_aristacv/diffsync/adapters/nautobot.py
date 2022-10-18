@@ -22,7 +22,7 @@ class NautobotAdapter(DiffSync):
     ipaddr = NautobotIPAddress
     cf = NautobotCustomField
 
-    top_level = ["device", "cf"]
+    top_level = ["device", "ipaddr", "cf"]
 
     def __init__(self, *args, job=None, **kwargs):
         """Initialize the Nautobot DiffSync adapter."""

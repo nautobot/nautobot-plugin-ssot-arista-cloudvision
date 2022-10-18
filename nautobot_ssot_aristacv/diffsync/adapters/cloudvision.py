@@ -22,7 +22,7 @@ class CloudvisionAdapter(DiffSync):
     ipaddr = CloudvisionIPAddress
     cf = CloudvisionCustomField
 
-    top_level = ["device", "cf"]
+    top_level = ["device", "ipaddr", "cf"]
 
     def __init__(self, *args, job=None, conn: cloudvision.CloudvisionApi, **kwargs):
         """Initialize the CloudVision DiffSync adapter."""
