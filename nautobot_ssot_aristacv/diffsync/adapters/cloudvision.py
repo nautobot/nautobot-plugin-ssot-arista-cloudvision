@@ -4,11 +4,12 @@ import re
 
 import arista.tag.v1 as TAG
 from diffsync import DiffSync
-from diffsync.exceptions import ObjectAlreadyExists
+from diffsync.exceptions import ObjectAlreadyExists, ObjectNotFound
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import (
     CloudvisionCustomField,
     CloudvisionDevice,
     CloudvisionPort,
+    CloudvisionIPAddress,
 )
 from nautobot_ssot_aristacv.utils import cloudvision
 
@@ -18,6 +19,7 @@ class CloudvisionAdapter(DiffSync):
 
     device = CloudvisionDevice
     port = CloudvisionPort
+    ipaddr = CloudvisionIPAddress
     cf = CloudvisionCustomField
 
     top_level = ["device", "cf"]
@@ -47,6 +49,7 @@ class CloudvisionAdapter(DiffSync):
                     )
                     continue
                 self.load_interfaces(device=new_device)
+                self.load_ip_addresses(dev=new_device)
                 self.load_device_tags(device=new_device)
             else:
                 self.job.log_warning(message=f"Device {dev} is missing hostname so won't be imported.")
@@ -100,6 +103,50 @@ class CloudvisionAdapter(DiffSync):
                     self.job.log_warning(
                         message=f"Duplicate port {port['interface']} found for {device.name} and ignored. {err}"
                     )
+
+    def load_ip_addresses(self, dev: device):
+        """Load IP addresses from CloudVision."""
+        dev_ip_intfs = cloudvision.get_ip_interfaces(client=self.conn, dId=dev.serial)
+        for intf in dev_ip_intfs:
+            try:
+                _ = self.get(self.port, {"name": intf["interface"], "device": dev.name})
+            except ObjectNotFound:
+                new_port = self.port(
+                    name=intf["interface"],
+                    device=dev.name,
+                    description=cloudvision.get_interface_description(
+                        client=self.conn, dId=dev.serial, interface=intf["interface"]
+                    ),
+                    mac_addr="",
+                    enabled=True,
+                    mode="access",
+                    mtu=65535,
+                    port_type=cloudvision.get_port_type(port_info={"interface": intf["interface"]}, transceiver=""),
+                    status="active",
+                    uuid=None,
+                )
+                self.add(new_port)
+                try:
+                    device = self.get(self.device, dev.name)
+                    device.add_child(new_port)
+                except ObjectNotFound as err:
+                    self.job.log_warning(
+                        message=f"Unable to find device {dev.name} to assign port {intf['interface']}. {err}"
+                    )
+
+            new_ip = self.ipaddr(
+                address=intf["address"],
+                interface=intf["interface"],
+                device=dev.name,
+                uuid=None,
+            )
+            try:
+                self.add(new_ip)
+            except ObjectAlreadyExists as err:
+                self.job.log_warning(
+                    message=f"Unable to load {intf['address']} for {dev.name} on {intf['interface']}. {err}"
+                )
+                continue
 
     def load_device_tags(self, device):
         """Load device tags from CloudVision."""

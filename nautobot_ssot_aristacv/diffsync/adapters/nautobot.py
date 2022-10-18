@@ -1,10 +1,16 @@
 """DiffSync adapter for Nautobot."""
 from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Interface as OrmInterface
+from nautobot.ipam.models import IPAddress as OrmIPAddress
 from diffsync import DiffSync
 from diffsync.exceptions import ObjectNotFound, ObjectAlreadyExists
 
-from nautobot_ssot_aristacv.diffsync.models.nautobot import NautobotDevice, NautobotCustomField, NautobotPort
+from nautobot_ssot_aristacv.diffsync.models.nautobot import (
+    NautobotDevice,
+    NautobotCustomField,
+    NautobotIPAddress,
+    NautobotPort,
+)
 from nautobot_ssot_aristacv.utils import nautobot
 
 
@@ -13,6 +19,7 @@ class NautobotAdapter(DiffSync):
 
     device = NautobotDevice
     port = NautobotPort
+    ipaddr = NautobotIPAddress
     cf = NautobotCustomField
 
     top_level = ["device", "cf"]
@@ -70,3 +77,15 @@ class NautobotAdapter(DiffSync):
                 self.job.log_warning(
                     message=f"Unable to find Device {intf.device.name} in diff to assign to port {intf.name}. {err}"
                 )
+
+        for ipaddr in OrmIPAddress.objects.filter(interface__device__device_type__manufacturer__slug="arista"):
+            new_ip = self.ipaddr(
+                address=str(ipaddr.address),
+                interface=ipaddr.assigned_object.name,
+                device=ipaddr.assigned_object.device.name,
+                uuid=ipaddr.id,
+            )
+            try:
+                self.add(new_ip)
+            except ObjectAlreadyExists as err:
+                self.job.log_warning(message=f"Unable to load {ipaddr.address} as appears to be a duplicate. {err}")
