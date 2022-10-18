@@ -245,10 +245,7 @@ class NautobotCustomField(CustomField):
         """Delete Custom Field in Nautobot."""
         try:
             device = OrmDevice.objects.get(name=self.device_name)
-            if self.name == "arista_model":
-                device.platform = None
-            else:
-                device.custom_field_data.update({self.name: None})
+            device.custom_field_data.update({self.name: None})
             device.validated_save()
             super().delete()
             return self

@@ -49,10 +49,6 @@ class NautobotAdapter(DiffSync):
                         self.job.log_warning(message=f"Unable to load {cf_name}. {err}")
                         continue
 
-            # Gets model from device type and puts it into CustomField Object.
-            new_cf = self.cf(name="arista_model", value=str(dev.device_type.model), device_name=dev.name)
-            self.add(new_cf)
-
         for intf in OrmInterface.objects.all():
             new_port = self.port(
                 name=intf.name,
