@@ -124,7 +124,7 @@ class NautobotDevice(Device):
         relations = device.get_relationships()
         for _, relationships in relations.items():
             for relationship, queryset in relationships.items():
-                if relationship.id == software_relation:
+                if relationship == software_relation:
                     if diffsync.job.kwargs.get("debug"):
                         diffsync.job.log_warning(
                             message=f"Deleting Software Version Relationships for {device.name} to assign a new version."
