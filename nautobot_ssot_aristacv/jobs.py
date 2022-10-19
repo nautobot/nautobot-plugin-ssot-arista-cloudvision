@@ -40,53 +40,36 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
     @classmethod
     def config_information(cls):
         """Dictionary describing the configuration of this DataSource."""
-        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("cvp_host"):
-            return {
-                "Server type": "On prem",
-                "CloudVision host": configs.get("cvp_host"),
-                "Username": configs.get("cvp_user"),
-                "Verify": configs.get("verify"),
-                "Delete devices on sync": configs.get(
-                    "delete_devices_on_sync", str(nautobot.DEFAULT_DELETE_DEVICES_ON_SYNC)
-                ),
-                "New device default site": configs.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
-                "New device default role": configs.get(
-                    "from_cloudvision_default_device_role", nautobot.DEFAULT_DEVICE_ROLE
-                ),
-                "New device default role color": configs.get(
-                    "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
-                ),
-                "New device default status": configs.get(
-                    "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
-                ),
-                "New device default status color": configs.get(
-                    "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
-                ),
-                "Apply import tag": str(configs.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG))
-                # Password is intentionally omitted!
-            }
+        if PLUGIN_SETTINGS.get("cvp_host"):
+            server_type = "On prem"
+            host = PLUGIN_SETTINGS.get("cvp_host")
+        else:
+            server_type = "CVaaS"
+            host = PLUGIN_SETTINGS.get("cvaas_url")
         return {
-            "Server type": "CVaaS",
-            "CloudVision host": configs.get("cvaas_url"),
-            "Delete devices on sync": configs.get(
+            "Server type": server_type,
+            "CloudVision host": host,
+            "Username": PLUGIN_SETTINGS.get("cvp_user"),
+            "Verify": str(PLUGIN_SETTINGS.get("verify")),
+            "Delete devices on sync": PLUGIN_SETTINGS.get(
                 "delete_devices_on_sync", str(nautobot.DEFAULT_DELETE_DEVICES_ON_SYNC)
             ),
-            "New device default site": configs.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
-            "New device default role": configs.get(
+            "New device default site": PLUGIN_SETTINGS.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
+            "New device default role": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_role", nautobot.DEFAULT_DEVICE_ROLE
             ),
-            "New device default role color": configs.get(
+            "New device default role color": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
             ),
-            "New device default status": configs.get(
+            "New device default status": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
             ),
-            "New device default status color": configs.get(
+            "New device default status color": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
             ),
-            "Apply import tag": str(configs.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG))
-            # Token is intentionally omitted!
+            "Apply import tag": str(PLUGIN_SETTINGS.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG)),
+            "Import Active": PLUGIN_SETTINGS.get("import_active", "True")
+            # Password and Token are intentionally omitted!
         }
 
     @classmethod
