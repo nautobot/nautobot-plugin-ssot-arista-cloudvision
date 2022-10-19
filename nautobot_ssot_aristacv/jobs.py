@@ -111,18 +111,18 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             DataMapping("topology_type", None, "Topology Type", None),
         )
 
-    def sync_data(self):
-        """Sync system tags from CloudVision to Nautobot custom fields."""
-        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("delete_devices_on_sync"):
-            self.log_warning(
-                message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot."
-            )
-        else:
-            self.log_warning(
-                message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
-            )
-        self.log("Connecting to CloudVision")
+    def load_source_adapter(self):
+        """Load data from CloudVision into DiffSync models."""
+        if self.kwargs.get("debug"):
+            if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot."
+                )
+            else:
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
+                )
+            self.log("Connecting to CloudVision")
         with CloudvisionApi(
             cvp_host=PLUGIN_SETTINGS["cvp_host"],
             cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
@@ -130,26 +130,18 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             username=PLUGIN_SETTINGS["cvp_user"],
             password=PLUGIN_SETTINGS["cvp_password"],
             cvp_token=PLUGIN_SETTINGS["cvp_token"],
-        ) as cvp:
+        ) as client:
             self.log("Loading data from CloudVision")
-            cv = CloudvisionAdapter(job=self, conn=cvp)
+            cv = CloudvisionAdapter(job=self, conn=client)
             cv.load()
+        return super().load_source_adapter()
+
+    def load_target_adapter(self):
+        """Load data from Nautobot into DiffSync models."""
         self.log("Loading data from Nautobot")
         nb = NautobotAdapter(job=self)
         nb.load()
-        self.log("Performing diff between Cloudvision and Nautobot.")
-        diff = nb.diff_from(cv)
-        self.sync.diff = diff.dict()
-        self.sync.save()
-        self.log(diff.summary())
-        if not self.kwargs["dry_run"]:
-            self.log("Syncing to Nautbot")
-            try:
-                nb.sync_from(cv)
-            except RpcError as e:
-                self.log_failure("Sync failed.")
-                raise e
-            self.log_success(message="Sync complete.")
+        return super().load_target_adapter()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
@@ -198,9 +190,25 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
         """List describing the data mappings involved in this DataTarget."""
         return (DataMapping("Tags", reverse("extras:tag_list"), "Device Tags", None),)
 
-    def sync_data(self):
-        """Sync device tags from CloudVision to Nautobot."""
-        self.log("Connecting to CloudVision")
+    def load_source_adapter(self):
+        """Load data from Nautobot into DiffSync models."""
+        self.log("Loading data from Nautobot")
+        nb = NautobotAdapter(job=self)
+        nb.load()
+        return super().load_source_adapter()
+
+    def load_target_adapter(self):
+        """Load data from CloudVision into DiffSync models."""
+        if self.kwargs.get("debug"):
+            if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot."
+                )
+            else:
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
+                )
+            self.log("Connecting to CloudVision")
         with CloudvisionApi(
             cvp_host=PLUGIN_SETTINGS["cvp_host"],
             cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
@@ -208,28 +216,11 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
             username=PLUGIN_SETTINGS["cvp_user"],
             password=PLUGIN_SETTINGS["cvp_password"],
             cvp_token=PLUGIN_SETTINGS["cvp_token"],
-        ) as cvp:
+        ) as client:
             self.log("Loading data from CloudVision")
-            cv = CloudvisionAdapter(job=self, conn=cvp)
+            cv = CloudvisionAdapter(job=self, conn=client)
             cv.load()
-        self.log("Loading data from Nautobot")
-        nb = NautobotAdapter()
-        nb.load()
-        self.log("Performing diff between Nautobot and Cloudvision")
-        diff = cv.diff_from(nb)
-        self.sync.diff = diff.dict()
-        self.sync.save()
-        self.log(diff.summary())
-        # if self.kwargs["debug"]:
-        #     self.log_debug(diff_nb_cv.dict())
-        if not self.kwargs["dry_run"]:
-            self.log("Syncing to CloudVision")
-            try:
-                nb.sync_to(cv)
-            except RpcError as e:
-                self.log_failure("Sync failed.")
-                raise e
-            self.log_success(message="Sync complete")
+        return super().load_target_adapter()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
