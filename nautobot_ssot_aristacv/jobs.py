@@ -170,18 +170,17 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     @classmethod
     def config_information(cls):
         """Dictionary describing the configuration of this DataTarget."""
-        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("cvp_host"):
+        if PLUGIN_SETTINGS.get("cvp_host"):
             return {
                 "Server type": "On prem",
-                "CloudVision host": configs.get("cvp_host"),
-                "Username": configs.get("cvp_user"),
-                "Verify": configs.get("verify")
+                "CloudVision host": PLUGIN_SETTINGS.get("cvp_host"),
+                "Username": PLUGIN_SETTINGS.get("cvp_user"),
+                "Verify": str(PLUGIN_SETTINGS.get("verify"))
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
-            "CloudVision host": "www.arista.io",
+            "CloudVision host": PLUGIN_SETTINGS.get("cvaas_url"),
             # Token is intentionally omitted!
         }
 
