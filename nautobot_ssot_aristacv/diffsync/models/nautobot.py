@@ -235,17 +235,6 @@ class NautobotIPAddress(IPAddress):
             diffsync.job.log_warning(message=f"Unable to find Interface {ids['interface']} for {ids['device']}. {err}")
         return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
 
-    def delete(self):
-        """Delete IPAddress in Nautobot."""
-        if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
-            super().delete()
-            self.diffsync.job.log_warning(
-                message=f"IP Address {self.address} for {self.interface} on {self.device} will be deleted."
-            )
-            _ip = OrmIPAddress.objects.get(id=self.uuid)
-            _ip.delete()
-        return self
-
 
 class NautobotCustomField(CustomField):
     """Nautobot CustomField model."""
