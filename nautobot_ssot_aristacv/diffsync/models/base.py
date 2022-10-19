@@ -70,7 +70,7 @@ class IPAddress(DiffSyncModel):
     address: str
     device: str
     interface: str
-    uuid: Optional[str]
+    uuid: Optional[UUID]
 
 
 class CustomField(DiffSyncModel):
