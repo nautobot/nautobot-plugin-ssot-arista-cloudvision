@@ -138,3 +138,23 @@ class TestCloudvisionUtils(TestCase):
             )
         expected = "Uplink to DC1"
         self.assertEqual(results, expected)
+
+    def test_get_ip_interfaces(self):
+        """Test the get_ip_interfaces method."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\002ip",
+            "\304\006config",
+            "\304\014ipIntfConfig",
+            "\307\00\001",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.IP_INTF_QUERY
+            results = cloudvision.get_ip_interfaces(client=self.client, dId="JPE12345678")
+        expected = fixtures.IP_INTF_FIXTURE
+        self.assertEqual(results, expected)

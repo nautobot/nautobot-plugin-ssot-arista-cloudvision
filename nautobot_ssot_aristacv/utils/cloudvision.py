@@ -666,3 +666,36 @@ def get_interface_description(client: CloudvisionApi, dId: str, interface: str):
             if notif["updates"].get("description") and notif["updates"]["description"] is not None:
                 return notif["updates"]["description"]
     return ""
+
+
+def get_ip_interfaces(client: CloudvisionApi, dId: str):
+    """Gets interfaces with IP Addresses configured from specified device.
+
+    Args:
+        client (CloudvisionApi): Cloudvision connection.
+        dId (str): Device ID to retrieve IP Addresses and associated interfaces for.
+    """
+    pathElts = ["Sysdb", "ip", "config", "ipIntfConfig", Wildcard()]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
+
+    ip_intfs = []
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            try:
+                results = notif["updates"]
+                if results.get("intfId") and results.get("addrWithMask"):
+                    ip_intfs.append(
+                        {
+                            "interface": results["intfId"],
+                            "address": results["addrWithMask"]
+                            if results["addrWithMask"] != "0.0.0.0/0"
+                            else results.get("virtualAddrWithMask"),
+                        }
+                    )
+            except KeyError as e:
+                print(
+                    f"Unknown key {e} for ip_intfs on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}.\n\nUpdate: {notif['updates']}"
+                )
+                continue
+    return ip_intfs

@@ -14,3 +14,5 @@ INTERFACE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_inter
 INTF_DESCRIPTION_QUERY = load_json(
     "./nautobot_ssot_aristacv/tests/fixtures/get_interface_description_client_query.json"
 )
+IP_INTF_QUERY = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_ip_interfaces_client_query.json")
+IP_INTF_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_ip_interfaces_response.json")

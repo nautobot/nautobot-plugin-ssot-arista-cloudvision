@@ -35,6 +35,8 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
         self.cloudvision.get_interface_transceiver.return_value = "1000BASE-T"
         self.cloudvision.get_interface_description = MagicMock()
         self.cloudvision.get_interface_description.return_value = "Uplink to DC1"
+        self.cloudvision.get_ip_interfaces = MagicMock()
+        self.cloudvision.get_ip_interfaces.return_value = fixtures.IP_INTF_FIXTURE
 
         self.job = CloudVisionDataSource()
         self.job.job_result = JobResult.objects.create(
@@ -84,4 +86,22 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
         self.assertEqual(
             {f"{port['interface']}__mock_device" for port in fixtures.INTERFACE_FIXTURE},
             {port.get_unique_id() for port in self.cvp.get_all("port")},
+        )
+
+    def test_load_ip_addresses(self):
+        """Test the load_ip_addresses() adapter method."""
+        mock_device = MagicMock()
+        mock_device.name = "mock_device"
+        mock_device.serial = MagicMock()
+        mock_device.serial.return_value = "JPE12345678"
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.get_ip_interfaces", self.cloudvision.get_ip_interfaces):
+            with patch(
+                "nautobot_ssot_aristacv.utils.cloudvision.get_interface_description",
+                self.cloudvision.get_interface_description,
+            ):
+                self.cvp.load_ip_addresses(dev=mock_device)
+        self.assertEqual(
+            {f"{ipaddr['address']}__mock_device__{ipaddr['interface']}" for ipaddr in fixtures.IP_INTF_FIXTURE},
+            {ipaddr.get_unique_id() for ipaddr in self.cvp.get_all("ipaddr")},
         )
