@@ -115,14 +115,12 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             self.log("Loading data from CloudVision")
             cv = CloudvisionAdapter(job=self, conn=client)
             cv.load()
-        return super().load_source_adapter()
 
     def load_target_adapter(self):
         """Load data from Nautobot into DiffSync models."""
         self.log("Loading data from Nautobot")
         nb = NautobotAdapter(job=self)
         nb.load()
-        return super().load_target_adapter()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
@@ -175,7 +173,6 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
         self.log("Loading data from Nautobot")
         nb = NautobotAdapter(job=self)
         nb.load()
-        return super().load_source_adapter()
 
     def load_target_adapter(self):
         """Load data from CloudVision into DiffSync models."""
@@ -200,7 +197,6 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
             self.log("Loading data from CloudVision")
             cv = CloudvisionAdapter(job=self, conn=client)
             cv.load()
-        return super().load_target_adapter()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
