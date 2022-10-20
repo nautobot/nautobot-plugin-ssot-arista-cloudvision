@@ -1,7 +1,5 @@
 # pylint: disable=invalid-name,too-few-public-methods
 """Jobs for CloudVision integration with SSoT plugin."""
-from grpc import RpcError
-
 from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
