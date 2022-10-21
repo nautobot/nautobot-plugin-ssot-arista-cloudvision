@@ -40,15 +40,9 @@ class NautobotDevice(Device):
     def create(cls, diffsync, ids, attrs):
         """Create device object in Nautobot."""
         PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
-        site_code, role_code = nautobot.parse_hostname(ids["name"])
+        site_code, role_code = nautobot.parse_hostname(ids["name"].lower())
         site_map = PLUGIN_SETTINGS.get("site_mapping")
         role_map = PLUGIN_SETTINGS.get("role_mapping")
-
-        # ensure codes are lowercased
-        if site_code:
-            site_code = site_code.lower()
-        if role_code:
-            role_code = role_code.lower()
 
         if site_code and site_code in site_map:
             site = nautobot.verify_site(site_map[site_code])
