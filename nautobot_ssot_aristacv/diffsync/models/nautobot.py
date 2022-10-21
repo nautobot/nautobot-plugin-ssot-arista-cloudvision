@@ -40,15 +40,33 @@ class NautobotDevice(Device):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create device object in Nautobot."""
-        default_site_object = nautobot.verify_site(PLUGIN_SETTINGS.get("from_cloudvision_default_site", DEFAULT_SITE))
+        site_code, role_code = nautobot.parse_hostname(ids["name"])
+        site_map = PLUGIN_SETTINGS.get("site_mapping")
+        role_map = PLUGIN_SETTINGS.get("role_mapping")
 
-        device_type_cv = attrs["device_model"]
+        # ensure codes are lowercased
+        if site_code:
+            site_code = site_code.lower()
+        if role_code:
+            role_code = role_code.lower()
 
-        device_type_object = nautobot.verify_device_type_object(device_type_cv)
-        device_role_object = nautobot.verify_device_role_object(
-            PLUGIN_SETTINGS.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
-            PLUGIN_SETTINGS.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
-        )
+        if site_code and site_code in site_map:
+            site = nautobot.verify_site(site_map[site_code])
+        else:
+            site = nautobot.verify_site(PLUGIN_SETTINGS.get("from_cloudvision_default_site", DEFAULT_SITE))
+
+        if role_code and role_code in role_map:
+            role = nautobot.verify_device_role_object(
+                role_map[role_code],
+                PLUGIN_SETTINGS.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
+            )
+        else:
+            role = nautobot.verify_device_role_object(
+                PLUGIN_SETTINGS.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
+                PLUGIN_SETTINGS.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
+            )
+
+        device_type_object = nautobot.verify_device_type_object(attrs["device_model"])
 
         device_status = nautobot.verify_device_status(
             PLUGIN_SETTINGS.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
@@ -58,9 +76,9 @@ class NautobotDevice(Device):
         new_device = OrmDevice(
             status=device_status,
             device_type=device_type_object,
-            device_role=device_role_object,
+            device_role=role,
             platform=OrmPlatform.objects.get(slug="arista_eos"),
-            site=default_site_object,
+            site=site,
             name=ids["name"],
             serial=attrs["serial"] if attrs.get("serial") else "",
         )
