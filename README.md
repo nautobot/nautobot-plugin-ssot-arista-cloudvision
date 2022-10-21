@@ -85,6 +85,9 @@ PLUGINS_CONFIG = {
     "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
     "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
     "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
+    "hostname_patterns": [""],
+    "site_mapping": {},
+    "role_mapping": {},
   }
 }
 ```
@@ -159,11 +162,21 @@ Optionally, an import tag with the name `cloudvision_imported` can be applied to
 
 > If apply_import_tag is set to True, the tag value that is applied to devices is `cloudvision_imported`.
 
-Lastly, you can control whether only active devices are imported or whether all devices regardless of status are imported.
+In addition, you can control whether only active devices are imported or whether all devices regardless of status are imported.
 
 | Configuration Variable | Type    | Usage                                        | Default |
 | ---------------------- | ------- | -------------------------------------------- | ------- |
 | import_active          | boolean | Only import active devices from CloudVision. | False   |
+
+Finally, there is the option to parse device hostname's for codes that indicate the assigned site or device role. This is done through a combination of a few settings. First, the hostname_patterns setting defines a list of regex patterns that define your hostname structure. These patterns must include a named capture group using the `site` and `role` key to identify the portion of the hostname that indicates those pieces of data, ie `(?P<site>\w+)` and `(?P<role>\w+)`. Once those pieces are extracted they are then evaluated against the relevant map, ie the value for the `site` capture group is looked for in the `site_mapping` dictionary expecting the value to be a key with the map value being the name of the Site. It is expected that these Sites already exist in Nautobot. For the Device Role, it will be created if it doesn't exist in Nautobot.
+
+| Configuration Variable                       | Type    | Usage                                                      | Default              |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| hostname_patterns                            |List[str]| Define the portions of a hostname that indicate site/role. | []                   |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| site_mapping                                 |  dict   | Define the site name associated with code in hostname.     | {}                   |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| role_mapping                                 |  dict   | Define the role name associated with code in hostname.     | {}                   |
 
 ## Usage
 
