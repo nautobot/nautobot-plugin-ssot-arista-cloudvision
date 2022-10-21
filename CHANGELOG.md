@@ -1,5 +1,30 @@
 # Changelog
 
+## v1.4.0 - 2022-10-21
+
+### Added
+
+- #101 - Added support for the Device Lifecycle Management plug-in. Addresses #87.
+- #99 - Added support for getting interface description.
+- #103 - Added support for importing IP Addresses from CloudVision. Addresses #52.
+
+### Fixed
+
+- #101 - Fix Platform creation to be single item instead of matching DeviceType.
+- #101 - Corrected Nautobot adapter load method
+- #101 - Ensure only CustomFields with `arista_` prepend are loaded. Addresses #95.
+- #101 - Validated enabledState key in chassis interface. Addresses #102.
+- #101 - Fixed MAC address string to match CVP so diff is idempotent.
+- #104 - Fixes display of plugin settings. Addresses #86.
+
+### Performance
+
+- #101 - Optimized query for Devices to improve load times. Addresses #93.
+
+### Refactor
+
+- #104 - Refactored Jobs to use load source/target adapter methods for performance metrics.
+
 ## v1.3.0 - 2022-10-13
 
 ### Added
