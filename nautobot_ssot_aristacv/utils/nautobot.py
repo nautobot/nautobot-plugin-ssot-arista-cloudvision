@@ -1,4 +1,6 @@
 """Utility functions for Nautobot ORM."""
+import re
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
 from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
@@ -107,3 +109,54 @@ def get_device_version(device):
     else:
         version = device.custom_field_data["arista_eos"]
     return version
+
+
+def parse_hostname(hostname: str):
+    """Parse a device's hostname to find site and role.
+
+    Args:
+        hostname (str): Device hostname to be parsed for site and role.
+    """
+    hostname_patterns = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("hostname_patterns")
+
+    site, role = None, None
+    for pattern in hostname_patterns:
+        match = re.search(pattern=pattern, string=hostname)
+        if match:
+            if match.group("site"):
+                site = match.group("site")
+            if match.group("role"):
+                role = match.group("role")
+    return (site, role)
+
+
+def get_site_from_map(site_code: str):
+    """Get name of Site from site_mapping based upon sitecode.
+
+    Args:
+        site_code (str): Site code from device hostname.
+
+    Returns:
+        str|None: Name of Site if site code found else None.
+    """
+    site_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("site_mapping")
+    site_name = None
+    if site_code in site_map:
+        site_name = site_map[site_code]
+    return site_name
+
+
+def get_role_from_map(role_code: str):
+    """Get name of Role from role_mapping based upon role code in hostname.
+
+    Args:
+        role_code (str): Role code from device hostname.
+
+    Returns:
+        str|None: Name of Device Role if role code found else None.
+    """
+    role_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("role_mapping")
+    role_name = None
+    if role_code in role_map:
+        role_name = role_map[role_code]
+    return role_name
