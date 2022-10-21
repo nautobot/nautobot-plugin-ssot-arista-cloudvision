@@ -31,7 +31,6 @@ DEFAULT_DEVICE_STATUS_COLOR = "ff0000"
 DEFAULT_DELETE_DEVICES_ON_SYNC = False
 APPLY_IMPORT_TAG = False
 MISSING_CUSTOM_FIELDS = []
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 
 
 class NautobotDevice(Device):
@@ -40,6 +39,7 @@ class NautobotDevice(Device):
     @classmethod
     def create(cls, diffsync, ids, attrs):
         """Create device object in Nautobot."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         site_code, role_code = nautobot.parse_hostname(ids["name"])
         site_map = PLUGIN_SETTINGS.get("site_mapping")
         role_map = PLUGIN_SETTINGS.get("role_mapping")
@@ -114,7 +114,9 @@ class NautobotDevice(Device):
 
     def delete(self):
         """Delete device object in Nautobot."""
-        if PLUGIN_SETTINGS.get("delete_devices_on_sync", DEFAULT_DELETE_DEVICES_ON_SYNC):
+        if settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get(
+            "delete_devices_on_sync", DEFAULT_DELETE_DEVICES_ON_SYNC
+        ):
             self.diffsync.job.log_warning(message=f"Device {self.name} will be deleted per plugin settings.")
             device = OrmDevice.objects.get(id=self.uuid)
             device.delete()
@@ -215,7 +217,7 @@ class NautobotPort(Port):
 
     def delete(self):
         """Delete Interface in Nautobot."""
-        if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
+        if settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("delete_devices_on_sync"):
             super().delete()
             if self.diffsync.job.kwargs.get("debug"):
                 self.diffsync.job.log_warning(message=f"Interface {self.name} for {self.device} will be deleted.")
