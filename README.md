@@ -1,6 +1,6 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. From Nautobot into CloudVision, it synchronizes user device tags. From CloudVision into Nautobot, it synchronizes devices, their interfaces and their system tags. Here is a table showing the data mappings when syncing from CloudVision.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. From Nautobot into CloudVision, it synchronizes user device tags. From CloudVision into Nautobot, it synchronizes devices, their interfaces, associated IP addresses, and their system tags. Here is a table showing the data mappings when syncing from CloudVision.
 
 | CloudVision System Tags | Nautobot Device Custom Field |
 |-------------------------|------------------------------|
@@ -36,11 +36,11 @@ When syncing User tags from Nautobot to CloudVision the data mappings are as fol
 
 ## Screenshots
 
-This screenshot shows the CloudVision to Nautobot home page. This contains a list of all the system tags from CloudVision and how they map to custom fields in Nautobot. This also displays current plugin configuration and sync history.
+This screenshot shows the CloudVision to Nautobot home page. This contains a list of all the system tags from CloudVision and how they map to custom fields in Nautobot. This also displays your plugin configuration and the sync history.
 
 ![cv_to_naut](https://user-images.githubusercontent.com/38091261/124859726-03557800-df76-11eb-9622-af4c29ba8d40.PNG)
 
-This screenshow shows the Nautobot to CloudVision home page. It also contains data mappings, plugin configuration and sync history.
+This screenshot shows the Nautobot to CloudVision home page. It also contains data mappings, plugin configuration and sync history.
 
 ![naut_to_cv](https://user-images.githubusercontent.com/38091261/124859903-55969900-df76-11eb-87c4-64ca2616bffe.PNG)
 
@@ -110,7 +110,7 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 > While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
 
-Other custom fields may need to be created by the user. When a sync is ran and a system tag for a device in CloudVision is found without a corresponding custom field, the sync log will display a message. In order to have that data synced, a custom field must be created in the Admin UI using the given name in the message.
+Other custom fields may need to be created by the user. When a sync is run and a system tag for a device in CloudVision is found without a corresponding custom field, the sync log will display a message. To have that data synced, a custom field must be created in the Admin UI using the given name in the message.
 
 ![Custom_Fields_Arista](https://user-images.githubusercontent.com/38091261/133857343-94ee262c-87ca-4e64-a3b2-c3d410755098.PNG)
 

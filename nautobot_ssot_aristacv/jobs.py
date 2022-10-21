@@ -66,7 +66,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
                 "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
             ),
             "Apply import tag": str(PLUGIN_SETTINGS.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG)),
-            "Import Active": PLUGIN_SETTINGS.get("import_active", "True")
+            "Import Active": str(PLUGIN_SETTINGS.get("import_active", "True"))
             # Password and Token are intentionally omitted!
         }
 
@@ -113,16 +113,14 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             cvp_token=PLUGIN_SETTINGS["cvp_token"],
         ) as client:
             self.log("Loading data from CloudVision")
-            cv = CloudvisionAdapter(job=self, conn=client)
-            cv.load()
-        return super().load_source_adapter()
+            self.source_adapter = CloudvisionAdapter(job=self, conn=client)
+            self.source_adapter.load()
 
     def load_target_adapter(self):
         """Load data from Nautobot into DiffSync models."""
         self.log("Loading data from Nautobot")
-        nb = NautobotAdapter(job=self)
-        nb.load()
-        return super().load_target_adapter()
+        self.target_adapter = NautobotAdapter(job=self)
+        self.target_adapter.load()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
@@ -173,9 +171,8 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     def load_source_adapter(self):
         """Load data from Nautobot into DiffSync models."""
         self.log("Loading data from Nautobot")
-        nb = NautobotAdapter(job=self)
-        nb.load()
-        return super().load_source_adapter()
+        self.source_adapter = NautobotAdapter(job=self)
+        self.source_adapter.load()
 
     def load_target_adapter(self):
         """Load data from CloudVision into DiffSync models."""
@@ -198,9 +195,8 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
             cvp_token=PLUGIN_SETTINGS["cvp_token"],
         ) as client:
             self.log("Loading data from CloudVision")
-            cv = CloudvisionAdapter(job=self, conn=client)
-            cv.load()
-        return super().load_target_adapter()
+            self.target_adapter = CloudvisionAdapter(job=self, conn=client)
+            self.target_adapter.load()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
