@@ -1,5 +1,6 @@
 """Tests of Cloudvision utility methods."""
 from django.test import override_settings
+from nautobot.dcim.models import Site
 from nautobot.utilities.testing import TestCase
 from nautobot_ssot_aristacv.utils import nautobot
 
@@ -8,6 +9,19 @@ class TestNautobotUtils(TestCase):
     """Test Nautobot utility methods."""
 
     databases = ("default", "job_logs")
+
+    def test_verify_site_success(self):
+        """Test the verify_site method for existing Site."""
+        test_site, _ = Site.objects.get_or_create(name="Test")
+        result = nautobot.verify_site(site_name="Test")
+        self.assertEqual(result, test_site)
+
+    def test_verify_site_fail(self):
+        """Test the verify_site method for non-existing Site."""
+        result = nautobot.verify_site(site_name="Test2")
+        self.assertEqual(result.name, "Test2")
+        self.assertEqual(result.slug, "test2")
+        self.assertTrue(isinstance(result, Site))
 
     @override_settings(
         PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]}}
