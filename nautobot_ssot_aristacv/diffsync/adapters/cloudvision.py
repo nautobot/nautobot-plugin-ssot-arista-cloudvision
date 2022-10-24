@@ -1,4 +1,5 @@
 """DiffSync adapter for Arista CloudVision."""
+from django.conf import settings
 import distutils
 import re
 
@@ -37,6 +38,7 @@ class CloudvisionAdapter(DiffSync):
                 new_device = self.device(
                     name=dev["hostname"],
                     serial=dev["device_id"],
+                    status=dev["status"],
                     device_model=dev["model"],
                     version=dev["sw_ver"],
                     uuid=None,
@@ -178,4 +180,11 @@ class CloudvisionAdapter(DiffSync):
 
     def load(self):
         """Load devices and associated data from CloudVision."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_arisacv"]
+        if PLUGIN_SETTINGS.get("hostname_patterns") and not (
+            PLUGIN_SETTINGS.get("site_mappings") and PLUGIN_SETTINGS.get("role_mappings")
+        ):
+            self.job.log_warning(
+                message="Configuration found for hostname_patterns but no site_mappings or role_mappings. Please ensure your mappings are defined."
+            )
         self.load_devices()
