@@ -84,8 +84,8 @@ PLUGINS_CONFIG = {
         "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
         "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
         "hostname_patterns": [[r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]],
-        "site_mapping": {"ams01": "Amsterdam", "atl01": "Atlanta"},
-        "role_mapping": {
+        "site_mappings": {"ams01": "Amsterdam", "atl01": "Atlanta"},
+        "role_mappings": {
             "bb": "backbone",
             "edge": "edge",
             "dist": "distribution",

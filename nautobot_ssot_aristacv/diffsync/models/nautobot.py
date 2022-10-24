@@ -41,8 +41,8 @@ class NautobotDevice(Device):
         """Create device object in Nautobot."""
         PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         site_code, role_code = nautobot.parse_hostname(ids["name"].lower())
-        site_map = PLUGIN_SETTINGS.get("site_mapping")
-        role_map = PLUGIN_SETTINGS.get("role_mapping")
+        site_map = PLUGIN_SETTINGS.get("site_mappings")
+        role_map = PLUGIN_SETTINGS.get("role_mappings")
 
         if site_code and site_code in site_map:
             site = nautobot.verify_site(site_map[site_code])
