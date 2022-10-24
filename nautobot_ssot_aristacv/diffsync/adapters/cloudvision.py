@@ -180,7 +180,7 @@ class CloudvisionAdapter(DiffSync):
 
     def load(self):
         """Load devices and associated data from CloudVision."""
-        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_arisacv"]
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         if PLUGIN_SETTINGS.get("hostname_patterns") and not (
             PLUGIN_SETTINGS.get("site_mappings") and PLUGIN_SETTINGS.get("role_mappings")
         ):
