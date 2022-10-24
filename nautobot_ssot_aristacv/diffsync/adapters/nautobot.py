@@ -37,6 +37,7 @@ class NautobotAdapter(DiffSync):
                     name=dev.name,
                     device_model=dev.device_type.model,
                     serial=dev.serial,
+                    status=dev.status.slug,
                     version=nautobot.get_device_version(dev),
                     uuid=dev.id,
                 )

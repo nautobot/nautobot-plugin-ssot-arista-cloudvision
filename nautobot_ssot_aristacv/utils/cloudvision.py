@@ -281,6 +281,7 @@ def get_devices(client):
             "fqdn": resp.value.fqdn.value,
             "sw_ver": resp.value.software_version.value,
             "model": resp.value.model_name.value,
+            "status": "active" if resp.value.streaming_status == 2 else "offline",
             "system_mac_address": resp.value.system_mac_address.value,
         }
         devices.append(device)

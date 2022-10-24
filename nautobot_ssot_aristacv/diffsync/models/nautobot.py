@@ -62,13 +62,8 @@ class NautobotDevice(Device):
 
         device_type_object = nautobot.verify_device_type_object(attrs["device_model"])
 
-        device_status = nautobot.verify_device_status(
-            PLUGIN_SETTINGS.get("from_cloudvision_default_device_status", DEFAULT_DEVICE_STATUS),
-            PLUGIN_SETTINGS.get("from_cloudvision_default_device_status_color", DEFAULT_DEVICE_STATUS_COLOR),
-        )
-
         new_device = OrmDevice(
-            status=device_status,
+            status=OrmStatus.objects.get(slug=attrs["status"]),
             device_type=device_type_object,
             device_role=role,
             platform=OrmPlatform.objects.get(slug="arista_eos"),

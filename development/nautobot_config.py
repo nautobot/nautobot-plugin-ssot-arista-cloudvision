@@ -80,8 +80,6 @@ PLUGINS_CONFIG = {
         "from_cloudvision_default_site": "cloudvision_imported",
         "from_cloudvision_default_device_role": "network",
         "from_cloudvision_default_device_role_color": "ff0000",
-        "from_cloudvision_default_device_status": "Active",
-        "from_cloudvision_default_device_status_color": "ff0000",
         "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
         "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
         "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),

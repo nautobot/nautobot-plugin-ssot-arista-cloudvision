@@ -13,6 +13,7 @@ class Device(DiffSyncModel):
     _attributes = (
         "device_model",
         "serial",
+        "status",
         "version",
     )
     _children = {"port": "ports"}
@@ -20,6 +21,7 @@ class Device(DiffSyncModel):
     name: str
     device_model: str
     serial: str
+    status: str
     version: Optional[str]
     ports: List["Port"] = list()
     uuid: Optional[UUID]
