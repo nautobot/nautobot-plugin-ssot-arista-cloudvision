@@ -178,6 +178,8 @@ Finally, there is the option to parse device hostname's for codes that indicate 
 |----------------------------------------------|---------|------------------------------------------------------------|----------------------|
 | role_mappings                                |  dict   | Define the role name associated with code in hostname.     | {}                   |
 
+> As the Device hostname is used as the identifier for Device objects any change in hostname implies a new Device and thus should trigger a deletion and creation of a new Device in Nautobot. For this reason, the hostname parsing feature is not done during updates and only at initial creation of the Device. If you need to correct the Site or Role for a Device after initial creation you will need to manually correct it or delete it and run the import Job again.
+
 ## Usage
 
 This extension can sync data both `to` and `from` Nautobot. Once the plugin has been installed successfully two new options are available under the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) plugin.
