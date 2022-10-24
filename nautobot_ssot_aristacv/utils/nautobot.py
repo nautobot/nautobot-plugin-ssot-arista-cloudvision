@@ -2,6 +2,7 @@
 import re
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.utils.text import slugify
 
 from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
 from nautobot.extras.models import Status, Tag, Relationship
@@ -24,7 +25,7 @@ def verify_site(site_name):
     try:
         site_obj = Site.objects.get(name=site_name)
     except Site.DoesNotExist:
-        site_obj = Site(name=site_name, slug=site_name.lower(), status=Status.objects.get(name="Staging"))
+        site_obj = Site(name=site_name, slug=slugify(site_name), status=Status.objects.get(name="Staging"))
         site_obj.validated_save()
     return site_obj
 
