@@ -80,8 +80,6 @@ PLUGINS_CONFIG = {
     "from_cloudvision_default_site": "",
     "from_cloudvision_default_device_role": "",
     "from_cloudvision_default_device_role_color": "",
-    "from_cloudvision_default_device_status": "",
-    "from_cloudvision_default_device_status_color": "",
     "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
     "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
     "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
@@ -136,13 +134,11 @@ To connect to a cloud instance of CloudVision you must set the following variabl
 
 When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. When creating new devices in Nautobot, a site, device role, device role color, device status, and device are required. You may define which values to use by configuring the following values in your `nautobot_config.py` file. If you define a `default_device_role` and `default_device_status` that already exist, the default color value for both of those will be ignored as it will pull that information from Nautobot.
 
-| Configuration Variable                       | Type   | Usage                                                      | Default              |
-| -------------------------------------------- | ------ | ---------------------------------------------------------- | -------------------- |
-| from_cloudvision_default_site                | string | Default site created when syncing new devices to Nautobot. | cloudvision_imported |
-| from_cloudvision_default_device_role         | string | Default role created when syncing new devices to Nautobot. | network              |
-| from_cloudvision_default_device_role_color   | string | Default role color used for default role.                  | ff0000               |
-| from_cloudvision_default_device_status       | string | Default status used when syncing new devices to Nautobot.  | cloudvision_imported |
-| from_cloudvision_default_device_status_color | string | Default status color used for default status.              | ff0000               |
+| Configuration Variable                     | Type   | Usage                                                      | Default              |
+| ------------------------------------------ | ------ | ---------------------------------------------------------- | -------------------- |
+| from_cloudvision_default_site              | string | Default site created when syncing new devices to Nautobot. | cloudvision_imported |
+| from_cloudvision_default_device_role       | string | Default role created when syncing new devices to Nautobot. | network              |
+| from_cloudvision_default_device_role_color | string | Default role color used for default role.                  | ff0000               |
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
@@ -170,13 +166,13 @@ In addition, you can control whether only active devices are imported or whether
 
 Finally, there is the option to parse device hostname's for codes that indicate the assigned site or device role. This is done through a combination of a few settings. First, the hostname_patterns setting defines a list of regex patterns that define your hostname structure. These patterns must include a named capture group using the `site` and `role` key to identify the portion of the hostname that indicates those pieces of data, ie `(?P<site>\w+)` and `(?P<role>\w+)`. Once those pieces are extracted they are then evaluated against the relevant map, ie the value for the `site` capture group is looked for in the `site_mappings` dictionary expecting the value to be a key with the map value being the name of the Site. If the Site doesn't exist it will be created in Staging status. For the Device Role, it will be created if it doesn't exist in Nautobot. Please note that the hostname is converted to all lowercase when the parsing is performed so the keys are expected to be all lowercase too.
 
-| Configuration Variable                       | Type    | Usage                                                      | Default              |
-|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
-| hostname_patterns                            |List[str]| Define the portions of a hostname that indicate site/role. | []                   |
-|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
-| site_mappings                                |  dict   | Define the site name associated with code in hostname.     | {}                   |
-|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
-| role_mappings                                |  dict   | Define the role name associated with code in hostname.     | {}                   |
+| Configuration Variable                         | Type      | Usage                                                        | Default                |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
+| hostname_patterns                              | List[str] | Define the portions of a hostname that indicate site/role.   | []                     |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
+| site_mappings                                  | dict      | Define the site name associated with code in hostname.       | {}                     |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
+| role_mappings                                  | dict      | Define the role name associated with code in hostname.       | {}                     |
 
 > As the Device hostname is used as the identifier for Device objects any change in hostname implies a new Device and thus should trigger a deletion and creation of a new Device in Nautobot. For this reason, the hostname parsing feature is not done during updates and only at initial creation of the Device. If you need to correct the Site or Role for a Device after initial creation you will need to manually correct it or delete it and run the import Job again.
 
