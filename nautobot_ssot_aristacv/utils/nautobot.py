@@ -156,7 +156,7 @@ def get_role_from_map(role_code: str):
     Returns:
         str|None: Name of Device Role if role code found else None.
     """
-    role_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("role_mapping")
+    role_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("role_mappings")
     role_name = None
     if role_code in role_map:
         role_name = role_map[role_code]
