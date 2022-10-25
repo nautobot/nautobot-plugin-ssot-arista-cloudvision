@@ -7,6 +7,7 @@
 - #101 - Added support for the Device Lifecycle Management plug-in. Addresses #87.
 - #99 - Added support for getting interface description.
 - #103 - Added support for importing IP Addresses from CloudVision. Addresses #52.
+- #108 - Added support for hostname parsing to dynamically create Site/Role. #51
 
 ### Fixed
 
