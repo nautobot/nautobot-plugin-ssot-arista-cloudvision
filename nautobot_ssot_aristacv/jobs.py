@@ -19,8 +19,6 @@ from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
 
 name = "SSoT - Arista CloudVision"  # pylint: disable=invalid-name
 
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
-
 
 class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
     """CloudVision SSoT Data Source."""
@@ -38,6 +36,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
     @classmethod
     def config_information(cls):
         """Dictionary describing the configuration of this DataSource."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         if PLUGIN_SETTINGS.get("cvp_host"):
             server_type = "On prem"
             host = PLUGIN_SETTINGS.get("cvp_host")
@@ -94,6 +93,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
 
     def load_source_adapter(self):
         """Load data from CloudVision into DiffSync models."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         if self.kwargs.get("debug"):
             if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
                 self.log_warning(
@@ -149,6 +149,7 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     @classmethod
     def config_information(cls):
         """Dictionary describing the configuration of this DataTarget."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         if PLUGIN_SETTINGS.get("cvp_host"):
             return {
                 "Server type": "On prem",
@@ -176,6 +177,7 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
 
     def load_target_adapter(self):
         """Load data from CloudVision into DiffSync models."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         if self.kwargs.get("debug"):
             if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
                 self.log_warning(

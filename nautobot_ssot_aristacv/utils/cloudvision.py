@@ -24,7 +24,6 @@ from cloudvision.Connector.grpc_client.grpcClient import create_query, to_pbts
 from nautobot_ssot_aristacv.constant import PORT_TYPE_MAP
 
 RPC_TIMEOUT = 30
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 TIME_TYPE = Union[pbts.Timestamp, datetime]
 UPDATE_TYPE = Tuple[Any, Any]
 UPDATES_TYPE = List[UPDATE_TYPE]
@@ -95,7 +94,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
             self.metadata = ((self.AUTH_KEY_PATH, self.cvp_token),)
         # Set up credentials for CVaaS using supplied token.
         else:
-            self.cvp_url = PLUGIN_SETTINGS.get("cvaas_url", "www.arista.io:443")
+            self.cvp_url = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("cvaas_url", "www.arista.io:443")
             call_creds = grpc.access_token_call_credentials(self.cvp_token)
             channel_creds = grpc.ssl_channel_credentials()
         conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
@@ -267,7 +266,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
 def get_devices(client):
     """Get devices from CloudVision inventory."""
     device_stub = services.DeviceServiceStub(client)
-    if PLUGIN_SETTINGS.get("import_active"):
+    if settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("import_active"):
         req = services.DeviceStreamRequest(
             partial_eq_filter=[models.Device(streaming_status=models.STREAMING_STATUS_ACTIVE)]
         )
@@ -282,6 +281,7 @@ def get_devices(client):
             "fqdn": resp.value.fqdn.value,
             "sw_ver": resp.value.software_version.value,
             "model": resp.value.model_name.value,
+            "status": "active" if resp.value.streaming_status == 2 else "offline",
             "system_mac_address": resp.value.system_mac_address.value,
         }
         devices.append(device)

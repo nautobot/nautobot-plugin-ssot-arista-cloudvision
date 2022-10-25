@@ -3,8 +3,6 @@ from django.conf import settings
 from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, IPAddress, Port
 from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
 
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
-
 
 class CloudvisionDevice(Device):
     """Cloudvision Device model."""
@@ -66,6 +64,7 @@ class CloudvisionCustomField(CustomField):
     @staticmethod
     def connect_cvp():
         """Connect to Cloudvision gRPC endpoint."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         return CloudvisionApi(
             cvp_host=PLUGIN_SETTINGS["cvp_host"],
             cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),

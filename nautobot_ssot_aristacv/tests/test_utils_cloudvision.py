@@ -23,6 +23,7 @@ class TestCloudvisionUtils(TestCase):
         device1.value.hostname.value = "ams01-edge-01.ntc.com"
         device1.value.fqdn.value = "ams01-edge-01.ntc.com"
         device1.value.software_version.value = "4.26.5M"
+        device1.value.streaming_status = 2
         device1.value.model_name.value = "DCS-7280CR2-60"
         device1.value.system_mac_address.value = "12:34:56:78:ab:cd"
 
@@ -31,6 +32,7 @@ class TestCloudvisionUtils(TestCase):
         device2.value.hostname.value = "ams01-edge-02.ntc.com"
         device2.value.fqdn.value = "ams01-edge-02.ntc.com"
         device2.value.software_version.value = "4.26.5M"
+        device2.value.streaming_status = 2
         device2.value.model_name.value = "DCS-7280CR2-60"
         device2.value.system_mac_address.value = "12:34:56:78:ab:ce"
 
