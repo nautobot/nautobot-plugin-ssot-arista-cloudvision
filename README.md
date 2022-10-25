@@ -86,8 +86,8 @@ PLUGINS_CONFIG = {
     "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
     "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
     "hostname_patterns": [""],
-    "site_mapping": {},
-    "role_mapping": {},
+    "site_mappings": {},
+    "role_mappings": {},
   }
 }
 ```
