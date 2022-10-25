@@ -1,8 +1,19 @@
 """Utility functions for Nautobot ORM."""
-from nautobot.dcim.models import DeviceType, DeviceRole, Site, Manufacturer
-from nautobot.extras.models.statuses import Status
-from nautobot.extras.models.tags import Tag
+import re
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.utils.text import slugify
+
+from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
+from nautobot.extras.models import Status, Tag, Relationship
+
+try:
+    from nautobot_device_lifecycle_mgmt.models import SoftwareLCM  # noqa: F401 # pylint: disable=unused-import
+
+    LIFECYCLE_MGMT = True
+except ImportError:
+    print("Device Lifecycle plugin isn't installed so will revert to CustomField for OS version.")
+    LIFECYCLE_MGMT = False
 
 
 def verify_site(site_name):
@@ -14,19 +25,9 @@ def verify_site(site_name):
     try:
         site_obj = Site.objects.get(name=site_name)
     except Site.DoesNotExist:
-        site_obj = Site(name=site_name, slug=site_name.lower(), status=Status.objects.get(name="Staging"))
+        site_obj = Site(name=site_name, slug=slugify(site_name), status=Status.objects.get(name="Staging"))
         site_obj.validated_save()
     return site_obj
-
-
-def verify_manufacturer():
-    """Verifies whether Arista manufactere exists in Nautobot. If not, creates Arista Manufacturer."""
-    try:
-        arista_mf = Manufacturer.objects.get(name="Arista")
-    except Manufacturer.DoesNotExist:
-        arista_mf = Manufacturer(name="Arista", slug="arista")
-        arista_mf.validated_save()
-    return arista_mf
 
 
 def verify_device_type_object(device_type):
@@ -38,8 +39,9 @@ def verify_device_type_object(device_type):
     try:
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
-        manufacturer = verify_manufacturer()
-        device_type_obj = DeviceType(manufacturer=manufacturer, model=device_type, slug=device_type.lower())
+        device_type_obj = DeviceType(
+            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=device_type.lower()
+        )
         device_type_obj.validated_save()
     return device_type_obj
 
@@ -89,3 +91,73 @@ def verify_import_tag():
         import_tag = Tag(name="cloudvision_imported", slug="cloudvision_imported", color="ff0000")
         import_tag.validated_save()
     return import_tag
+
+
+def get_device_version(device):
+    """Determines Device version from Custom Field or RelationshipAssociation.
+
+    Args:
+        device (Device): The Device object to determine software version for.
+    """
+    version = ""
+    if LIFECYCLE_MGMT:
+        software_relation = Relationship.objects.get(name="Software on Device")
+        relations = device.get_relationships()
+        try:
+            version = relations["destination"][software_relation][0].source.version
+        except KeyError:
+            pass
+    else:
+        version = device.custom_field_data["arista_eos"]
+    return version
+
+
+def parse_hostname(hostname: str):
+    """Parse a device's hostname to find site and role.
+
+    Args:
+        hostname (str): Device hostname to be parsed for site and role.
+    """
+    hostname_patterns = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("hostname_patterns")
+
+    site, role = None, None
+    for pattern in hostname_patterns:
+        match = re.search(pattern=pattern, string=hostname)
+        if match:
+            if match.group("site"):
+                site = match.group("site")
+            if match.group("role"):
+                role = match.group("role")
+    return (site, role)
+
+
+def get_site_from_map(site_code: str):
+    """Get name of Site from site_mapping based upon sitecode.
+
+    Args:
+        site_code (str): Site code from device hostname.
+
+    Returns:
+        str|None: Name of Site if site code found else None.
+    """
+    site_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("site_mappings")
+    site_name = None
+    if site_code in site_map:
+        site_name = site_map[site_code]
+    return site_name
+
+
+def get_role_from_map(role_code: str):
+    """Get name of Role from role_mapping based upon role code in hostname.
+
+    Args:
+        role_code (str): Role code from device hostname.
+
+    Returns:
+        str|None: Name of Device Role if role code found else None.
+    """
+    role_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("role_mappings")
+    role_name = None
+    if role_code in role_map:
+        role_name = role_map[role_code]
+    return role_name

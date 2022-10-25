@@ -1,13 +1,13 @@
 # Nautobot to Arista CloudVision Sync
 
-A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. From Nautobot into CloudVision, it synchronizes user device tags. From CloudVision into Nautobot, it synchronizes devices, their interfaces and their system tags. Here is a table showing the data mappings when syncing from CloudVision.
+A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchronization of data directly between CloudVision and Nautobot. From Nautobot into CloudVision, it synchronizes user device tags. From CloudVision into Nautobot, it synchronizes devices, their interfaces, associated IP addresses, and their system tags. Here is a table showing the data mappings when syncing from CloudVision.
 
 | CloudVision System Tags | Nautobot Device Custom Field |
-|-------------------------|------------------------------|
+| ----------------------- | ---------------------------- |
 | topology_network_type   | Topology Network Type        |
 | mlag                    | mlag                         |
 | mpls                    | mpls                         |
-| model                   | Device Platform*             |
+| model                   | Device Type*                 |
 | systype                 | systype                      |
 | serialnumber            | Device Serial Number         |
 | pimbidir                | pimbidir                     |
@@ -18,27 +18,29 @@ A plugin for [Nautobot](https://github.com/nautobot/nautobot) that allows synchr
 | bgp                     | bgp                          |
 | terminattr              | TerminAttr Version           |
 | ztp                     | ztp                          |
-| eos                     | EOS Version                  |
+| eos                     | EOS Version**                |
 | topology_type           | Topology Type                |
-> The model system tag is mapped to the device platform model in Nautobot.
+> *The model system tag is mapped to the device type model in Nautobot.
+
+> **If the [Device Lifecycle plug-in](https://github.com/nautobot/nautobot-plugin-device-lifecycle-mgmt) is found to be installed, a matching Version will be created with a RelationshipAssociation connecting the device and that Version.
 
 When syncing User tags from Nautobot to CloudVision the data mappings are as follows:
 
-| Nautobot | CloudVision |
-|----------|-------------|
-| Interface| Interface   |
-|----------|-------------|
-| Tags     | Device Tags |
+| Nautobot   | CloudVision   |
+| ---------- | ------------- |
+| Interface  | Interface     |
+| ---------- | ------------- |
+| Tags       | Device Tags   |
 
 > This plugin is an extension of the [Nautobot Single Source of Truth (SSoT)](https://github.com/nautobot/nautobot-plugin-ssot) and you must have that plugin installed before installing this extension.
 
 ## Screenshots
 
-This screenshot shows the CloudVision to Nautobot home page. This contains a list of all the system tags from CloudVision and how they map to custom fields in Nautobot. This also displays current plugin configuration and sync history.
+This screenshot shows the CloudVision to Nautobot home page. This contains a list of all the system tags from CloudVision and how they map to custom fields in Nautobot. This also displays your plugin configuration and the sync history.
 
 ![cv_to_naut](https://user-images.githubusercontent.com/38091261/124859726-03557800-df76-11eb-9622-af4c29ba8d40.PNG)
 
-This screenshow shows the Nautobot to CloudVision home page. It also contains data mappings, plugin configuration and sync history.
+This screenshot shows the Nautobot to CloudVision home page. It also contains data mappings, plugin configuration and sync history.
 
 ![naut_to_cv](https://user-images.githubusercontent.com/38091261/124859903-55969900-df76-11eb-87c4-64ca2616bffe.PNG)
 
@@ -78,11 +80,12 @@ PLUGINS_CONFIG = {
     "from_cloudvision_default_site": "",
     "from_cloudvision_default_device_role": "",
     "from_cloudvision_default_device_role_color": "",
-    "from_cloudvision_default_device_status": "",
-    "from_cloudvision_default_device_status_color": "",
     "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
     "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
     "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
+    "hostname_patterns": [""],
+    "site_mappings": {},
+    "role_mappings": {},
   }
 }
 ```
@@ -108,60 +111,70 @@ Upon installation, this plugin creates the following custom fields in Nautobot:
 
 > While these contain the prefix "arista" in the custom field admin portal, when looking at them on a device the prefix is removed.
 
-Other custom fields may need to be created by the user. When a sync is ran and a system tag for a device in CloudVision is found without a corresponding custom field, the sync log will display a message. In order to have that data synced, a custom field must be created in the Admin UI using the given name in the message.
+Other custom fields may need to be created by the user. When a sync is run and a system tag for a device in CloudVision is found without a corresponding custom field, the sync log will display a message. To have that data synced, a custom field must be created in the Admin UI using the given name in the message.
 
 ![Custom_Fields_Arista](https://user-images.githubusercontent.com/38091261/133857343-94ee262c-87ca-4e64-a3b2-c3d410755098.PNG)
 
 The plugin can connect to either on-premise or a cloud instance of CloudVision. To connect to an on-premise instance, you must set the following variables in the Nautobot configuration file.
 
 | Configuration Variable | Type    | Usage                                                                                            |
-|------------------------|---------|--------------------------------------------------------------------------------------------------|
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------ |
 | cvp_host               | string  | Hostname or ip address of the onprem instance of CloudVision.                                    |
 | cvp_port               | string  | gRPC port (defaults to 8443, but this port has changed to 443 as of CVP 2021.3.0)                |
-| cvp_user               | string  | The username used to connect to the on-prem instance of CloudVision.                              |
+| cvp_user               | string  | The username used to connect to the on-prem instance of CloudVision.                             |
 | cvp_password           | string  | The password used by the user specified above.                                                   |
 | cvp_token              | string  | Token to be used when connecting to CloudVision.                                                 |
 | verify                 | boolean | If False, the plugin will download the certificate from CloudVision and trust it for gRPC calls. |
 
 To connect to a cloud instance of CloudVision you must set the following variable:
 
-| Configuration Variable | Type   | Usage                                                         | Default            |
-|------------------------|--------|---------------------------------------------------------------|--------------------|
-| cvaas_url              | string | URL used to connect to your CvaaS instance.                   | www.arista.io:443  |
+| Configuration Variable | Type   | Usage                                       | Default           |
+| ---------------------- | ------ | ------------------------------------------- | ----------------- |
+| cvaas_url              | string | URL used to connect to your CvaaS instance. | www.arista.io:443 |
 
 When syncing from CloudVision, this plugin will create new Arista devices that do not exist in Nautobot. When creating new devices in Nautobot, a site, device role, device role color, device status, and device are required. You may define which values to use by configuring the following values in your `nautobot_config.py` file. If you define a `default_device_role` and `default_device_status` that already exist, the default color value for both of those will be ignored as it will pull that information from Nautobot.
 
-| Configuration Variable                       | Type   | Usage                                                      | Default              |
-|----------------------------------------------|--------|------------------------------------------------------------|----------------------|
-| from_cloudvision_default_site                | string | Default site created when syncing new devices to Nautobot. | cloudvision_imported |
-| from_cloudvision_default_device_role         | string | Default role created when syncing new devices to Nautobot. | network              |
-| from_cloudvision_default_device_role_color   | string | Default role color used for default role.                  | ff0000               |
-| from_cloudvision_default_device_status       | string | Default status used when syncing new devices to Nautobot.  | cloudvision_imported |
-| from_cloudvision_default_device_status_color | string | Default status color used for default status.              | ff0000               |
+| Configuration Variable                     | Type   | Usage                                                      | Default              |
+| ------------------------------------------ | ------ | ---------------------------------------------------------- | -------------------- |
+| from_cloudvision_default_site              | string | Default site created when syncing new devices to Nautobot. | cloudvision_imported |
+| from_cloudvision_default_device_role       | string | Default role created when syncing new devices to Nautobot. | network              |
+| from_cloudvision_default_device_role_color | string | Default role color used for default role.                  | ff0000               |
 
 > When these variables are not defined in the plugin settings, the plugin will use the default values mentioned.
 
 When an Arista device exists in Nautobot but not in CloudVision, this plugin can either delete or leave the device in Nautobot. That behavior can be set with the following variable in the `nautobot_config.py` file.
 
-| Configuration Variable           | Type    | Usage                                                                                                                                                              | Default |
-|----------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Configuration Variable | Type    | Usage                                                                                                                                                              | Default |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
 | delete_devices_on_sync | boolean | If true, devices in Nautobot with device type manufacturer name set to Arista that do not exist in CloudVision but do exist in Nautobot upon sync will be deleted. | False   |
 
 > When this variable is not defined in the plugin settings, the plugin will default to using `False`.
 
 Optionally, an import tag with the name `cloudvision_imported` can be applied to devices that are imported from CloudVision.
 
-| Configuration Variable                       | Type    | Usage                                                      | Default              |
-|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
-| apply_import_tag                             | boolean | Apply import tag to devices imported from CloudVision.     | False                |
+| Configuration Variable | Type    | Usage                                                  | Default |
+| ---------------------- | ------- | ------------------------------------------------------ | ------- |
+| apply_import_tag       | boolean | Apply import tag to devices imported from CloudVision. | False   |
 
 > If apply_import_tag is set to True, the tag value that is applied to devices is `cloudvision_imported`.
 
-Lastly, you can control whether only active devices are imported or whether all devices regardless of status are imported.
+In addition, you can control whether only active devices are imported or whether all devices regardless of status are imported.
 
-| Configuration Variable                       | Type    | Usage                                                      | Default              |
-|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
-| import_active                                | boolean | Only import active devices from CloudVision.               | False                |
+| Configuration Variable | Type    | Usage                                        | Default |
+| ---------------------- | ------- | -------------------------------------------- | ------- |
+| import_active          | boolean | Only import active devices from CloudVision. | False   |
+
+Finally, there is the option to parse device hostname's for codes that indicate the assigned site or device role. This is done through a combination of a few settings. First, the hostname_patterns setting defines a list of regex patterns that define your hostname structure. These patterns must include a named capture group using the `site` and `role` key to identify the portion of the hostname that indicates those pieces of data, ie `(?P<site>\w+)` and `(?P<role>\w+)`. Once those pieces are extracted they are then evaluated against the relevant map, ie the value for the `site` capture group is looked for in the `site_mappings` dictionary expecting the value to be a key with the map value being the name of the Site. If the Site doesn't exist it will be created in Staging status. For the Device Role, it will be created if it doesn't exist in Nautobot. Please note that the hostname is converted to all lowercase when the parsing is performed so the keys are expected to be all lowercase too.
+
+| Configuration Variable                         | Type      | Usage                                                        | Default                |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
+| hostname_patterns                              | List[str] | Define the portions of a hostname that indicate site/role.   | []                     |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
+| site_mappings                                  | dict      | Define the site name associated with code in hostname.       | {}                     |
+| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
+| role_mappings                                  | dict      | Define the role name associated with code in hostname.       | {}                     |
+
+> As the Device hostname is used as the identifier for Device objects any change in hostname implies a new Device and thus should trigger a deletion and creation of a new Device in Nautobot. For this reason, the hostname parsing feature is not done during updates and only at initial creation of the Device. If you need to correct the Site or Role for a Device after initial creation you will need to manually correct it or delete it and run the import Job again.
 
 ## Usage
 

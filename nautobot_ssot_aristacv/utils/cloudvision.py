@@ -24,7 +24,6 @@ from cloudvision.Connector.grpc_client.grpcClient import create_query, to_pbts
 from nautobot_ssot_aristacv.constant import PORT_TYPE_MAP
 
 RPC_TIMEOUT = 30
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 TIME_TYPE = Union[pbts.Timestamp, datetime]
 UPDATE_TYPE = Tuple[Any, Any]
 UPDATES_TYPE = List[UPDATE_TYPE]
@@ -95,7 +94,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
             self.metadata = ((self.AUTH_KEY_PATH, self.cvp_token),)
         # Set up credentials for CVaaS using supplied token.
         else:
-            self.cvp_url = PLUGIN_SETTINGS.get("cvaas_url", "www.arista.io:443")
+            self.cvp_url = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("cvaas_url", "www.arista.io:443")
             call_creds = grpc.access_token_call_credentials(self.cvp_token)
             channel_creds = grpc.ssl_channel_credentials()
         conn_creds = grpc.composite_channel_credentials(channel_creds, call_creds)
@@ -267,7 +266,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
 def get_devices(client):
     """Get devices from CloudVision inventory."""
     device_stub = services.DeviceServiceStub(client)
-    if PLUGIN_SETTINGS.get("import_active"):
+    if settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("import_active"):
         req = services.DeviceStreamRequest(
             partial_eq_filter=[models.Device(streaming_status=models.STREAMING_STATUS_ACTIVE)]
         )
@@ -282,6 +281,7 @@ def get_devices(client):
             "fqdn": resp.value.fqdn.value,
             "sw_ver": resp.value.software_version.value,
             "model": resp.value.model_name.value,
+            "status": "active" if resp.value.streaming_status == 2 else "offline",
             "system_mac_address": resp.value.system_mac_address.value,
         }
         devices.append(device)
@@ -509,7 +509,9 @@ def get_interfaces_chassis(client: CloudvisionApi, dId):
                             "oper_status": "up"
                             if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
                             else "down",
-                            "enabled": bool(results["enabledState"]["Name"] == "enabled"),
+                            "enabled": bool(results["enabledState"]["Name"] == "enabled")
+                            if results.get("enabledState")
+                            else False,
                             "mac_addr": results["burnedInAddr"],
                             "mtu": results["mtu"],
                         }
@@ -645,3 +647,55 @@ def get_interface_status(port_info: dict) -> str:
     if port_info["oper_status"] == "down" and port_info["link_status"] == "down":
         status = "maintenance"
     return status
+
+
+def get_interface_description(client: CloudvisionApi, dId: str, interface: str):
+    """Gets interface description.
+
+    Args:
+        client (CloudvisionApi): Cloudvision connection.
+        dId (str): Device ID to get description for.
+        interface (str): Name of interface to get description for.
+    """
+    pathElts = ["Sysdb", "interface", "config", "eth", "phy", "slice", "1", "intfConfig", interface]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
+
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            if notif["updates"].get("description") and notif["updates"]["description"] is not None:
+                return notif["updates"]["description"]
+    return ""
+
+
+def get_ip_interfaces(client: CloudvisionApi, dId: str):
+    """Gets interfaces with IP Addresses configured from specified device.
+
+    Args:
+        client (CloudvisionApi): Cloudvision connection.
+        dId (str): Device ID to retrieve IP Addresses and associated interfaces for.
+    """
+    pathElts = ["Sysdb", "ip", "config", "ipIntfConfig", Wildcard()]
+    query = [create_query([(pathElts, [])], dId)]
+    query = unfreeze_frozen_dict(query)
+
+    ip_intfs = []
+    for batch in client.get(query):
+        for notif in batch["notifications"]:
+            try:
+                results = notif["updates"]
+                if results.get("intfId") and results.get("addrWithMask"):
+                    ip_intfs.append(
+                        {
+                            "interface": results["intfId"],
+                            "address": results["addrWithMask"]
+                            if results["addrWithMask"] != "0.0.0.0/0"
+                            else results.get("virtualAddrWithMask"),
+                        }
+                    )
+            except KeyError as e:
+                print(
+                    f"Unknown key {e} for ip_intfs on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}.\n\nUpdate: {notif['updates']}"
+                )
+                continue
+    return ip_intfs

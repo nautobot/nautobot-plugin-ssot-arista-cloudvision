@@ -1,15 +1,14 @@
 # pylint: disable=invalid-name,too-few-public-methods
 """Jobs for CloudVision integration with SSoT plugin."""
-from grpc import RpcError
-
 from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 
+from nautobot.dcim.models import DeviceType
 from nautobot.extras.jobs import Job, BooleanVar
 from nautobot.extras.models.tags import Tag
 from nautobot.extras.models.customfields import CustomField
-
+from nautobot.utilities.utils import get_route_for_model
 from nautobot_ssot.jobs.base import DataTarget, DataSource, DataMapping
 
 from nautobot_ssot_aristacv.diffsync.adapters.cloudvision import CloudvisionAdapter
@@ -19,8 +18,6 @@ from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
 
 
 name = "SSoT - Arista CloudVision"  # pylint: disable=invalid-name
-
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 
 
 class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
@@ -39,53 +36,37 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
     @classmethod
     def config_information(cls):
         """Dictionary describing the configuration of this DataSource."""
-        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("cvp_host"):
-            return {
-                "Server type": "On prem",
-                "CloudVision host": configs.get("cvp_host"),
-                "Username": configs.get("cvp_user"),
-                "Verify": configs.get("verify"),
-                "Delete devices on sync": configs.get(
-                    "delete_devices_on_sync", str(nautobot.DEFAULT_DELETE_DEVICES_ON_SYNC)
-                ),
-                "New device default site": configs.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
-                "New device default role": configs.get(
-                    "from_cloudvision_default_device_role", nautobot.DEFAULT_DEVICE_ROLE
-                ),
-                "New device default role color": configs.get(
-                    "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
-                ),
-                "New device default status": configs.get(
-                    "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
-                ),
-                "New device default status color": configs.get(
-                    "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
-                ),
-                "Apply import tag": str(configs.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG))
-                # Password is intentionally omitted!
-            }
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+        if PLUGIN_SETTINGS.get("cvp_host"):
+            server_type = "On prem"
+            host = PLUGIN_SETTINGS.get("cvp_host")
+        else:
+            server_type = "CVaaS"
+            host = PLUGIN_SETTINGS.get("cvaas_url")
         return {
-            "Server type": "CVaaS",
-            "CloudVision host": configs.get("cvaas_url"),
-            "Delete devices on sync": configs.get(
+            "Server type": server_type,
+            "CloudVision host": host,
+            "Username": PLUGIN_SETTINGS.get("cvp_user"),
+            "Verify": str(PLUGIN_SETTINGS.get("verify")),
+            "Delete devices on sync": PLUGIN_SETTINGS.get(
                 "delete_devices_on_sync", str(nautobot.DEFAULT_DELETE_DEVICES_ON_SYNC)
             ),
-            "New device default site": configs.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
-            "New device default role": configs.get(
+            "New device default site": PLUGIN_SETTINGS.get("from_cloudvision_default_site", nautobot.DEFAULT_SITE),
+            "New device default role": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_role", nautobot.DEFAULT_DEVICE_ROLE
             ),
-            "New device default role color": configs.get(
+            "New device default role color": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
             ),
-            "New device default status": configs.get(
+            "New device default status": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
             ),
-            "New device default status color": configs.get(
+            "New device default status color": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
             ),
-            "Apply import tag": str(configs.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG))
-            # Token is intentionally omitted!
+            "Apply import tag": str(PLUGIN_SETTINGS.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG)),
+            "Import Active": str(PLUGIN_SETTINGS.get("import_active", "True"))
+            # Password and Token are intentionally omitted!
         }
 
     @classmethod
@@ -95,7 +76,7 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             DataMapping("topology_network_type", None, "Topology Network Type", None),
             DataMapping("mlag", None, "MLAG", None),
             DataMapping("mpls", None, "mpls", None),
-            DataMapping("model", None, "Platform", reverse("dcim:platform_list")),
+            DataMapping("model", None, "Device Type", reverse(get_route_for_model(DeviceType, "list"))),
             DataMapping("systype", None, "systype", None),
             DataMapping("serialnumber", None, "Device Serial Number", None),
             DataMapping("pimbidir", None, "pimbidir", None),
@@ -110,18 +91,19 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             DataMapping("topology_type", None, "Topology Type", None),
         )
 
-    def sync_data(self):
-        """Sync system tags from CloudVision to Nautobot custom fields."""
-        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("delete_devices_on_sync"):
-            self.log_warning(
-                message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot."
-            )
-        else:
-            self.log_warning(
-                message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
-            )
-        self.log("Connecting to CloudVision")
+    def load_source_adapter(self):
+        """Load data from CloudVision into DiffSync models."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+        if self.kwargs.get("debug"):
+            if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot."
+                )
+            else:
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
+                )
+            self.log("Connecting to CloudVision")
         with CloudvisionApi(
             cvp_host=PLUGIN_SETTINGS["cvp_host"],
             cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
@@ -129,26 +111,16 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             username=PLUGIN_SETTINGS["cvp_user"],
             password=PLUGIN_SETTINGS["cvp_password"],
             cvp_token=PLUGIN_SETTINGS["cvp_token"],
-        ) as cvp:
+        ) as client:
             self.log("Loading data from CloudVision")
-            cv = CloudvisionAdapter(job=self, conn=cvp)
-            cv.load()
+            self.source_adapter = CloudvisionAdapter(job=self, conn=client)
+            self.source_adapter.load()
+
+    def load_target_adapter(self):
+        """Load data from Nautobot into DiffSync models."""
         self.log("Loading data from Nautobot")
-        nb = NautobotAdapter(job=self)
-        nb.load()
-        self.log("Performing diff between Cloudvision and Nautobot.")
-        diff = nb.diff_from(cv)
-        self.sync.diff = diff.dict()
-        self.sync.save()
-        self.log(diff.summary())
-        if not self.kwargs["dry_run"]:
-            self.log("Syncing to Nautbot")
-            try:
-                nb.sync_from(cv)
-            except RpcError as e:
-                self.log_failure("Sync failed.")
-                raise e
-            self.log_success(message="Sync complete.")
+        self.target_adapter = NautobotAdapter(job=self)
+        self.target_adapter.load()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""
@@ -177,18 +149,18 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     @classmethod
     def config_information(cls):
         """Dictionary describing the configuration of this DataTarget."""
-        configs = settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv", {})
-        if configs.get("cvp_host"):
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+        if PLUGIN_SETTINGS.get("cvp_host"):
             return {
                 "Server type": "On prem",
-                "CloudVision host": configs.get("cvp_host"),
-                "Username": configs.get("cvp_user"),
-                "Verify": configs.get("verify")
+                "CloudVision host": PLUGIN_SETTINGS.get("cvp_host"),
+                "Username": PLUGIN_SETTINGS.get("cvp_user"),
+                "Verify": str(PLUGIN_SETTINGS.get("verify"))
                 # Password is intentionally omitted!
             }
         return {
             "Server type": "CVaaS",
-            "CloudVision host": "www.arista.io",
+            "CloudVision host": PLUGIN_SETTINGS.get("cvaas_url"),
             # Token is intentionally omitted!
         }
 
@@ -197,9 +169,25 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
         """List describing the data mappings involved in this DataTarget."""
         return (DataMapping("Tags", reverse("extras:tag_list"), "Device Tags", None),)
 
-    def sync_data(self):
-        """Sync device tags from CloudVision to Nautobot."""
-        self.log("Connecting to CloudVision")
+    def load_source_adapter(self):
+        """Load data from Nautobot into DiffSync models."""
+        self.log("Loading data from Nautobot")
+        self.source_adapter = NautobotAdapter(job=self)
+        self.source_adapter.load()
+
+    def load_target_adapter(self):
+        """Load data from CloudVision into DiffSync models."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+        if self.kwargs.get("debug"):
+            if PLUGIN_SETTINGS.get("delete_devices_on_sync"):
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will be deleted from Nautobot."
+                )
+            else:
+                self.log_warning(
+                    message="Devices not present in Cloudvision but present in Nautobot will not be deleted from Nautobot."
+                )
+            self.log("Connecting to CloudVision")
         with CloudvisionApi(
             cvp_host=PLUGIN_SETTINGS["cvp_host"],
             cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
@@ -207,28 +195,10 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
             username=PLUGIN_SETTINGS["cvp_user"],
             password=PLUGIN_SETTINGS["cvp_password"],
             cvp_token=PLUGIN_SETTINGS["cvp_token"],
-        ) as cvp:
+        ) as client:
             self.log("Loading data from CloudVision")
-            cv = CloudvisionAdapter(job=self, conn=cvp)
-            cv.load()
-        self.log("Loading data from Nautobot")
-        nb = NautobotAdapter()
-        nb.load()
-        self.log("Performing diff between Nautobot and Cloudvision")
-        diff = cv.diff_from(nb)
-        self.sync.diff = diff.dict()
-        self.sync.save()
-        self.log(diff.summary())
-        # if self.kwargs["debug"]:
-        #     self.log_debug(diff_nb_cv.dict())
-        if not self.kwargs["dry_run"]:
-            self.log("Syncing to CloudVision")
-            try:
-                nb.sync_to(cv)
-            except RpcError as e:
-                self.log_failure("Sync failed.")
-                raise e
-            self.log_success(message="Sync complete")
+            self.target_adapter = CloudvisionAdapter(job=self, conn=client)
+            self.target_adapter.load()
 
     def lookup_object(self, model_name, unique_id):
         """Lookup object for SSoT plugin integration."""

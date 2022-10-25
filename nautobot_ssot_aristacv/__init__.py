@@ -32,6 +32,9 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
         "cvp_password": os.getenv("NAUTOBOT_ARISTACV_PASSWORD"),
         "verify": os.getenv("NAUTOBOT_ARISTACVP_VERIFY"),
         "cvp_token": os.getenv("NAUTOBOT_ARISTACV_TOKEN"),
+        "hostname_patterns": [],
+        "site_mappings": {},
+        "role_mappings": {},
     }
     caching_config = {}
 
@@ -41,9 +44,13 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
 
         from .signals import (  # pylint: disable=import-outside-toplevel
             post_migrate_create_custom_fields,
+            post_migrate_create_manufacturer,
+            post_migrate_create_platform,
         )
 
         post_migrate.connect(post_migrate_create_custom_fields)
+        post_migrate.connect(post_migrate_create_manufacturer)
+        post_migrate.connect(post_migrate_create_platform)
 
 
 config = NautobotSSOTAristaCVConfig  # pylint:disable=invalid-name

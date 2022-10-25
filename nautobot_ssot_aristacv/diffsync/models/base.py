@@ -1,6 +1,7 @@
 """DiffSyncModel subclasses for Nautobot-to-AristaCV data sync."""
 from uuid import UUID
 from diffsync import DiffSyncModel
+from diffsync.enum import DiffSyncModelFlags
 from typing import List, Optional
 
 
@@ -12,12 +13,16 @@ class Device(DiffSyncModel):
     _attributes = (
         "device_model",
         "serial",
+        "status",
+        "version",
     )
     _children = {"port": "ports"}
 
     name: str
     device_model: str
     serial: str
+    status: str
+    version: Optional[str]
     ports: List["Port"] = list()
     uuid: Optional[UUID]
 
@@ -31,6 +36,7 @@ class Port(DiffSyncModel):
         "device",
     )
     _attributes = (
+        "description",
         "mac_addr",
         "enabled",
         "mode",
@@ -42,12 +48,33 @@ class Port(DiffSyncModel):
 
     name: str
     device: str
+    description: Optional[str]
     mac_addr: str
     enabled: bool
     mode: str
     mtu: Optional[int]
     port_type: str
     status: str
+    uuid: Optional[UUID]
+
+
+class IPAddress(DiffSyncModel):
+    """IPAddress Model."""
+
+    model_flags = DiffSyncModelFlags.SKIP_UNMATCHED_DST
+
+    _modelname = "ipaddr"
+    _identifiers = (
+        "address",
+        "device",
+        "interface",
+    )
+    _attributes = ()
+    _children = {}
+
+    address: str
+    device: str
+    interface: str
     uuid: Optional[UUID]
 
 

@@ -1,9 +1,7 @@
 """Cloudvision DiffSync models for AristaCV SSoT."""
 from django.conf import settings
-from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, Port
+from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, IPAddress, Port
 from nautobot_ssot_aristacv.utils.cloudvision import CloudvisionApi
-
-PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 
 
 class CloudvisionDevice(Device):
@@ -24,7 +22,7 @@ class CloudvisionDevice(Device):
 
 
 class CloudvisionPort(Port):
-    """Nautobot Port model."""
+    """Cloudvision Port model."""
 
     @classmethod
     def create(cls, diffsync, ids, attrs):
@@ -40,12 +38,33 @@ class CloudvisionPort(Port):
         return self
 
 
+class CloudvisionIPAddress(IPAddress):
+    """Cloudvision IPAdress model."""
+
+    @classmethod
+    def create(cls, diffsync, ids, attrs):
+        """Create IPAddress in AristaCV from IPAddress object."""
+        ...
+        return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
+
+    def update(self, attrs):
+        """Update IPAddress in AristaCV from IPAddress object."""
+        ...
+        return super().update(attrs)
+
+    def delete(self):
+        """Delete IPAddress in AristaCV from IPAddress object."""
+        ...
+        return self
+
+
 class CloudvisionCustomField(CustomField):
     """Cloudvision CustomField model."""
 
     @staticmethod
     def connect_cvp():
         """Connect to Cloudvision gRPC endpoint."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         return CloudvisionApi(
             cvp_host=PLUGIN_SETTINGS["cvp_host"],
             cvp_port=PLUGIN_SETTINGS.get("cvp_port", "8443"),
