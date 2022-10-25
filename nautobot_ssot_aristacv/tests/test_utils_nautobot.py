@@ -1,6 +1,6 @@
 """Tests of Cloudvision utility methods."""
 from django.test import override_settings
-from nautobot.dcim.models import Site
+from nautobot.dcim.models import DeviceType, Manufacturer, Site
 from nautobot.utilities.testing import TestCase
 from nautobot_ssot_aristacv.utils import nautobot
 
@@ -22,6 +22,21 @@ class TestNautobotUtils(TestCase):
         self.assertEqual(result.name, "Test2")
         self.assertEqual(result.slug, "test2")
         self.assertTrue(isinstance(result, Site))
+
+    def test_verify_device_type_object_success(self):
+        """Test the verify_device_type_object for existing DeviceType."""
+        new_dt, _ = DeviceType.objects.get_or_create(
+            model="DCS-7150S-24", slug="dcs-7150s-24", manufacturer=Manufacturer.objects.get(slug="arista")
+        )
+        result = nautobot.verify_device_type_object(device_type="DCS-7150S-24")
+        self.assertEqual(result, new_dt)
+
+    def test_verify_device_type_object_fail(self):
+        """Test the verify_device_type_object for non-existing DeviceType."""
+        result = nautobot.verify_device_type_object(device_type="DCS-7150S-24")
+        self.assertEqual(result.model, "DCS-7150S-24")
+        self.assertEqual(result.slug, "dcs-7150s-24")
+        self.assertTrue(isinstance(result, DeviceType))
 
     @override_settings(
         PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]}}

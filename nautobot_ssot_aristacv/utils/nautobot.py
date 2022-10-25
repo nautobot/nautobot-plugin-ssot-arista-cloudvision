@@ -40,7 +40,7 @@ def verify_device_type_object(device_type):
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
         device_type_obj = DeviceType(
-            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=device_type.lower()
+            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=slugify(device_type)
         )
         device_type_obj.validated_save()
     return device_type_obj
@@ -56,7 +56,7 @@ def verify_device_role_object(role_name, role_color):
     try:
         role_obj = DeviceRole.objects.get(name=role_name)
     except DeviceRole.DoesNotExist:
-        role_obj = DeviceRole(name=role_name, slug=role_name.lower(), color=role_color)
+        role_obj = DeviceRole(name=role_name, slug=slugify(role_name), color=role_color)
         role_obj.validated_save()
     return role_obj
 
