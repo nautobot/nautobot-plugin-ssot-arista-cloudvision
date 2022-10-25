@@ -1,6 +1,6 @@
 """Tests of Cloudvision utility methods."""
 from django.test import override_settings
-from nautobot.dcim.models import DeviceType, Manufacturer, Site
+from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
 from nautobot.utilities.testing import TestCase
 from nautobot_ssot_aristacv.utils import nautobot
 
@@ -37,6 +37,19 @@ class TestNautobotUtils(TestCase):
         self.assertEqual(result.model, "DCS-7150S-24")
         self.assertEqual(result.slug, "dcs-7150s-24")
         self.assertTrue(isinstance(result, DeviceType))
+
+    def test_verify_device_role_object_success(self):
+        """Test the verify_device_role_object method for existing DeviceRole."""
+        new_dr, _ = DeviceRole.objects.get_or_create(name="Edge Router", slug="edge-router")
+        result = nautobot.verify_device_role_object(role_name="Edge Router", role_color="ff0000")
+        self.assertEqual(result, new_dr)
+
+    def test_verify_device_role_object_fail(self):
+        """Test the verify_device_role_object method for non-existing DeviceRole."""
+        result = nautobot.verify_device_role_object(role_name="Distro Switch", role_color="ff0000")
+        self.assertEqual(result.name, "Distro Switch")
+        self.assertEqual(result.slug, "distro-switch")
+        self.assertEqual(result.color, "ff0000")
 
     @override_settings(
         PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]}}
