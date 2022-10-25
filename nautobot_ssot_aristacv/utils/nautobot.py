@@ -1,7 +1,6 @@
 """Utility functions for Nautobot ORM."""
 import re
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
 
 from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
@@ -59,28 +58,6 @@ def verify_device_role_object(role_name, role_color):
         role_obj = DeviceRole(name=role_name, slug=slugify(role_name), color=role_color)
         role_obj.validated_save()
     return role_obj
-
-
-def verify_device_status(device_status, device_status_color):
-    """Verifies device status object exists in Nautobot. If not, creates specified device status.
-
-    Args:
-        device_status (str): Status name.
-        device_status_color (str): Status color.
-    """
-    try:
-        status_obj = Status.objects.get(name=device_status)
-    except Status.DoesNotExist:
-        dcim_device = ContentType.objects.get(app_label="dcim", model="device")
-        status_obj = Status(
-            name=device_status,
-            slug=device_status.lower(),
-            color=device_status_color,
-            description="Devices imported from CloudVision.",
-        )
-        status_obj.validated_save()
-        status_obj.content_types.set([dcim_device])
-    return status_obj
 
 
 def verify_import_tag():
