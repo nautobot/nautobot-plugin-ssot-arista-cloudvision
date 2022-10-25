@@ -140,7 +140,7 @@ def get_site_from_map(site_code: str):
     Returns:
         str|None: Name of Site if site code found else None.
     """
-    site_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("site_mapping")
+    site_map = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("site_mappings")
     site_name = None
     if site_code in site_map:
         site_name = site_map[site_code]
