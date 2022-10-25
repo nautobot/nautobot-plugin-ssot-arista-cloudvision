@@ -1,7 +1,8 @@
 """Tests of Cloudvision utility methods."""
+from unittest.mock import MagicMock, patch
 from django.test import override_settings
 from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
-from nautobot.extras.models import Tag
+from nautobot.extras.models import Relationship, Tag
 from nautobot.utilities.testing import TestCase
 from nautobot_ssot_aristacv.utils import nautobot
 
@@ -63,6 +64,33 @@ class TestNautobotUtils(TestCase):
         result = nautobot.verify_import_tag()
         self.assertEqual(result.name, "cloudvision_imported")
         self.assertEqual(result.slug, "cloudvision_imported")
+
+    def test_get_device_version_dlc_success(self):
+        """Test the get_device_version method pulling from Device Lifecycle plugin."""
+        software_relation = Relationship.objects.get(name="Software on Device")
+
+        mock_version = MagicMock()
+        mock_version.source.version = MagicMock()
+        mock_version.source.version = "1.0"
+
+        mock_device = MagicMock()
+        mock_device.get_relationships = MagicMock()
+        mock_device.get_relationships.return_value = {"destination": {software_relation: [mock_version]}}
+
+        result = nautobot.get_device_version(mock_device)
+        self.assertEqual(result, "1.0")
+
+    def test_get_device_version_dlc_exception(self):
+        """Test the get_device_version method pulling from the Device Custom Field."""
+        mock_device = MagicMock()
+        mock_device.custom_field_data = {"arista_eos": "1.0"}
+
+        mock_import = MagicMock()
+        mock_import.LIFECYCLE_MGMT = False
+
+        with patch("nautobot_ssot_aristacv.utils.nautobot.LIFECYCLE_MGMT", mock_import.LIFECYCLE_MGMT):
+            result = nautobot.get_device_version(mock_device)
+        self.assertEqual(result, "1.0")
 
     @override_settings(
         PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]}}
