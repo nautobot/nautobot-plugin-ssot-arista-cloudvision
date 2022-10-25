@@ -1,6 +1,7 @@
 """Tests of Cloudvision utility methods."""
 from django.test import override_settings
 from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
+from nautobot.extras.models import Tag
 from nautobot.utilities.testing import TestCase
 from nautobot_ssot_aristacv.utils import nautobot
 
@@ -50,6 +51,18 @@ class TestNautobotUtils(TestCase):
         self.assertEqual(result.name, "Distro Switch")
         self.assertEqual(result.slug, "distro-switch")
         self.assertEqual(result.color, "ff0000")
+
+    def test_verify_import_tag_success(self):
+        """Test the verify_import_tag method for existing Tag."""
+        new_tag, _ = Tag.objects.get_or_create(name="cloudvision_imported", slug="cloudvision_imported")
+        result = nautobot.verify_import_tag()
+        self.assertEqual(result, new_tag)
+
+    def test_verify_import_tag_fail(self):
+        """Test the verify_import_tag method for non-existing Tag."""
+        result = nautobot.verify_import_tag()
+        self.assertEqual(result.name, "cloudvision_imported")
+        self.assertEqual(result.slug, "cloudvision_imported")
 
     @override_settings(
         PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]}}
