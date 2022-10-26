@@ -80,6 +80,15 @@ class TestNautobotUtils(TestCase):
         result = nautobot.get_device_version(mock_device)
         self.assertEqual(result, "1.0")
 
+    def test_get_device_version_dlc_fail(self):
+        """Test the get_device_version method pulling from Device Lifecycle plugin but failing."""
+        mock_device = MagicMock()
+        mock_device.get_relationships = MagicMock()
+        mock_device.get_relationships.return_value = {}
+
+        result = nautobot.get_device_version(mock_device)
+        self.assertEqual(result, "")
+
     def test_get_device_version_dlc_exception(self):
         """Test the get_device_version method pulling from the Device Custom Field."""
         mock_device = MagicMock()
