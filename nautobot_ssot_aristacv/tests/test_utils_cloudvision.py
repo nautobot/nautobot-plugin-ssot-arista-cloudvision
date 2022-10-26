@@ -7,6 +7,17 @@ from nautobot_ssot_aristacv.utils import cloudvision
 from nautobot_ssot_aristacv.tests.fixtures import fixtures
 
 
+class TestCloudvisionApi(TestCase):
+    """Test Cloudvision Api client and methods."""
+
+    databases = ("default", "job_logs")
+
+    def test_auth_failure_exception(self):
+        """Test that AuthFailure is thrown when no credentials are passed."""
+        with self.assertRaises(cloudvision.AuthFailure):
+            cloudvision.CloudvisionApi(cvp_host="https://localhost", username="", password="", verify=True)  # nosec
+
+
 class TestCloudvisionUtils(TestCase):
     """Test Cloudvision utility methods."""
 
