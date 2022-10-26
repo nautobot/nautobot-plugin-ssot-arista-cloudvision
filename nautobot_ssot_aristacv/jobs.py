@@ -58,12 +58,6 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             "New device default role color": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
             ),
-            "New device default status": PLUGIN_SETTINGS.get(
-                "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
-            ),
-            "New device default status color": PLUGIN_SETTINGS.get(
-                "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
-            ),
             "Apply import tag": str(PLUGIN_SETTINGS.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG)),
             "Import Active": str(PLUGIN_SETTINGS.get("import_active", "True"))
             # Password and Token are intentionally omitted!
