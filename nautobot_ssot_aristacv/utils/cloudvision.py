@@ -288,16 +288,6 @@ def get_devices(client):
     return devices
 
 
-# def get_device_id(self, device_name: str):
-#     """Get device_id for device_name from CloudVision inventory."""
-#     device_stub = services.DeviceServiceStub(self.comm_channel)
-#     req = services.DeviceStreamRequest(
-#         partial_eq_filter=[models.Device(hostname=device_name, streaming_status=models.STREAMING_STATUS_ACTIVE)]
-#     )
-#     resp = device_stub.GetOne(req)
-#     return resp.value.key.device_id.value
-
-
 def get_tags(client):
     """Get all tags from CloudVision."""
     tag_stub = tag_services.DeviceTagServiceStub(client)
