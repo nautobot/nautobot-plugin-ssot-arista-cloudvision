@@ -97,8 +97,8 @@ class TestCloudvisionUtils(TestCase):
         ]
         self.assertEqual(results, expected)
 
-    def test_get_tags(self):
-        """Test get_tags method."""
+    def test_get_tags_by_type(self):
+        """Test get_tags_by_type method."""
 
         mock_tag = MagicMock()
         mock_tag.value.key.label.value = "test"
@@ -109,8 +109,8 @@ class TestCloudvisionUtils(TestCase):
         device_tag_stub.DeviceTagServiceStub.return_value.GetAll.return_value = [mock_tag]
 
         with patch("nautobot_ssot_aristacv.utils.cloudvision.tag_services", device_tag_stub):
-            results = cloudvision.get_tags(client=self.client)
-        expected = [{"label": "test", "value": "test", "creator_type": 1}]
+            results = cloudvision.get_tags_by_type(client=self.client)
+        expected = [{"label": "test", "value": "test"}]
         self.assertEqual(results, expected)
 
     def test_get_interfaces_fixed(self):
