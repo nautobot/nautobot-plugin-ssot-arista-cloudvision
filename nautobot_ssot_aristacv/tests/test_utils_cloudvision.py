@@ -1,5 +1,6 @@
 """Tests of Cloudvision utility methods."""
 from unittest.mock import MagicMock, patch
+from django.test import override_settings
 from parameterized import parameterized
 
 from nautobot.utilities.testing import TestCase
@@ -33,8 +34,9 @@ class TestCloudvisionUtils(TestCase):
         """Setup mock Cloudvision client."""
         self.client = MagicMock()
 
-    def test_get_devices(self):
-        """Test get_devices function."""
+    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"import_active": False}})
+    def test_get_all_devices(self):
+        """Test get_devices function for active and inactive devices."""
         device1 = MagicMock()
         device1.value.key.device_id.value = "JPE12345678"
         device1.value.hostname.value = "ams01-edge-01.ntc.com"
