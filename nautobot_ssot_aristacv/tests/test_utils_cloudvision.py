@@ -100,7 +100,7 @@ class TestCloudvisionUtils(TestCase):
             self.client.get = MagicMock()
             self.client.get.return_value = fixtures.FIXED_INTF_QUERY
             results = cloudvision.get_interfaces_fixed(client=self.client, dId="JPE12345678")
-        expected = fixtures.INTERFACE_FIXTURE
+        expected = fixtures.FIXED_INTERFACE_FIXTURE
         self.assertEqual(results, expected)
 
     port_types = [
