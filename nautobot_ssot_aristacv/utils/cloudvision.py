@@ -288,22 +288,6 @@ def get_devices(client):
     return devices
 
 
-def get_tags(client):
-    """Get all tags from CloudVision."""
-    tag_stub = tag_services.DeviceTagServiceStub(client)
-    req = tag_services.DeviceTagStreamRequest()
-    responses = tag_stub.GetAll(req)
-    tags = []
-    for resp in responses:
-        dev_tag = {
-            "label": resp.value.key.label.value,
-            "value": resp.value.key.value.value,
-            "creator_type": resp.value.creator_type,
-        }
-        tags.append(dev_tag)
-    return tags
-
-
 def get_tags_by_type(client, creator_type: int = tag_models.CREATOR_TYPE_USER):
     """Get tags by creator type from CloudVision."""
     tag_stub = tag_services.DeviceTagServiceStub(client)
