@@ -103,6 +103,32 @@ class TestCloudvisionUtils(TestCase):
         expected = fixtures.FIXED_INTERFACE_FIXTURE
         self.assertEqual(results, expected)
 
+    def test_get_interfaces_chassis(self):
+        """Test get_interfaces_chassis method."""
+        self.maxDiff = None  # pylint:disable=invalid-name
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\tinterface",
+            "\304\006status",
+            "\304\003eth",
+            "\304\003phy",
+            "\304\005slice",
+        ]
+
+        mock_lc = MagicMock()
+        mock_lc.return_value = {"Linecard1": None}
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.unfreeze_frozen_dict", mock_lc):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.CHASSIS_INTF_QUERY
+            results = cloudvision.get_interfaces_chassis(client=self.client, dId="JPE12345678")
+
+        expected = fixtures.CHASSIS_INTERFACE_FIXTURE
+        self.assertEqual(results, expected)
+
     port_types = [
         ("built_in_gig", {"port_info": {}, "transceiver": "xcvr1000BaseT"}, "1000base-t"),
         ("build_in_10g_sr", {"port_info": {}, "transceiver": "xcvr10GBaseSr"}, "10gbase-x-xfp"),
