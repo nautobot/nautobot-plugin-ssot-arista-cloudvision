@@ -65,6 +65,38 @@ class TestCloudvisionUtils(TestCase):
         expected = fixtures.DEVICE_FIXTURE
         self.assertEqual(results, expected)
 
+    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"import_active": True}})
+    def test_get_active_devices(self):
+        """Test get_devices function for active devices."""
+        device1 = MagicMock()
+        device1.value.key.device_id.value = "JPE12345678"
+        device1.value.hostname.value = "ams01-edge-01.ntc.com"
+        device1.value.fqdn.value = "ams01-edge-01.ntc.com"
+        device1.value.software_version.value = "4.26.5M"
+        device1.value.streaming_status = 2
+        device1.value.model_name.value = "DCS-7280CR2-60"
+        device1.value.system_mac_address.value = "12:34:56:78:ab:cd"
+
+        device_list = [device1]
+
+        device_svc_stub = MagicMock()
+        device_svc_stub.DeviceServiceStub.return_value.GetAll.return_value = device_list
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.services", device_svc_stub):
+            results = cloudvision.get_devices(client=self.client)
+        expected = [
+            {
+                "device_id": "JPE12345678",
+                "hostname": "ams01-edge-01.ntc.com",
+                "fqdn": "ams01-edge-01.ntc.com",
+                "status": "active",
+                "sw_ver": "4.26.5M",
+                "model": "DCS-7280CR2-60",
+                "system_mac_address": "12:34:56:78:ab:cd",
+            }
+        ]
+        self.assertEqual(results, expected)
+
     def test_get_tags(self):
         """Test get_tags method."""
 
