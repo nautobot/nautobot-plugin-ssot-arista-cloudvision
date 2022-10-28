@@ -507,30 +507,24 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
     intfStatusFixed = []
     for batch in client.get(query):
         for notif in batch["notifications"]:
-            try:
-                results = notif["updates"]
-                if results.get("intfId"):
-                    intfStatusFixed.append(
-                        {
-                            "interface": results["intfId"],
-                            "link_status": "up"
-                            if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
-                            else "down",
-                            "oper_status": "up"
-                            if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
-                            else "down",
-                            "enabled": bool(
-                                results["enabledState"]["Name"] == "enabled" if results.get("enabledState") else False
-                            ),
-                            "mac_addr": results["burnedInAddr"] if results.get("burnedInAddr") else "",
-                            "mtu": results["mtu"] if results.get("mtu") else 1500,
-                        }
-                    )
-            except KeyError as e:
-                print(
-                    f"Unknown key {e} for intfStatusFixed on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}.\n\nUpdate: {notif['updates']}"
+            results = notif["updates"]
+            if results.get("intfId"):
+                intfStatusFixed.append(
+                    {
+                        "interface": results["intfId"],
+                        "link_status": "up"
+                        if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
+                        else "down",
+                        "oper_status": "up"
+                        if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
+                        else "down",
+                        "enabled": bool(
+                            results["enabledState"]["Name"] == "enabled" if results.get("enabledState") else False
+                        ),
+                        "mac_addr": results["burnedInAddr"] if results.get("burnedInAddr") else "",
+                        "mtu": results["mtu"] if results.get("mtu") else 1500,
+                    }
                 )
-                continue
     return intfStatusFixed
 
 
