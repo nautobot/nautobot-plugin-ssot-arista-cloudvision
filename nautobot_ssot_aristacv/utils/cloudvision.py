@@ -650,20 +650,14 @@ def get_ip_interfaces(client: CloudvisionApi, dId: str):
     ip_intfs = []
     for batch in client.get(query):
         for notif in batch["notifications"]:
-            try:
-                results = notif["updates"]
-                if results.get("intfId") and results.get("addrWithMask"):
-                    ip_intfs.append(
-                        {
-                            "interface": results["intfId"],
-                            "address": results["addrWithMask"]
-                            if results["addrWithMask"] != "0.0.0.0/0"
-                            else results.get("virtualAddrWithMask"),
-                        }
-                    )
-            except KeyError as e:
-                print(
-                    f"Unknown key {e} for ip_intfs on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}.\n\nUpdate: {notif['updates']}"
+            results = notif["updates"]
+            if results.get("intfId") and results.get("addrWithMask"):
+                ip_intfs.append(
+                    {
+                        "interface": results["intfId"],
+                        "address": results["addrWithMask"]
+                        if results["addrWithMask"] != "0.0.0.0/0"
+                        else results.get("virtualAddrWithMask"),
+                    }
                 )
-                continue
     return ip_intfs
