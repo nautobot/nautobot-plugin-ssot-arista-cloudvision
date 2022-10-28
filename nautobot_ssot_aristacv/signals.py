@@ -79,7 +79,9 @@ def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
         },
         {"name": "arista_topology_type", "type": CustomFieldTypeChoices.TYPE_TEXT, "label": "Topology Type"},
     ]:
-        field, _ = CustomField.objects.get_or_create(name=device_cf_dict["name"], defaults=device_cf_dict)
+        field, _ = CustomField.objects.get_or_create(
+            name=device_cf_dict["name"], defaults=device_cf_dict, slug=device_cf_dict["name"]
+        )
         field.content_types.set([ContentType.objects.get_for_model(Device)])
 
 
