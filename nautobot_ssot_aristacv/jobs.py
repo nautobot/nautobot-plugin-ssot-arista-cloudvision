@@ -6,8 +6,6 @@ from django.urls import reverse
 
 from nautobot.dcim.models import DeviceType
 from nautobot.extras.jobs import Job, BooleanVar
-from nautobot.extras.models.tags import Tag
-from nautobot.extras.models.customfields import CustomField
 from nautobot.utilities.utils import get_route_for_model
 from nautobot_ssot.jobs.base import DataTarget, DataSource, DataMapping
 
@@ -116,16 +114,6 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
         self.target_adapter = NautobotAdapter(job=self)
         self.target_adapter.load()
 
-    def lookup_object(self, model_name, unique_id):
-        """Lookup object for SSoT plugin integration."""
-        if model_name == "cf":
-            try:
-                cf_name, _ = unique_id.split("__")
-                return CustomField.objects.get(name=f"{cf_name}")
-            except CustomField.DoesNotExist:
-                pass
-        return None
-
 
 class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
     """CloudVision SSoT Data Target."""
@@ -193,16 +181,6 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
             self.log("Loading data from CloudVision")
             self.target_adapter = CloudvisionAdapter(job=self, conn=client)
             self.target_adapter.load()
-
-    def lookup_object(self, model_name, unique_id):
-        """Lookup object for SSoT plugin integration."""
-        if model_name == "tag":
-            try:
-                tag_name, value = unique_id.split("__")
-                return Tag.objects.get(name=f"{tag_name}:{value}")
-            except Tag.DoesNotExist:
-                pass
-        return None
 
 
 jobs = [CloudVisionDataSource, CloudVisionDataTarget]
