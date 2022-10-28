@@ -209,6 +209,52 @@ class TestCloudvisionUtils(TestCase):
         expected = fixtures.CHASSIS_INTERFACE_FIXTURE
         self.assertEqual(results, expected)
 
+    def test_get_interface_transceiver_eeprom(self):
+        """Test the get_interface_transceiver method from eeprom."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\010hardware",
+            "\304\006archer",
+            "\304\004xcvr",
+            "\304\006status",
+            "\304\003all",
+            "\304\tEthernet1",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.TRANSCEIVER_EEPROM_QUERY
+            results = cloudvision.get_interface_transceiver(
+                client=self.client, dId="JPE12345678", interface="Ethernet1"
+            )
+        self.assertEqual(results, "40GBASE-PLR4")
+
+    def test_get_interface_transceiver_local(self):
+        """Test the get_interface_transceiver method from local interface."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345679"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\010hardware",
+            "\304\006archer",
+            "\304\004xcvr",
+            "\304\006status",
+            "\304\003all",
+            "\304\tEthernet1",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.TRANSCEIVER_LOCAL_QUERY
+            results = cloudvision.get_interface_transceiver(
+                client=self.client, dId="JPE12345678", interface="Ethernet1"
+            )
+        self.assertEqual(results, "xcvr1000BaseT")
+
     port_types = [
         ("built_in_gig", {"port_info": {}, "transceiver": "xcvr1000BaseT"}, "1000base-t"),
         ("build_in_10g_sr", {"port_info": {}, "transceiver": "xcvr10GBaseSr"}, "10gbase-x-xfp"),
