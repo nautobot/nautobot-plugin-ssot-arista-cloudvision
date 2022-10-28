@@ -128,6 +128,24 @@ class TestCloudvisionUtils(TestCase):
         expected = [{"label": "ztp", "value": "enabled"}]
         self.assertEqual(results, expected)
 
+    def test_get_device_type_modular(self):
+        """Test the get_device_type method for modular chassis."""
+        mock_query = MagicMock()
+        mock_query.return_value = {"fixedSystem": None}
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.unfreeze_frozen_dict", mock_query):
+            results = cloudvision.get_device_type(client=self.client, dId="JPE12345678")
+        self.assertEqual(results, "modular")
+
+    def test_get_device_type_fixed(self):
+        """Test the get_device_type method for fixed type."""
+        mock_query = MagicMock()
+        mock_query.return_value = {"fixedSystem": True}
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.unfreeze_frozen_dict", mock_query):
+            results = cloudvision.get_device_type(client=self.client, dId="JPE12345678")
+        self.assertEqual(results, "fixedSystem")
+
     def test_get_interfaces_fixed(self):
         """Test get_interfaces_fixed method."""
         mock_query = MagicMock()
