@@ -110,6 +110,8 @@ class CloudvisionAdapter(DiffSync):
         """Load IP addresses from CloudVision."""
         dev_ip_intfs = cloudvision.get_ip_interfaces(client=self.conn, dId=dev.serial)
         for intf in dev_ip_intfs:
+            if self.job.kwargs.get("debug"):
+                self.job.log(message=f"Loading interface {intf['interface']} on {dev.name} for {intf['address']}.")
             try:
                 _ = self.get(self.port, {"name": intf["interface"], "device": dev.name})
             except ObjectNotFound:
@@ -136,19 +138,24 @@ class CloudvisionAdapter(DiffSync):
                         message=f"Unable to find device {dev.name} to assign port {intf['interface']}. {err}"
                     )
 
-            new_ip = self.ipaddr(
-                address=intf["address"],
-                interface=intf["interface"],
-                device=dev.name,
-                uuid=None,
-            )
-            try:
-                self.add(new_ip)
-            except ObjectAlreadyExists as err:
-                self.job.log_warning(
-                    message=f"Unable to load {intf['address']} for {dev.name} on {intf['interface']}. {err}"
+            if self.job.kwargs.get("debug"):
+                self.job.log(
+                    message=f"Attempting to load IP Address {intf['address']} for {intf['interface']} on {dev.name}."
                 )
-                continue
+            if intf["address"] and intf["address"] != "none":
+                new_ip = self.ipaddr(
+                    address=intf["address"],
+                    interface=intf["interface"],
+                    device=dev.name,
+                    uuid=None,
+                )
+                try:
+                    self.add(new_ip)
+                except ObjectAlreadyExists as err:
+                    self.job.log_warning(
+                        message=f"Unable to load {intf['address']} for {dev.name} on {intf['interface']}. {err}"
+                    )
+                    continue
 
     def load_device_tags(self, device):
         """Load device tags from CloudVision."""

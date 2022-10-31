@@ -10,7 +10,15 @@ def load_json(path):
 
 DEVICE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_devices_response.json")
 FIXED_INTF_QUERY = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_client_query.json")
-INTERFACE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_response.json")
+CHASSIS_INTF_QUERY = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_chassis_client_query.json")
+TRANSCEIVER_EEPROM_QUERY = load_json(
+    "./nautobot_ssot_aristacv/tests/fixtures/get_interface_transceiver_eeprom_client_query.json"
+)
+TRANSCEIVER_LOCAL_QUERY = load_json(
+    "./nautobot_ssot_aristacv/tests/fixtures/get_interface_transceiver_local_client_query.json"
+)
+FIXED_INTERFACE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_fixed_response.json")
+CHASSIS_INTERFACE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interfaces_chassis_response.json")
 INTF_DESCRIPTION_QUERY = load_json(
     "./nautobot_ssot_aristacv/tests/fixtures/get_interface_description_client_query.json"
 )
