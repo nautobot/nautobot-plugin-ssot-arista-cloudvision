@@ -81,8 +81,14 @@ def get_device_version(device):
         software_relation = Relationship.objects.get(name="Software on Device")
         relations = device.get_relationships()
         try:
-            version = relations["destination"][software_relation][0].source.version
+            assigned_versions = relations["destination"][software_relation]
+            if len(assigned_versions) > 0:
+                version = assigned_versions[0].source.version
+            else:
+                return ""
         except KeyError:
+            pass
+        except IndexError:
             pass
     else:
         version = device.custom_field_data["arista_eos"]
