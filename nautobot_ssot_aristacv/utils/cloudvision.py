@@ -505,26 +505,23 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
     query = unfreeze_frozen_dict(query)
 
     intfStatusFixed = []
-    for batch in client.get(query):
-        for notif in batch["notifications"]:
+    for interface in client.get(query):
+        new_intf = {}
+        for notif in interface["notifications"]:
             results = notif["updates"]
             if results.get("intfId"):
-                intfStatusFixed.append(
-                    {
-                        "interface": results["intfId"],
-                        "link_status": "up"
-                        if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
-                        else "down",
-                        "oper_status": "up"
-                        if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
-                        else "down",
-                        "enabled": bool(
-                            results["enabledState"]["Name"] == "enabled" if results.get("enabledState") else False
-                        ),
-                        "mac_addr": results["burnedInAddr"] if results.get("burnedInAddr") else "",
-                        "mtu": results["mtu"] if results.get("mtu") else 1500,
-                    }
-                )
+                new_intf["interface"] = results["intfId"]
+            if results.get("enabledState"):
+                new_intf["enabled"] = bool(results["enabledState"]["Name"] == "enabled")
+            if results.get("burnedInAddr"):
+                new_intf["mac_addr"] = results["burnedInAddr"]
+            if results.get("mtu"):
+                new_intf["mtu"] = results["mtu"]
+            if results.get("operStatus"):
+                new_intf["oper_status"] = results["operStatus"]
+            if results.get("linkStatus"):
+                new_intf["link_status"] = results["linkStatus"]
+        intfStatusFixed.append(new_intf)
     return intfStatusFixed
 
 
