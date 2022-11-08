@@ -443,10 +443,12 @@ def get_device_type(client: CloudvisionApi, dId: str):
     pathElts = ["Sysdb", "hardware", "entmib"]
     query = get_query(client, dId, pathElts)
     query = unfreeze_frozen_dict(query)
-    if query["fixedSystem"] is None:
+    if "fixedSystem" in query and query["fixedSystem"] is None:
         dType = "modular"
-    else:
+    elif query.get("fixedSystem"):
         dType = "fixedSystem"
+    else:
+        dType = "Unknown"
     return dType
 
 

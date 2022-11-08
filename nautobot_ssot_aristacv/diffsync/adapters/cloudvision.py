@@ -67,6 +67,11 @@ class CloudvisionAdapter(DiffSync):
             port_info = cloudvision.get_interfaces_chassis(client=self.conn, dId=device.serial)
         elif chassis_type == "fixedSystem":
             port_info = cloudvision.get_interfaces_fixed(client=self.conn, dId=device.serial)
+        elif chassis_type == "Unknown":
+            self.job.log_warning(
+                message=f"Unable to determine chassis type for {device.name} so will be unable to retrieve interfaces."
+            )
+            return None
         if self.job.kwargs.get("debug"):
             self.job.log_debug(message=f"Device being loaded: {device.name}. Port: {port_info}.")
         for port in port_info:

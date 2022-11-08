@@ -159,6 +159,15 @@ class TestCloudvisionUtils(TestCase):
             results = cloudvision.get_device_type(client=self.client, dId="JPE12345678")
         self.assertEqual(results, "fixedSystem")
 
+    def test_get_device_type_unknown(self):
+        """Test the get_device_type method for unknown type."""
+        mock_query = MagicMock()
+        mock_query.return_value = {}
+
+        with patch("nautobot_ssot_aristacv.utils.cloudvision.unfreeze_frozen_dict", mock_query):
+            results = cloudvision.get_device_type(client=self.client, dId="JPE12345678")
+        self.assertEqual(results, "Unknown")
+
     def test_get_interfaces_fixed(self):
         """Test get_interfaces_fixed method."""
         mock_query = MagicMock()
