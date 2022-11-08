@@ -443,10 +443,12 @@ def get_device_type(client: CloudvisionApi, dId: str):
     pathElts = ["Sysdb", "hardware", "entmib"]
     query = get_query(client, dId, pathElts)
     query = unfreeze_frozen_dict(query)
-    if query["fixedSystem"] is None:
+    if "fixedSystem" in query and query["fixedSystem"] is None:
         dType = "modular"
-    else:
+    elif query.get("fixedSystem"):
         dType = "fixedSystem"
+    else:
+        dType = "Unknown"
     return dType
 
 
@@ -470,26 +472,23 @@ def get_interfaces_chassis(client: CloudvisionApi, dId):
 
         query = [create_query([(pathElts, [])], dataset)]
 
-        for batch in client.get(query):
-            for notif in batch["notifications"]:
+        for interface in client.get(query):
+            new_intf = {}
+            for notif in interface["notifications"]:
                 results = notif["updates"]
                 if results.get("intfId"):
-                    intfStatusChassis.append(
-                        {
-                            "interface": results["intfId"],
-                            "link_status": "up"
-                            if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
-                            else "down",
-                            "oper_status": "up"
-                            if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
-                            else "down",
-                            "enabled": bool(results["enabledState"]["Name"] == "enabled")
-                            if results.get("enabledState")
-                            else False,
-                            "mac_addr": results["burnedInAddr"],
-                            "mtu": results["mtu"],
-                        }
-                    )
+                    new_intf["interface"] = results["intfId"]
+                if results.get("linkStatus"):
+                    new_intf["link_status"] = "up" if results["linkStatus"]["Name"] == "linkUp" else "down"
+                if results.get("operStatus"):
+                    new_intf["oper_status"] = "up" if results["operStatus"]["Name"] == "intfOperUp" else "down"
+                if results.get("enabledState"):
+                    new_intf["enabled"] = bool(results["enabledState"]["Name"] == "enabled")
+                if results.get("burnedInAddr"):
+                    new_intf["mac_addr"] = results["burnedInAddr"]
+                if results.get("mtu"):
+                    new_intf["mtu"] = results["mtu"]
+            intfStatusChassis.append(new_intf)
     return intfStatusChassis
 
 
@@ -505,26 +504,23 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
     query = unfreeze_frozen_dict(query)
 
     intfStatusFixed = []
-    for batch in client.get(query):
-        for notif in batch["notifications"]:
+    for interface in client.get(query):
+        new_intf = {}
+        for notif in interface["notifications"]:
             results = notif["updates"]
             if results.get("intfId"):
-                intfStatusFixed.append(
-                    {
-                        "interface": results["intfId"],
-                        "link_status": "up"
-                        if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
-                        else "down",
-                        "oper_status": "up"
-                        if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
-                        else "down",
-                        "enabled": bool(
-                            results["enabledState"]["Name"] == "enabled" if results.get("enabledState") else False
-                        ),
-                        "mac_addr": results["burnedInAddr"] if results.get("burnedInAddr") else "",
-                        "mtu": results["mtu"] if results.get("mtu") else 1500,
-                    }
-                )
+                new_intf["interface"] = results["intfId"]
+            if results.get("enabledState"):
+                new_intf["enabled"] = bool(results["enabledState"]["Name"] == "enabled")
+            if results.get("burnedInAddr"):
+                new_intf["mac_addr"] = results["burnedInAddr"]
+            if results.get("mtu"):
+                new_intf["mtu"] = results["mtu"]
+            if results.get("operStatus"):
+                new_intf["oper_status"] = "up" if results["operStatus"]["Name"] == "intfOperUp" else "down"
+            if results.get("linkStatus"):
+                new_intf["link_status"] = "up" if results["linkStatus"]["Name"] == "linkUp" else "down"
+        intfStatusFixed.append(new_intf)
     return intfStatusFixed
 
 
