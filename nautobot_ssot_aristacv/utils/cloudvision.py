@@ -477,9 +477,9 @@ def get_interfaces_chassis(client: CloudvisionApi, dId):
                 if results.get("intfId"):
                     new_intf["interface"] = results["intfId"]
                 if results.get("linkStatus"):
-                    new_intf["link_status"] = results["linkStatus"]
+                    new_intf["link_status"] = "up" if results["linkStatus"]["Name"] == "linkUp" else "down"
                 if results.get("operStatus"):
-                    new_intf["oper_status"] = results["operStatus"]
+                    new_intf["oper_status"] = "up" if results["operStatus"]["Name"] == "intfOperUp" else "down"
                 if results.get("enabledState"):
                     new_intf["enabled"] = bool(results["enabledState"]["Name"] == "enabled")
                 if results.get("burnedInAddr"):
@@ -515,9 +515,9 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
             if results.get("mtu"):
                 new_intf["mtu"] = results["mtu"]
             if results.get("operStatus"):
-                new_intf["oper_status"] = results["operStatus"]
+                new_intf["oper_status"] = "up" if results["operStatus"]["Name"] == "intfOperUp" else "down"
             if results.get("linkStatus"):
-                new_intf["link_status"] = results["linkStatus"]
+                new_intf["link_status"] = "up" if results["linkStatus"]["Name"] == "linkUp" else "down"
         intfStatusFixed.append(new_intf)
     return intfStatusFixed
 
