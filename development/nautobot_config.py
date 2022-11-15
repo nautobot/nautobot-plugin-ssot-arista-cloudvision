@@ -83,6 +83,7 @@ PLUGINS_CONFIG = {
         "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
         "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
         "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
+        "create_controller": is_truthy(os.getenv("NAUTOBOT_ARISTACV_CREATE_CONTROLLER", False)),
         "hostname_patterns": [[r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]],
         "site_mappings": {"ams01": "Amsterdam", "atl01": "Atlanta"},
         "role_mappings": {

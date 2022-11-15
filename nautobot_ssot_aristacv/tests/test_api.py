@@ -25,4 +25,4 @@ class PlaceholderAPITest(TestCase):
         url = reverse("dcim-api:device-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 0)
+        self.assertEqual(response.data["count"], 1)
