@@ -122,6 +122,38 @@ class TestNautobotUtils(TestCase):
     @override_settings(
         PLUGINS_CONFIG={
             "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-.+-\d+"],
+                "site_mappings": {"ams01": "Amsterdam"},
+                "role_mappings": {},
+            }
+        }
+    )
+    def test_parse_hostname_only_site(self):
+        """Test the parse_hostname method with only site specified."""
+        host = "ams01-leaf-01"
+        results = nautobot.parse_hostname(host)
+        expected = ("ams01", None)
+        self.assertEqual(results, expected)
+
+    @override_settings(
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r".+-(?P<role>\w+)-\d+"],
+                "site_mappings": {},
+                "role_mappings": {"leaf": "leaf"},
+            }
+        }
+    )
+    def test_parse_hostname_only_role(self):
+        """Test the parse_hostname method with only role specified."""
+        host = "ams01-leaf-01"
+        results = nautobot.parse_hostname(host)
+        expected = (None, "leaf")
+        self.assertEqual(results, expected)
+
+    @override_settings(
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
                 "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"],
                 "site_mappings": {"ams01": "Amsterdam"},
             }
