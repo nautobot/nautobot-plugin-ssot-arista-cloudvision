@@ -102,7 +102,15 @@ class TestNautobotUtils(TestCase):
         self.assertEqual(result, "1.0")
 
     @override_settings(
-        PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"]}}
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"],
+                "site_mappings": {"ams01": "Amsterdam"},
+                "role_mappings": {
+                    "leaf": "leaf",
+                },
+            }
+        }
     )
     def test_parse_hostname(self):
         """Test the parse_hostname method."""
@@ -111,28 +119,56 @@ class TestNautobotUtils(TestCase):
         expected = ("ams01", "leaf")
         self.assertEqual(results, expected)
 
-    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"site_mappings": {"ams01": "Amsterdam"}}})
+    @override_settings(
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"],
+                "site_mappings": {"ams01": "Amsterdam"},
+            }
+        }
+    )
     def test_get_site_from_map_success(self):
         """Test the get_site_from_map method with response."""
         results = nautobot.get_site_from_map("ams01")
         expected = "Amsterdam"
         self.assertEqual(results, expected)
 
-    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"site_mappings": {}}})
+    @override_settings(
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"],
+                "site_mappings": {},
+            }
+        }
+    )
     def test_get_site_from_map_fail(self):
         """Test the get_site_from_map method with failed response."""
         results = nautobot.get_site_from_map("dc01")
         expected = None
         self.assertEqual(results, expected)
 
-    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"role_mappings": {"edge": "Edge Router"}}})
+    @override_settings(
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"],
+                "role_mappings": {"edge": "Edge Router"},
+            }
+        }
+    )
     def test_get_role_from_map_success(self):
         """Test the get_role_from_map method with response."""
         results = nautobot.get_role_from_map("edge")
         expected = "Edge Router"
         self.assertEqual(results, expected)
 
-    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"role_mappings": {}}})
+    @override_settings(
+        PLUGINS_CONFIG={
+            "nautobot_ssot_aristacv": {
+                "hostname_patterns": [r"(?P<site>\w{2,3}\d+)-(?P<role>\w+)-\d+"],
+                "role_mappings": {},
+            }
+        }
+    )
     def test_get_role_from_map_fail(self):
         """Test the get_role_from_map method with failed response."""
         results = nautobot.get_role_from_map("rtr")
