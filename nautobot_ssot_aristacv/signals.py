@@ -2,6 +2,8 @@
 """Nautobot signal handler functions for aristavc_sync."""
 
 from django.apps import apps as global_apps
+from django.conf import settings
+from django.utils.text import slugify
 from nautobot.extras.choices import CustomFieldTypeChoices, RelationshipTypeChoices
 
 
@@ -112,6 +114,12 @@ def post_migrate_create_controller_device(apps=global_apps, **kwargs):
     Site = apps.get_model("dcim", "Site")
     Status = apps.get_model("extras", "Status")
 
+    PLUGIN_CFG = settings.PLUGIN_CONFIG["nautobot_ssot_aristacv"]
+    if PLUGIN_CFG.get("controller_site") and PLUGIN_CFG["controller_site"] != "":
+        site_name = PLUGIN_CFG["controller_site"]
+    else:
+        site_name = "CloudVision"
+
     device_type, _ = DeviceType.objects.get_or_create(
         model="CloudVision",
         manufacturer=Manufacturer.objects.get(slug="arista"),
@@ -123,7 +131,10 @@ def post_migrate_create_controller_device(apps=global_apps, **kwargs):
         vm_role=True,
     )
     status, _ = Status.objects.get_or_create(name="Active", slug="active")
-    site, _ = Site.objects.get_or_create(name="CloudVision", slug="cloudvision", status=status)
+    try:
+        site = Site.objects.get(name=site_name)
+    except Site.DoesNotExist:
+        site, _ = Site.objects.get_or_create(name=site_name, slug=slugify(site_name), status=status)
     Device.objects.get_or_create(
         name="CloudVision",
         device_role=device_role,
