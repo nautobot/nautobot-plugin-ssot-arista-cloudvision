@@ -114,7 +114,7 @@ def post_migrate_create_controller_device(apps=global_apps, **kwargs):
     Site = apps.get_model("dcim", "Site")
     Status = apps.get_model("extras", "Status")
 
-    PLUGIN_CFG = settings.PLUGIN_CONFIG["nautobot_ssot_aristacv"]
+    PLUGIN_CFG = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
     if PLUGIN_CFG.get("controller_site") and PLUGIN_CFG["controller_site"] != "":
         site_name = PLUGIN_CFG["controller_site"]
     else:
