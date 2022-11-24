@@ -35,6 +35,7 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
         "hostname_patterns": [],
         "site_mappings": {},
         "role_mappings": {},
+        "platform_name": "Arista EOS",
     }
     caching_config = {}
 

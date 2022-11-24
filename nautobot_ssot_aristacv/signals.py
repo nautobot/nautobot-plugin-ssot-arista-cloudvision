@@ -2,6 +2,8 @@
 """Nautobot signal handler functions for aristavc_sync."""
 
 from django.apps import apps as global_apps
+from django.conf import settings
+from django.utils.text import slugify
 from nautobot.extras.choices import CustomFieldTypeChoices
 
 
@@ -93,11 +95,14 @@ def post_migrate_create_manufacturer(apps=global_apps, **kwargs):
 
 def post_migrate_create_platform(apps=global_apps, **kwargs):
     """Callback function for post_migrate() -- create Arista Platform."""
+    plugin_settings = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
     Platform = apps.get_model("dcim", "Platform")
     Manufacturer = apps.get_model("dcim", "Manufacturer")
     Platform.objects.get_or_create(
-        name="arista.eos.eos",
-        slug="arista_eos",
-        napalm_driver="eos",
-        manufacturer=Manufacturer.objects.get(slug="arista"),
+        slug=slugify(plugin_settings["platform_name"]),
+        defaults={
+            "name": plugin_settings["platform_name"],
+            "napalm_driver": "eos",
+            "manufacturer": Manufacturer.objects.get(slug="arista"),
+        },
     )

@@ -93,5 +93,6 @@ PLUGINS_CONFIG = {
             "rtr": "router",
             "spine": "spine",
         },
+        "platform_name": "Arista EOS",
     },
 }

@@ -2,6 +2,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.utils.text import slugify
 from nautobot.core.settings_funcs import is_truthy
 from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Interface as OrmInterface
@@ -31,6 +32,8 @@ DEFAULT_DEVICE_STATUS_COLOR = "ff0000"
 DEFAULT_DELETE_DEVICES_ON_SYNC = False
 APPLY_IMPORT_TAG = False
 MISSING_CUSTOM_FIELDS = []
+
+PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
 
 
 class NautobotDevice(Device):
@@ -66,7 +69,7 @@ class NautobotDevice(Device):
             status=OrmStatus.objects.get(slug=attrs["status"]),
             device_type=device_type_object,
             device_role=role,
-            platform=OrmPlatform.objects.get(slug="arista_eos"),
+            platform=OrmPlatform.objects.get(slug=slugify(PLUGIN_SETTINGS["platform_name"])),
             site=site,
             name=ids["name"],
             serial=attrs["serial"] if attrs.get("serial") else "",
@@ -115,7 +118,7 @@ class NautobotDevice(Device):
     @staticmethod
     def _add_software_lcm(version: str):
         """Add OS Version as SoftwareLCM if Device Lifecycle Plugin found."""
-        _platform = OrmPlatform.objects.get(slug="arista_eos")
+        _platform = OrmPlatform.objects.get(slug=slugify(PLUGIN_SETTINGS["platform_name"]))
         try:
             os_ver = SoftwareLCM.objects.get(device_platform=_platform, version=version)
         except SoftwareLCM.DoesNotExist:
