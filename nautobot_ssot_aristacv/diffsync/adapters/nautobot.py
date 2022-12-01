@@ -35,7 +35,7 @@ class NautobotAdapter(DiffSync):
 
     def load_devices(self):
         """Add Nautobot Device objects as DiffSync Device models."""
-        for dev in OrmDevice.objects.filter(device_type__manufacturer__slug="arista"):
+        for dev in OrmDevice.objects.filter(device_type__manufacturer__slug="arista").exclude(name="CloudVision"):
             try:
                 new_device = self.device(
                     name=dev.name,
