@@ -118,7 +118,7 @@ class NautobotAdapter(DiffSync):
             loaded_devices = source.dict()["device"]
             for dev in loaded_devices:
                 try:
-                    device = OrmDevice.objects.get(name=dev["name"])
+                    device = OrmDevice.objects.get(name=dev)
                     relations = device.get_relationships()
                     if len(relations["destination"][controller_relation]) == 0:
                         new_assoc = OrmRelationshipAssociation(
