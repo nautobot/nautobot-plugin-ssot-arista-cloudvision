@@ -79,8 +79,6 @@ class NautobotDevice(Device):
             if LIFECYCLE_MGMT and attrs.get("version"):
                 software_lcm = cls._add_software_lcm(version=attrs["version"])
                 cls._assign_version_to_device(diffsync=diffsync, device=new_device, software_lcm=software_lcm)
-            if PLUGIN_SETTINGS.get("create_controller"):
-                cls._create_association_to_controller(device=new_device)
             return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
         except ValidationError as err:
             diffsync.job.log_warning(message=f"Unable to create Device {ids['name']}. {err}")
@@ -96,8 +94,6 @@ class NautobotDevice(Device):
         if "version" in attrs and LIFECYCLE_MGMT:
             software_lcm = self._add_software_lcm(version=attrs["version"])
             self._assign_version_to_device(diffsync=self.diffsync, device=dev, software_lcm=software_lcm)
-        if settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("create_controller"):
-            self._create_association_to_controller(device=dev)
         try:
             dev.validated_save()
             return super().update(attrs)
@@ -152,22 +148,6 @@ class NautobotDevice(Device):
             destination=device,
         )
         new_assoc.validated_save()
-
-    @staticmethod
-    def _create_association_to_controller(device):
-        """Add RelationshipAssociation between CloudVison Controller and Device."""
-        controller_relation = OrmRelationship.objects.get(name="Controller -> Device")
-        relations = device.get_relationships()
-        if len(relations["destination"][controller_relation]) == 0:
-            device_ct = ContentType.objects.get_for_model(OrmDevice)
-            new_assoc = OrmRelationshipAssociation(
-                relationship=controller_relation,
-                source_type=device_ct,
-                source=OrmDevice.objects.get(name="CloudVision"),
-                destination_type=device_ct,
-                destination=device,
-            )
-            new_assoc.validated_save()
 
 
 class NautobotPort(Port):

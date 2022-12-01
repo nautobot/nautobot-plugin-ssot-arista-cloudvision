@@ -1,6 +1,10 @@
 """DiffSync adapter for Nautobot."""
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Interface as OrmInterface
+from nautobot.extras.models import Relationship as OrmRelationship
+from nautobot.extras.models import RelationshipAssociation as OrmRelationshipAssociation
 from nautobot.ipam.models import IPAddress as OrmIPAddress
 from diffsync import DiffSync
 from diffsync.exceptions import ObjectNotFound, ObjectAlreadyExists
@@ -96,6 +100,39 @@ class NautobotAdapter(DiffSync):
                 self.add(new_ip)
             except ObjectAlreadyExists as err:
                 self.job.log_warning(message=f"Unable to load {ipaddr.address} as appears to be a duplicate. {err}")
+
+    def sync_complete(self, source: DiffSync, *args, **kwargs):
+        """Perform actions after sync is completed.
+
+        Args:
+            source (DiffSync): Source DiffSync DataSource adapter.
+        """
+        PLUGIN_CFG = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+
+        # if Controller is created we need to ensure all imported Devices have RelationshipAssociation to it.
+        if PLUGIN_CFG.get("create_controller"):
+            self.job.log_info(message="Creating Relationships between CloudVision and connected Devices.")
+            controller_relation = OrmRelationship.objects.get(name="Controller -> Device")
+            device_ct = ContentType.objects.get_for_model(OrmDevice)
+            cvp = OrmDevice.objects.get(name="CloudVision")
+            loaded_devices = source.dict()["device"]
+            for dev in loaded_devices:
+                try:
+                    device = OrmDevice.objects.get(name=dev["name"])
+                    relations = device.get_relationships()
+                    if len(relations["destination"][controller_relation]) == 0:
+                        new_assoc = OrmRelationshipAssociation(
+                            relationship=controller_relation,
+                            source_type=device_ct,
+                            source=cvp,
+                            destination_type=device_ct,
+                            destination=device,
+                        )
+                        new_assoc.validated_save()
+                except OrmDevice.DoesNotExist:
+                    self.job.log_info(
+                        message=f"Unable to find Device {dev['name']} to create Relationship to Controller."
+                    )
 
     def load(self):
         """Load Nautobot models into DiffSync models."""
