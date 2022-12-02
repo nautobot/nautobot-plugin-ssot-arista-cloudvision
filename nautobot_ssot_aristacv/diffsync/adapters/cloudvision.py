@@ -97,7 +97,7 @@ class CloudvisionAdapter(DiffSync):
                     description=port_description,
                     mac_addr=port["mac_addr"] if port.get("mac_addr") else "",
                     mode="tagged" if port_mode == "trunk" else "access",
-                    mtu=port["mtu"],
+                    mtu=port["mtu"] if port.get("mtu") else 1500,
                     enabled=port["enabled"],
                     status=port_status,
                     port_type=port_type,
