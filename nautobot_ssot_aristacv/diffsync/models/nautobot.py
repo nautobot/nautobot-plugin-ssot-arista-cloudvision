@@ -46,6 +46,10 @@ class NautobotDevice(Device):
 
         if site_code and site_code in site_map:
             site = nautobot.verify_site(site_map[site_code])
+        elif PLUGIN_SETTINGS.get("controller_site"):
+            site = nautobot.verify_site(PLUGIN_SETTINGS["controller_site"])
+        elif "CloudVision" in ids["name"]:
+            site = nautobot.verify_site("CloudVision")
         else:
             site = nautobot.verify_site(PLUGIN_SETTINGS.get("from_cloudvision_default_site", DEFAULT_SITE))
 
@@ -60,13 +64,18 @@ class NautobotDevice(Device):
                 PLUGIN_SETTINGS.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
             )
 
+        if PLUGIN_SETTINGS.get("create_controller"):
+            platform = OrmPlatform.objects.get(slug="arista_eos_cloudvision")
+        else:
+            platform = OrmPlatform.objects.get(slug="arista_eos")
+
         device_type_object = nautobot.verify_device_type_object(attrs["device_model"])
 
         new_device = OrmDevice(
             status=OrmStatus.objects.get(slug=attrs["status"]),
             device_type=device_type_object,
             device_role=role,
-            platform=OrmPlatform.objects.get(slug="arista_eos"),
+            platform=platform,
             site=site,
             name=ids["name"],
             serial=attrs["serial"] if attrs.get("serial") else "",

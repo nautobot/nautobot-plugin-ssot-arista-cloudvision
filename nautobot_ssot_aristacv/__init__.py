@@ -53,14 +53,5 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
         post_migrate.connect(post_migrate_create_manufacturer)
         post_migrate.connect(post_migrate_create_platform)
 
-        if settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"].get("create_controller"):
-            from .signals import (  # pylint: disable=import-outside-toplevel
-                post_migrate_create_controller_device,
-                post_migrate_create_controller_relationship,
-            )
-
-            post_migrate.connect(post_migrate_create_controller_device)
-            post_migrate.connect(post_migrate_create_controller_relationship)
-
 
 config = NautobotSSOTAristaCVConfig  # pylint:disable=invalid-name
