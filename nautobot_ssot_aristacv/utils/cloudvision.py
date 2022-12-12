@@ -13,6 +13,7 @@ from arista.tag.v1 import services as tag_services
 from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 
+from cvprac.cvp_client import CvpClient
 import cloudvision.Connector.gen.notification_pb2 as ntf
 import cloudvision.Connector.gen.router_pb2 as rtr
 import cloudvision.Connector.gen.router_pb2_grpc as rtr_client
@@ -657,3 +658,18 @@ def get_ip_interfaces(client: CloudvisionApi, dId: str):
                     }
                 )
     return ip_intfs
+
+
+def get_cvp_version():
+    """Returns CloudVision portal version.
+
+    Returns:
+        str: CloudVision version from API or blank string if unable to find.
+    """
+    PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+    client = CvpClient()
+    client.connect([PLUGIN_SETTINGS["cvp_host"]], PLUGIN_SETTINGS["cvp_user"], PLUGIN_SETTINGS["cvp_password"])
+    version = client.api.get_cvp_info()
+    if "version" in version:
+        return version["version"]
+    return ""
