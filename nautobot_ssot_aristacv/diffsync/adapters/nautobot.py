@@ -117,22 +117,23 @@ class NautobotAdapter(DiffSync):
             cvp = OrmDevice.objects.get(name="CloudVision")
             loaded_devices = source.dict()["device"]
             for dev in loaded_devices:
-                try:
-                    device = OrmDevice.objects.get(name=dev)
-                    relations = device.get_relationships()
-                    if len(relations["destination"][controller_relation]) == 0:
-                        new_assoc = OrmRelationshipAssociation(
-                            relationship=controller_relation,
-                            source_type=device_ct,
-                            source=cvp,
-                            destination_type=device_ct,
-                            destination=device,
+                if dev != "CloudVision":
+                    try:
+                        device = OrmDevice.objects.get(name=dev)
+                        relations = device.get_relationships()
+                        if len(relations["destination"][controller_relation]) == 0:
+                            new_assoc = OrmRelationshipAssociation(
+                                relationship=controller_relation,
+                                source_type=device_ct,
+                                source=cvp,
+                                destination_type=device_ct,
+                                destination=device,
+                            )
+                            new_assoc.validated_save()
+                    except OrmDevice.DoesNotExist:
+                        self.job.log_info(
+                            message=f"Unable to find Device {dev['name']} to create Relationship to Controller."
                         )
-                        new_assoc.validated_save()
-                except OrmDevice.DoesNotExist:
-                    self.job.log_info(
-                        message=f"Unable to find Device {dev['name']} to create Relationship to Controller."
-                    )
 
     def load(self):
         """Load Nautobot models into DiffSync models."""
