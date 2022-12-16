@@ -99,6 +99,11 @@ class NautobotDevice(Device):
     def update(self, attrs):
         """Update device object in Nautobot."""
         dev = OrmDevice.objects.get(id=self.uuid)
+        if not dev.platform:
+            if dev.name != "CloudVision":
+                dev.platform = OrmPlatform.objects.get(slug="arista_eos")
+            else:
+                dev.platform = OrmPlatform.objects.get(slug="arista_eos_cloudvision")
         if "device_model" in attrs:
             dev.device_type = nautobot.verify_device_type_object(attrs["device_model"])
         if "serial" in attrs:
