@@ -46,10 +46,11 @@ class NautobotDevice(Device):
 
         if site_code and site_code in site_map:
             site = nautobot.verify_site(site_map[site_code])
-        elif PLUGIN_SETTINGS.get("controller_site"):
-            site = nautobot.verify_site(PLUGIN_SETTINGS["controller_site"])
         elif "CloudVision" in ids["name"]:
-            site = nautobot.verify_site("CloudVision")
+            if PLUGIN_SETTINGS.get("controller_site"):
+                site = nautobot.verify_site(PLUGIN_SETTINGS["controller_site"])
+            else:
+                site = nautobot.verify_site("CloudVision")
         else:
             site = nautobot.verify_site(PLUGIN_SETTINGS.get("from_cloudvision_default_site", DEFAULT_SITE))
 
