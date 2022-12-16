@@ -3,8 +3,7 @@
 
 from django.apps import apps as global_apps
 from django.conf import settings
-from django.utils.text import slugify
-from nautobot.extras.choices import CustomFieldTypeChoices, RelationshipTypeChoices
+from nautobot.extras.choices import CustomFieldTypeChoices
 
 
 def post_migrate_create_custom_fields(apps=global_apps, **kwargs):

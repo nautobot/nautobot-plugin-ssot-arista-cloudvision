@@ -10,7 +10,6 @@ __version__ = metadata.version(__name__)
 
 import os
 
-from django.conf import settings
 from django.db.models.signals import post_migrate
 from nautobot.extras.plugins import PluginConfig
 
