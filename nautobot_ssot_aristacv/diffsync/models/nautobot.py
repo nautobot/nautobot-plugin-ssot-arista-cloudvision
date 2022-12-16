@@ -59,6 +59,8 @@ class NautobotDevice(Device):
                 role_map[role_code],
                 PLUGIN_SETTINGS.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
             )
+        elif "CloudVision" in ids["name"]:
+            role = nautobot.verify_device_role_object("Controller", DEFAULT_DEVICE_ROLE_COLOR)
         else:
             role = nautobot.verify_device_role_object(
                 PLUGIN_SETTINGS.get("from_cloudvision_default_device_role", DEFAULT_DEVICE_ROLE),
