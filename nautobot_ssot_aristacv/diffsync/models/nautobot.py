@@ -89,7 +89,7 @@ class NautobotDevice(Device):
         try:
             new_device.validated_save()
             if LIFECYCLE_MGMT and attrs.get("version"):
-                software_lcm = cls._add_software_lcm(version=attrs["version"])
+                software_lcm = cls._add_software_lcm(platform=platform.slug, version=attrs["version"])
                 cls._assign_version_to_device(diffsync=diffsync, device=new_device, software_lcm=software_lcm)
             return super().create(ids=ids, diffsync=diffsync, attrs=attrs)
         except ValidationError as err:
@@ -104,7 +104,7 @@ class NautobotDevice(Device):
         if "serial" in attrs:
             dev.serial = attrs["serial"]
         if "version" in attrs and LIFECYCLE_MGMT:
-            software_lcm = self._add_software_lcm(version=attrs["version"])
+            software_lcm = self._add_software_lcm(platform=dev.platform.slug, version=attrs["version"])
             self._assign_version_to_device(diffsync=self.diffsync, device=dev, software_lcm=software_lcm)
         try:
             dev.validated_save()
@@ -125,9 +125,9 @@ class NautobotDevice(Device):
         return self
 
     @staticmethod
-    def _add_software_lcm(version: str):
+    def _add_software_lcm(platform: str, version: str):
         """Add OS Version as SoftwareLCM if Device Lifecycle Plugin found."""
-        _platform = OrmPlatform.objects.get(slug="arista_eos")
+        _platform = OrmPlatform.objects.get(slug=platform)
         try:
             os_ver = SoftwareLCM.objects.get(device_platform=_platform, version=version)
         except SoftwareLCM.DoesNotExist:
