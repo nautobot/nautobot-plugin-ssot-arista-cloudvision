@@ -67,7 +67,7 @@ class NautobotDevice(Device):
                 PLUGIN_SETTINGS.get("from_cloudvision_default_device_role_color", DEFAULT_DEVICE_ROLE_COLOR),
             )
 
-        if PLUGIN_SETTINGS.get("create_controller"):
+        if PLUGIN_SETTINGS.get("create_controller") and "CloudVision" in ids["name"]:
             platform = OrmPlatform.objects.get(slug="arista_eos_cloudvision")
         else:
             platform = OrmPlatform.objects.get(slug="arista_eos")
