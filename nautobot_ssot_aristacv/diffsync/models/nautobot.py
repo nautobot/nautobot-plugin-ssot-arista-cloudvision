@@ -10,6 +10,7 @@ from nautobot.extras.models import Relationship as OrmRelationship
 from nautobot.extras.models import RelationshipAssociation as OrmRelationshipAssociation
 from nautobot.extras.models import Status as OrmStatus
 from nautobot.ipam.models import IPAddress as OrmIPAddress
+from nautobot_ssot_aristacv.constant import ARISTA_PLATFORM, CLOUDVISION_PLATFORM
 from nautobot_ssot_aristacv.diffsync.models.base import Device, CustomField, IPAddress, Port
 from nautobot_ssot_aristacv.utils import nautobot
 import distutils
@@ -68,9 +69,9 @@ class NautobotDevice(Device):
             )
 
         if PLUGIN_SETTINGS.get("create_controller") and "CloudVision" in ids["name"]:
-            platform = OrmPlatform.objects.get(slug="arista_eos_cloudvision")
+            platform = OrmPlatform.objects.get(slug=CLOUDVISION_PLATFORM)
         else:
-            platform = OrmPlatform.objects.get(slug="arista_eos")
+            platform = OrmPlatform.objects.get(slug=ARISTA_PLATFORM)
 
         device_type_object = nautobot.verify_device_type_object(attrs["device_model"])
 
