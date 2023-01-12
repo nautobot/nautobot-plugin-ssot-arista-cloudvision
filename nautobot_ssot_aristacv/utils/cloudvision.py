@@ -14,6 +14,7 @@ from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 
 from cvprac.cvp_client import CvpClient
+from cvprac.cvp_client import CvpLoginError
 import cloudvision.Connector.gen.notification_pb2 as ntf
 import cloudvision.Connector.gen.router_pb2 as rtr
 import cloudvision.Connector.gen.router_pb2_grpc as rtr_client
@@ -668,8 +669,11 @@ def get_cvp_version():
     """
     PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
     client = CvpClient()
-    client.connect([PLUGIN_SETTINGS["cvp_host"]], PLUGIN_SETTINGS["cvp_user"], PLUGIN_SETTINGS["cvp_password"])
-    version = client.api.get_cvp_info()
-    if "version" in version:
-        return version["version"]
+    try:
+        client.connect([PLUGIN_SETTINGS["cvp_host"]], PLUGIN_SETTINGS["cvp_user"], PLUGIN_SETTINGS["cvp_password"])
+        version = client.api.get_cvp_info()
+        if "version" in version:
+            return version["version"]
+    except CvpLoginError as err:
+        raise AuthFailure(error_code="Failed Login", message=f"Unable to login to CloudVision Portal. {err}") from err
     return ""
