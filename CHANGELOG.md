@@ -5,12 +5,14 @@
 ### Added
 
 - #112 - Added tests.
+- #129 - Added CVP Version Documentation.
+- #121 - Added option to ceate CVP Controller Device and Link to Imported Devices. Addresses #123.
 
 ### Fixed
 
 - #111 - Ensured site/role mapping to be plural
 - #112 - Removed default status info from README.
-- #118 - Fixed Device Lifecycle plugin integration and AP handling. Addresses #116 and #117.
+- #118 - Fixed Device Lifecycle plugin integration, AP handling and information about interfaces. Addresses #116 and #117.
 - #122 - Fixed hostname parsing. Addresses #119.
 
 ### Refactor
