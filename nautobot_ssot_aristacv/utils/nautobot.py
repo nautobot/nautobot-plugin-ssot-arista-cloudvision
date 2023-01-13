@@ -107,9 +107,9 @@ def parse_hostname(hostname: str):
     for pattern in hostname_patterns:
         match = re.search(pattern=pattern, string=hostname)
         if match:
-            if match.group("site"):
+            if "site" in match.groupdict() and match.group("site"):
                 site = match.group("site")
-            if match.group("role"):
+            if "role" in match.groupdict() and match.group("role"):
                 role = match.group("role")
     return (site, role)
 

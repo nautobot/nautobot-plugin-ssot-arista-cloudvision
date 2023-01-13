@@ -72,3 +72,7 @@ PORT_TYPE_MAP = {
     "400GBASE-2FR4": "400gbase-x-osfp",
     "400GBASE-ZR": "400gbase-x-qsfpdd",
 }
+
+CLOUDVISION_PLATFORM = "arista_eos_cloudvision"
+
+ARISTA_PLATFORM = "arista_eos"
