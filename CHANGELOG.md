@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.5.0 - 2023-01-13
+
+### Added
+
+- #112 - Added tests.
+
+### Fixed
+
+- #111 - Ensured site/role mapping to be plural
+- #112 - Removed default status info from README.
+- #118 - Fixed Device Lifecycle plugin integration and AP handling. Addresses #116 and #117.
+- #122 - Fixed hostname parsing. Addresses #119.
+
+### Refactor
+
+- #104 - Refactored Jobs to use load source/target adapter methods for performance metrics.
+
 ## v1.4.0 - 2022-10-21
 
 ### Added
