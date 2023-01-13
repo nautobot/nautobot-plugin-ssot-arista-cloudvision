@@ -13,6 +13,8 @@ from arista.tag.v1 import services as tag_services
 from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 
+from cvprac.cvp_client import CvpClient
+from cvprac.cvp_client import CvpLoginError
 import cloudvision.Connector.gen.notification_pb2 as ntf
 import cloudvision.Connector.gen.router_pb2 as rtr
 import cloudvision.Connector.gen.router_pb2_grpc as rtr_client
@@ -288,32 +290,6 @@ def get_devices(client):
     return devices
 
 
-# def get_device_id(self, device_name: str):
-#     """Get device_id for device_name from CloudVision inventory."""
-#     device_stub = services.DeviceServiceStub(self.comm_channel)
-#     req = services.DeviceStreamRequest(
-#         partial_eq_filter=[models.Device(hostname=device_name, streaming_status=models.STREAMING_STATUS_ACTIVE)]
-#     )
-#     resp = device_stub.GetOne(req)
-#     return resp.value.key.device_id.value
-
-
-def get_tags(client):
-    """Get all tags from CloudVision."""
-    tag_stub = tag_services.DeviceTagServiceStub(client)
-    req = tag_services.DeviceTagStreamRequest()
-    responses = tag_stub.GetAll(req)
-    tags = []
-    for resp in responses:
-        dev_tag = {
-            "label": resp.value.key.label.value,
-            "value": resp.value.key.value.value,
-            "creator_type": resp.value.creator_type,
-        }
-        tags.append(dev_tag)
-    return tags
-
-
 def get_tags_by_type(client, creator_type: int = tag_models.CREATOR_TYPE_USER):
     """Get tags by creator type from CloudVision."""
     tag_stub = tag_services.DeviceTagServiceStub(client)
@@ -469,10 +445,12 @@ def get_device_type(client: CloudvisionApi, dId: str):
     pathElts = ["Sysdb", "hardware", "entmib"]
     query = get_query(client, dId, pathElts)
     query = unfreeze_frozen_dict(query)
-    if query["fixedSystem"] is None:
+    if "fixedSystem" in query and query["fixedSystem"] is None:
         dType = "modular"
-    else:
+    elif query.get("fixedSystem"):
         dType = "fixedSystem"
+    else:
+        dType = "Unknown"
     return dType
 
 
@@ -496,26 +474,23 @@ def get_interfaces_chassis(client: CloudvisionApi, dId):
 
         query = [create_query([(pathElts, [])], dataset)]
 
-        for batch in client.get(query):
-            for notif in batch["notifications"]:
+        for interface in client.get(query):
+            new_intf = {}
+            for notif in interface["notifications"]:
                 results = notif["updates"]
                 if results.get("intfId"):
-                    intfStatusChassis.append(
-                        {
-                            "interface": results["intfId"],
-                            "link_status": "up"
-                            if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
-                            else "down",
-                            "oper_status": "up"
-                            if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
-                            else "down",
-                            "enabled": bool(results["enabledState"]["Name"] == "enabled")
-                            if results.get("enabledState")
-                            else False,
-                            "mac_addr": results["burnedInAddr"],
-                            "mtu": results["mtu"],
-                        }
-                    )
+                    new_intf["interface"] = results["intfId"]
+                if results.get("linkStatus"):
+                    new_intf["link_status"] = "up" if results["linkStatus"]["Name"] == "linkUp" else "down"
+                if results.get("operStatus"):
+                    new_intf["oper_status"] = "up" if results["operStatus"]["Name"] == "intfOperUp" else "down"
+                if results.get("enabledState"):
+                    new_intf["enabled"] = bool(results["enabledState"]["Name"] == "enabled")
+                if results.get("burnedInAddr"):
+                    new_intf["mac_addr"] = results["burnedInAddr"]
+                if results.get("mtu"):
+                    new_intf["mtu"] = results["mtu"]
+            intfStatusChassis.append(new_intf)
     return intfStatusChassis
 
 
@@ -531,32 +506,23 @@ def get_interfaces_fixed(client: CloudvisionApi, dId: str):
     query = unfreeze_frozen_dict(query)
 
     intfStatusFixed = []
-    for batch in client.get(query):
-        for notif in batch["notifications"]:
-            try:
-                results = notif["updates"]
-                if results.get("intfId"):
-                    intfStatusFixed.append(
-                        {
-                            "interface": results["intfId"],
-                            "link_status": "up"
-                            if results.get("linkStatus") and results["linkStatus"]["Name"] == "linkUp"
-                            else "down",
-                            "oper_status": "up"
-                            if results.get("operStatus") and results["operStatus"]["Name"] == "intfOperUp"
-                            else "down",
-                            "enabled": bool(
-                                results["enabledState"]["Name"] == "enabled" if results.get("enabledState") else False
-                            ),
-                            "mac_addr": results["burnedInAddr"] if results.get("burnedInAddr") else "",
-                            "mtu": results["mtu"] if results.get("mtu") else 1500,
-                        }
-                    )
-            except KeyError as e:
-                print(
-                    f"Unknown key {e} for intfStatusFixed on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}.\n\nUpdate: {notif['updates']}"
-                )
-                continue
+    for interface in client.get(query):
+        new_intf = {}
+        for notif in interface["notifications"]:
+            results = notif["updates"]
+            if results.get("intfId"):
+                new_intf["interface"] = results["intfId"]
+            if results.get("enabledState"):
+                new_intf["enabled"] = bool(results["enabledState"]["Name"] == "enabled")
+            if results.get("burnedInAddr"):
+                new_intf["mac_addr"] = results["burnedInAddr"]
+            if results.get("mtu"):
+                new_intf["mtu"] = results["mtu"]
+            if results.get("operStatus"):
+                new_intf["oper_status"] = "up" if results["operStatus"]["Name"] == "intfOperUp" else "down"
+            if results.get("linkStatus"):
+                new_intf["link_status"] = "up" if results["linkStatus"]["Name"] == "linkUp" else "down"
+        intfStatusFixed.append(new_intf)
     return intfStatusFixed
 
 
@@ -682,20 +648,32 @@ def get_ip_interfaces(client: CloudvisionApi, dId: str):
     ip_intfs = []
     for batch in client.get(query):
         for notif in batch["notifications"]:
-            try:
-                results = notif["updates"]
-                if results.get("intfId") and results.get("addrWithMask"):
-                    ip_intfs.append(
-                        {
-                            "interface": results["intfId"],
-                            "address": results["addrWithMask"]
-                            if results["addrWithMask"] != "0.0.0.0/0"
-                            else results.get("virtualAddrWithMask"),
-                        }
-                    )
-            except KeyError as e:
-                print(
-                    f"Unknown key {e} for ip_intfs on interface {notif['updates']['intfId'] if notif['updates'].get('intfId') else notif['updates'].get('name')}.\n\nUpdate: {notif['updates']}"
+            results = notif["updates"]
+            if results.get("intfId") and results.get("addrWithMask"):
+                ip_intfs.append(
+                    {
+                        "interface": results["intfId"],
+                        "address": results["addrWithMask"]
+                        if results["addrWithMask"] != "0.0.0.0/0"
+                        else results.get("virtualAddrWithMask"),
+                    }
                 )
-                continue
     return ip_intfs
+
+
+def get_cvp_version():
+    """Returns CloudVision portal version.
+
+    Returns:
+        str: CloudVision version from API or blank string if unable to find.
+    """
+    PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+    client = CvpClient()
+    try:
+        client.connect([PLUGIN_SETTINGS["cvp_host"]], PLUGIN_SETTINGS["cvp_user"], PLUGIN_SETTINGS["cvp_password"])
+        version = client.api.get_cvp_info()
+        if "version" in version:
+            return version["version"]
+    except CvpLoginError as err:
+        raise AuthFailure(error_code="Failed Login", message=f"Unable to login to CloudVision Portal. {err}") from err
+    return ""

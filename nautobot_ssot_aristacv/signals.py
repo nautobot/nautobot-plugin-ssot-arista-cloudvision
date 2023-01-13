@@ -2,7 +2,8 @@
 """Nautobot signal handler functions for aristavc_sync."""
 
 from django.apps import apps as global_apps
-from nautobot.extras.choices import CustomFieldTypeChoices
+from django.conf import settings
+from nautobot.extras.choices import CustomFieldTypeChoices, RelationshipTypeChoices
 
 
 def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
@@ -79,7 +80,9 @@ def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
         },
         {"name": "arista_topology_type", "type": CustomFieldTypeChoices.TYPE_TEXT, "label": "Topology Type"},
     ]:
-        field, _ = CustomField.objects.get_or_create(name=device_cf_dict["name"], defaults=device_cf_dict)
+        field, _ = CustomField.objects.get_or_create(
+            name=device_cf_dict["name"], defaults=device_cf_dict, slug=device_cf_dict["name"]
+        )
         field.content_types.set([ContentType.objects.get_for_model(Device)])
 
 
@@ -99,3 +102,27 @@ def post_migrate_create_platform(apps=global_apps, **kwargs):
         napalm_driver="eos",
         manufacturer=Manufacturer.objects.get(slug="arista"),
     )
+
+    if settings.PLUGINS_CONFIG.get("nautobot_ssot_aristacv").get("create_controller"):
+        Platform.objects.get_or_create(
+            name="Arista EOS-CloudVision",
+            slug="arista_eos_cloudvision",
+            manufacturer=Manufacturer.objects.get(slug="arista"),
+        )
+
+
+def post_migrate_create_controller_relationship(apps=global_apps, **kwargs):
+    """Callback function for post_migrate() -- create Relationship for Controller -> Device."""
+    Device = apps.get_model("dcim", "Device")
+    Relationship = apps.get_model("extras", "Relationship")
+    ContentType = apps.get_model("contenttypes", "ContentType")
+    relationship_dict = {
+        "name": "Controller -> Device",
+        "slug": "controller_to_device",
+        "type": RelationshipTypeChoices.TYPE_ONE_TO_MANY,
+        "source_type": ContentType.objects.get_for_model(Device),
+        "source_label": "Controller",
+        "destination_type": ContentType.objects.get_for_model(Device),
+        "destination_label": "Device",
+    }
+    Relationship.objects.get_or_create(name=relationship_dict["name"], defaults=relationship_dict)

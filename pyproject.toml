@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nautobot-ssot-aristacv"
-version = "1.4.0"
+version = "1.5.0"
 description = "Nautobot SSoT Arista CloudVision"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 
@@ -24,6 +24,7 @@ nautobot = "^1.2.0"
 nautobot-ssot = "^1.0.1"
 cloudvision = "^1.5.0"
 nautobot-device-lifecycle-mgmt = {version = "^1.0.2", optional = true}
+cvprac = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 invoke = "*"

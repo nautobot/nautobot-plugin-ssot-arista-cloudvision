@@ -1,7 +1,6 @@
 """Utility functions for Nautobot ORM."""
 import re
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
 
 from nautobot.dcim.models import DeviceRole, DeviceType, Manufacturer, Site
@@ -40,7 +39,7 @@ def verify_device_type_object(device_type):
         device_type_obj = DeviceType.objects.get(model=device_type)
     except DeviceType.DoesNotExist:
         device_type_obj = DeviceType(
-            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=device_type.lower()
+            manufacturer=Manufacturer.objects.get(name="Arista"), model=device_type, slug=slugify(device_type)
         )
         device_type_obj.validated_save()
     return device_type_obj
@@ -56,31 +55,9 @@ def verify_device_role_object(role_name, role_color):
     try:
         role_obj = DeviceRole.objects.get(name=role_name)
     except DeviceRole.DoesNotExist:
-        role_obj = DeviceRole(name=role_name, slug=role_name.lower(), color=role_color)
+        role_obj = DeviceRole(name=role_name, slug=slugify(role_name), color=role_color)
         role_obj.validated_save()
     return role_obj
-
-
-def verify_device_status(device_status, device_status_color):
-    """Verifies device status object exists in Nautobot. If not, creates specified device status.
-
-    Args:
-        device_status (str): Status name.
-        device_status_color (str): Status color.
-    """
-    try:
-        status_obj = Status.objects.get(name=device_status)
-    except Status.DoesNotExist:
-        dcim_device = ContentType.objects.get(app_label="dcim", model="device")
-        status_obj = Status(
-            name=device_status,
-            slug=device_status.lower(),
-            color=device_status_color,
-            description="Devices imported from CloudVision.",
-        )
-        status_obj.validated_save()
-        status_obj.content_types.set([dcim_device])
-    return status_obj
 
 
 def verify_import_tag():
@@ -104,8 +81,14 @@ def get_device_version(device):
         software_relation = Relationship.objects.get(name="Software on Device")
         relations = device.get_relationships()
         try:
-            version = relations["destination"][software_relation][0].source.version
+            assigned_versions = relations["destination"][software_relation]
+            if len(assigned_versions) > 0:
+                version = assigned_versions[0].source.version
+            else:
+                return ""
         except KeyError:
+            pass
+        except IndexError:
             pass
     else:
         version = device.custom_field_data["arista_eos"]
@@ -124,9 +107,9 @@ def parse_hostname(hostname: str):
     for pattern in hostname_patterns:
         match = re.search(pattern=pattern, string=hostname)
         if match:
-            if match.group("site"):
+            if "site" in match.groupdict() and match.group("site"):
                 site = match.group("site")
-            if match.group("role"):
+            if "role" in match.groupdict() and match.group("role"):
                 role = match.group("role")
     return (site, role)
 

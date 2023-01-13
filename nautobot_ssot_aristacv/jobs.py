@@ -6,8 +6,6 @@ from django.urls import reverse
 
 from nautobot.dcim.models import DeviceType
 from nautobot.extras.jobs import Job, BooleanVar
-from nautobot.extras.models.tags import Tag
-from nautobot.extras.models.customfields import CustomField
 from nautobot.utilities.utils import get_route_for_model
 from nautobot_ssot.jobs.base import DataTarget, DataSource, DataMapping
 
@@ -57,12 +55,6 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
             ),
             "New device default role color": PLUGIN_SETTINGS.get(
                 "from_cloudvision_default_device_role_color", nautobot.DEFAULT_DEVICE_ROLE_COLOR
-            ),
-            "New device default status": PLUGIN_SETTINGS.get(
-                "from_cloudvision_default_device_status", nautobot.DEFAULT_DEVICE_STATUS
-            ),
-            "New device default status color": PLUGIN_SETTINGS.get(
-                "from_cloudvision_default_device_status_color", nautobot.DEFAULT_DEVICE_STATUS_COLOR
             ),
             "Apply import tag": str(PLUGIN_SETTINGS.get("apply_import_tag", nautobot.APPLY_IMPORT_TAG)),
             "Import Active": str(PLUGIN_SETTINGS.get("import_active", "True"))
@@ -121,16 +113,6 @@ class CloudVisionDataSource(DataSource, Job):  # pylint: disable=abstract-method
         self.log("Loading data from Nautobot")
         self.target_adapter = NautobotAdapter(job=self)
         self.target_adapter.load()
-
-    def lookup_object(self, model_name, unique_id):
-        """Lookup object for SSoT plugin integration."""
-        if model_name == "cf":
-            try:
-                cf_name, _ = unique_id.split("__")
-                return CustomField.objects.get(name=f"{cf_name}")
-            except CustomField.DoesNotExist:
-                pass
-        return None
 
 
 class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
@@ -199,16 +181,6 @@ class CloudVisionDataTarget(DataTarget, Job):  # pylint: disable=abstract-method
             self.log("Loading data from CloudVision")
             self.target_adapter = CloudvisionAdapter(job=self, conn=client)
             self.target_adapter.load()
-
-    def lookup_object(self, model_name, unique_id):
-        """Lookup object for SSoT plugin integration."""
-        if model_name == "tag":
-            try:
-                tag_name, value = unique_id.split("__")
-                return Tag.objects.get(name=f"{tag_name}:{value}")
-            except Tag.DoesNotExist:
-                pass
-        return None
 
 
 jobs = [CloudVisionDataSource, CloudVisionDataTarget]

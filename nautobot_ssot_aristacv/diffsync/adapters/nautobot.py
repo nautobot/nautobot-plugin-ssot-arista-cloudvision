@@ -1,6 +1,10 @@
 """DiffSync adapter for Nautobot."""
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from nautobot.dcim.models import Device as OrmDevice
 from nautobot.dcim.models import Interface as OrmInterface
+from nautobot.extras.models import Relationship as OrmRelationship
+from nautobot.extras.models import RelationshipAssociation as OrmRelationshipAssociation
 from nautobot.ipam.models import IPAddress as OrmIPAddress
 from diffsync import DiffSync
 from diffsync.exceptions import ObjectNotFound, ObjectAlreadyExists
@@ -29,8 +33,8 @@ class NautobotAdapter(DiffSync):
         super().__init__(*args, **kwargs)
         self.job = job
 
-    def load(self):
-        """Load device custom field data from Nautobot and populate DiffSync models."""
+    def load_devices(self):
+        """Add Nautobot Device objects as DiffSync Device models."""
         for dev in OrmDevice.objects.filter(device_type__manufacturer__slug="arista"):
             try:
                 new_device = self.device(
@@ -46,17 +50,21 @@ class NautobotAdapter(DiffSync):
                 self.job.log_warning(message=f"Unable to load {dev.name} as it appears to be a duplicate. {err}")
                 continue
 
-            for cf_name, cf_value in dev.custom_field_data.items():
-                if cf_name.startswith("arista_"):
-                    try:
-                        new_cf = self.cf(
-                            name=cf_name, value=cf_value if cf_value is not None else "", device_name=dev.name
-                        )
-                        self.add(new_cf)
-                    except AttributeError as err:
-                        self.job.log_warning(message=f"Unable to load {cf_name}. {err}")
-                        continue
+            self.load_custom_fields(dev=dev)
 
+    def load_custom_fields(self, dev: OrmDevice):
+        """Load device custom field data from Nautobot and populate DiffSync models."""
+        for cf_name, cf_value in dev.custom_field_data.items():
+            if cf_name.startswith("arista_"):
+                try:
+                    new_cf = self.cf(name=cf_name, value=cf_value if cf_value is not None else "", device_name=dev.name)
+                    self.add(new_cf)
+                except AttributeError as err:
+                    self.job.log_warning(message=f"Unable to load {cf_name}. {err}")
+                    continue
+
+    def load_interfaces(self):
+        """Add Nautobot Interface objects as DiffSync Port models."""
         for intf in OrmInterface.objects.filter(device__device_type__manufacturer__slug="arista"):
             new_port = self.port(
                 name=intf.name,
@@ -79,6 +87,8 @@ class NautobotAdapter(DiffSync):
                     message=f"Unable to find Device {intf.device.name} in diff to assign to port {intf.name}. {err}"
                 )
 
+    def load_ip_addresses(self):
+        """Add Nautobot IPAddress objects as DiffSync IPAddress models."""
         for ipaddr in OrmIPAddress.objects.filter(interface__device__device_type__manufacturer__slug="arista"):
             new_ip = self.ipaddr(
                 address=str(ipaddr.address),
@@ -90,3 +100,43 @@ class NautobotAdapter(DiffSync):
                 self.add(new_ip)
             except ObjectAlreadyExists as err:
                 self.job.log_warning(message=f"Unable to load {ipaddr.address} as appears to be a duplicate. {err}")
+
+    def sync_complete(self, source: DiffSync, *args, **kwargs):
+        """Perform actions after sync is completed.
+
+        Args:
+            source (DiffSync): Source DiffSync DataSource adapter.
+        """
+        PLUGIN_CFG = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+
+        # if Controller is created we need to ensure all imported Devices have RelationshipAssociation to it.
+        if PLUGIN_CFG.get("create_controller"):
+            self.job.log_info(message="Creating Relationships between CloudVision and connected Devices.")
+            controller_relation = OrmRelationship.objects.get(name="Controller -> Device")
+            device_ct = ContentType.objects.get_for_model(OrmDevice)
+            cvp = OrmDevice.objects.get(name="CloudVision")
+            loaded_devices = source.dict()["device"]
+            for dev in loaded_devices:
+                if dev != "CloudVision":
+                    try:
+                        device = OrmDevice.objects.get(name=dev)
+                        relations = device.get_relationships()
+                        if len(relations["destination"][controller_relation]) == 0:
+                            new_assoc = OrmRelationshipAssociation(
+                                relationship=controller_relation,
+                                source_type=device_ct,
+                                source=cvp,
+                                destination_type=device_ct,
+                                destination=device,
+                            )
+                            new_assoc.validated_save()
+                    except OrmDevice.DoesNotExist:
+                        self.job.log_info(
+                            message=f"Unable to find Device {dev['name']} to create Relationship to Controller."
+                        )
+
+    def load(self):
+        """Load Nautobot models into DiffSync models."""
+        self.load_devices()
+        self.load_interfaces()
+        self.load_ip_addresses()

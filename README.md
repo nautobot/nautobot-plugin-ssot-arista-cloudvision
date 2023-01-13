@@ -83,6 +83,8 @@ PLUGINS_CONFIG = {
     "delete_devices_on_sync": is_truthy(os.getenv("NAUTOBOT_ARISTACV_DELETE_ON_SYNC", False)),
     "apply_import_tag": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_TAG", False)),
     "import_active": is_truthy(os.getenv("NAUTOBOT_ARISTACV_IMPORT_ACTIVE", False)),
+    "create_controller": is_truthy(os.getenv("NAUTOBOT_ARISTACV_CREATE_CONTROLLER", False)),
+    "controller_site": os.getenv("NAUTOBOT_ARISTACV_CONTROLLER_SITE", ""),
     "hostname_patterns": [""],
     "site_mappings": {},
     "role_mappings": {},
@@ -164,15 +166,20 @@ In addition, you can control whether only active devices are imported or whether
 | ---------------------- | ------- | -------------------------------------------- | ------- |
 | import_active          | boolean | Only import active devices from CloudVision. | False   |
 
+There is also the option of having your CloudVision instance created within Nautobot and linked to the Devices managed by the instance. If the `create_controller` setting is `True` then a CloudVision Device will be created and Relationships created to the imported Devices from CVP. The `controller_site` setting allows you to specify the name of the Site you wish the Device to be created in. If this setting is blank a new CloudVision Site will be created and the Device will be placed in it.
+
+| Configuration Variable | Type    | Usage                                         | Default |
+| ---------------------- | ------- | --------------------------------------------- | ------- |
+| create_controller      | boolean | Create CloudVision Device in Nautobot.        | False   |
+| controller_site        | string  | The Site to associate with CloudVision Device.| ""      |
+
 Finally, there is the option to parse device hostname's for codes that indicate the assigned site or device role. This is done through a combination of a few settings. First, the hostname_patterns setting defines a list of regex patterns that define your hostname structure. These patterns must include a named capture group using the `site` and `role` key to identify the portion of the hostname that indicates those pieces of data, ie `(?P<site>\w+)` and `(?P<role>\w+)`. Once those pieces are extracted they are then evaluated against the relevant map, ie the value for the `site` capture group is looked for in the `site_mappings` dictionary expecting the value to be a key with the map value being the name of the Site. If the Site doesn't exist it will be created in Staging status. For the Device Role, it will be created if it doesn't exist in Nautobot. Please note that the hostname is converted to all lowercase when the parsing is performed so the keys are expected to be all lowercase too.
 
-| Configuration Variable                         | Type      | Usage                                                        | Default                |
-| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
-| hostname_patterns                              | List[str] | Define the portions of a hostname that indicate site/role.   | []                     |
-| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
-| site_mappings                                  | dict      | Define the site name associated with code in hostname.       | {}                     |
-| ---------------------------------------------- | --------- | ------------------------------------------------------------ | ---------------------- |
-| role_mappings                                  | dict      | Define the role name associated with code in hostname.       | {}                     |
+| Configuration Variable                       | Type    | Usage                                                      | Default              |
+|----------------------------------------------|---------|------------------------------------------------------------|----------------------|
+| hostname_patterns                            |List[str]| Define the portions of a hostname that indicate site/role. | []                   |
+| site_mappings                                |  dict   | Define the site name associated with code in hostname.     | {}                   |
+| role_mappings                                |  dict   | Define the role name associated with code in hostname.     | {}                   |
 
 > As the Device hostname is used as the identifier for Device objects any change in hostname implies a new Device and thus should trigger a deletion and creation of a new Device in Nautobot. For this reason, the hostname parsing feature is not done during updates and only at initial creation of the Device. If you need to correct the Site or Role for a Device after initial creation you will need to manually correct it or delete it and run the import Job again.
 

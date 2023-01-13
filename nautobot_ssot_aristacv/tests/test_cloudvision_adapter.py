@@ -1,6 +1,7 @@
 """Unit tests for the Cloudvision DiffSync adapter class."""
 import uuid
 from unittest.mock import MagicMock, patch
+from django.test import override_settings
 from django.contrib.contenttypes.models import ContentType
 
 from nautobot.extras.models import Job, JobResult
@@ -28,7 +29,7 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
         self.cloudvision.get_device_type = MagicMock()
         self.cloudvision.get_device_type.return_value = "fixedSystem"
         self.cloudvision.get_interfaces_fixed = MagicMock()
-        self.cloudvision.get_interfaces_fixed.return_value = fixtures.INTERFACE_FIXTURE
+        self.cloudvision.get_interfaces_fixed.return_value = fixtures.FIXED_INTERFACE_FIXTURE
         self.cloudvision.get_interface_mode = MagicMock()
         self.cloudvision.get_interface_mode.return_value = "access"
         self.cloudvision.get_interface_transceiver = MagicMock()
@@ -44,6 +45,7 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
         )
         self.cvp = CloudvisionAdapter(job=self.job, conn=self.client)
 
+    @override_settings(PLUGINS_CONFIG={"nautobot_ssot_aristacv": {"create_controller": False}})
     def test_load_devices(self):
         """Test the load_devices() adapter method."""
         with patch("nautobot_ssot_aristacv.utils.cloudvision.get_devices", self.cloudvision.get_devices):
@@ -84,7 +86,7 @@ class CloudvisionAdapterTestCase(TransactionTestCase):
                         ):
                             self.cvp.load_interfaces(mock_device)
         self.assertEqual(
-            {f"{port['interface']}__mock_device" for port in fixtures.INTERFACE_FIXTURE},
+            {f"{port['interface']}__mock_device" for port in fixtures.FIXED_INTERFACE_FIXTURE},
             {port.get_unique_id() for port in self.cvp.get_all("port")},
         )
 

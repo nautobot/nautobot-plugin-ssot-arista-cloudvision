@@ -33,6 +33,20 @@ class CloudvisionAdapter(DiffSync):
 
     def load_devices(self):
         """Load devices from CloudVision."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+        if PLUGIN_SETTINGS.get("create_controller"):
+            new_cvp = self.device(
+                name="CloudVision",
+                serial="",
+                status="active",
+                device_model="CloudVision",
+                version=cloudvision.get_cvp_version(),
+                uuid=None,
+            )
+            try:
+                self.add(new_cvp)
+            except ObjectAlreadyExists as err:
+                self.job.log_warning(message=f"Error attempting to add CloudVision device. {err}")
         for dev in cloudvision.get_devices(client=self.conn.comm_channel):
             if dev["hostname"] != "":
                 new_device = self.device(
@@ -67,6 +81,11 @@ class CloudvisionAdapter(DiffSync):
             port_info = cloudvision.get_interfaces_chassis(client=self.conn, dId=device.serial)
         elif chassis_type == "fixedSystem":
             port_info = cloudvision.get_interfaces_fixed(client=self.conn, dId=device.serial)
+        elif chassis_type == "Unknown":
+            self.job.log_warning(
+                message=f"Unable to determine chassis type for {device.name} so will be unable to retrieve interfaces."
+            )
+            return None
         if self.job.kwargs.get("debug"):
             self.job.log_debug(message=f"Device being loaded: {device.name}. Port: {port_info}.")
         for port in port_info:
@@ -92,7 +111,7 @@ class CloudvisionAdapter(DiffSync):
                     description=port_description,
                     mac_addr=port["mac_addr"] if port.get("mac_addr") else "",
                     mode="tagged" if port_mode == "trunk" else "access",
-                    mtu=port["mtu"],
+                    mtu=port["mtu"] if port.get("mtu") else 1500,
                     enabled=port["enabled"],
                     status=port_status,
                     port_type=port_type,
@@ -110,6 +129,8 @@ class CloudvisionAdapter(DiffSync):
         """Load IP addresses from CloudVision."""
         dev_ip_intfs = cloudvision.get_ip_interfaces(client=self.conn, dId=dev.serial)
         for intf in dev_ip_intfs:
+            if self.job.kwargs.get("debug"):
+                self.job.log(message=f"Loading interface {intf['interface']} on {dev.name} for {intf['address']}.")
             try:
                 _ = self.get(self.port, {"name": intf["interface"], "device": dev.name})
             except ObjectNotFound:
@@ -136,19 +157,24 @@ class CloudvisionAdapter(DiffSync):
                         message=f"Unable to find device {dev.name} to assign port {intf['interface']}. {err}"
                     )
 
-            new_ip = self.ipaddr(
-                address=intf["address"],
-                interface=intf["interface"],
-                device=dev.name,
-                uuid=None,
-            )
-            try:
-                self.add(new_ip)
-            except ObjectAlreadyExists as err:
-                self.job.log_warning(
-                    message=f"Unable to load {intf['address']} for {dev.name} on {intf['interface']}. {err}"
+            if self.job.kwargs.get("debug"):
+                self.job.log(
+                    message=f"Attempting to load IP Address {intf['address']} for {intf['interface']} on {dev.name}."
                 )
-                continue
+            if intf["address"] and intf["address"] != "none":
+                new_ip = self.ipaddr(
+                    address=intf["address"],
+                    interface=intf["interface"],
+                    device=dev.name,
+                    uuid=None,
+                )
+                try:
+                    self.add(new_ip)
+                except ObjectAlreadyExists as err:
+                    self.job.log_warning(
+                        message=f"Unable to load {intf['address']} for {dev.name} on {intf['interface']}. {err}"
+                    )
+                    continue
 
     def load_device_tags(self, device):
         """Load device tags from CloudVision."""

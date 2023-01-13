@@ -341,6 +341,20 @@ ssh = ["bcrypt (>=3.1.5)"]
 test = ["pytest (>=6.2.0)", "pytest-benchmark", "pytest-cov", "pytest-subtests", "pytest-xdist", "pretend", "iso8601", "pytz", "hypothesis (>=1.11.4,!=3.79.2)"]
 
 [[package]]
+name = "cvprac"
+version = "1.2.2"
+description = "Arista Cloudvision(R) Portal Rest API Client written in python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = ">=1.0.0"
+
+[package.extras]
+dev = ["check-manifest", "pep8", "pyflakes", "pylint", "coverage", "pyyaml"]
+
+[[package]]
 name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
@@ -2093,7 +2107,7 @@ nautobot-device-lifecycle-mgmt = ["nautobot-device-lifecycle-mgmt"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "9ef6a934806bbe8a9b39f50a133ce7e07a5d8911789a380c6fa00321e11ee311"
+content-hash = "2db8a48913fe4716b80d0a4c1665703ea8d15ccb72e72b608d5308f971646cb8"
 
 [metadata.files]
 amqp = [
@@ -2230,6 +2244,7 @@ coreschema = [
 ]
 coverage = []
 cryptography = []
+cvprac = []
 cycler = [
     {file = "cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
     {file = "cycler-0.11.0.tar.gz", hash = "sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f"},
