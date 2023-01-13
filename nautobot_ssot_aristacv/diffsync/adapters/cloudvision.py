@@ -33,6 +33,20 @@ class CloudvisionAdapter(DiffSync):
 
     def load_devices(self):
         """Load devices from CloudVision."""
+        PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
+        if PLUGIN_SETTINGS.get("create_controller"):
+            new_cvp = self.device(
+                name="CloudVision",
+                serial="",
+                status="active",
+                device_model="CloudVision",
+                version=cloudvision.get_cvp_version(),
+                uuid=None,
+            )
+            try:
+                self.add(new_cvp)
+            except ObjectAlreadyExists as err:
+                self.job.log_warning(message=f"Error attempting to add CloudVision device. {err}")
         for dev in cloudvision.get_devices(client=self.conn.comm_channel):
             if dev["hostname"] != "":
                 new_device = self.device(
