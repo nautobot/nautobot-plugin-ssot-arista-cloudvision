@@ -7,7 +7,6 @@ from django.utils.text import slugify
 from nautobot.extras.choices import CustomFieldTypeChoices, RelationshipTypeChoices
 
 
-
 def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
     """Callback function for post_migrate() -- create CustomField records."""
     ContentType = apps.get_model("contenttypes", "ContentType")
