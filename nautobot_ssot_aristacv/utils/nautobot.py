@@ -91,7 +91,7 @@ def get_device_version(device):
         except IndexError:
             pass
     else:
-        version = device.custom_field_data["arista_eos"]
+        version = device.custom_field_data["arista_eos"] if device.custom_field_data.get("arista_eos") else ""
     return version
 
 
