@@ -35,12 +35,20 @@ class CloudvisionAdapter(DiffSync):
         """Load devices from CloudVision."""
         PLUGIN_SETTINGS = settings.PLUGINS_CONFIG["nautobot_ssot_aristacv"]
         if PLUGIN_SETTINGS.get("create_controller"):
+            cvp_version = cloudvision.get_cvp_version()
+            cvp_ver_cf = self.cf(name="arista_eos", value=cvp_version, device_name="CloudVision")
+            try:
+                self.add(cvp_ver_cf)
+            except ObjectAlreadyExists as err:
+                self.job.log_warning(
+                    message=f"Unable to add CustomField for EOS Version for CloudVision device as already exists. {err}"
+                )
             new_cvp = self.device(
                 name="CloudVision",
                 serial="",
                 status="active",
                 device_model="CloudVision",
-                version=cloudvision.get_cvp_version(),
+                version=cvp_version,
                 uuid=None,
             )
             try:

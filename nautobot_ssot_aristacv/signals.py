@@ -79,8 +79,18 @@ def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
             "label": "Topology Network Type",
         },
         {"name": "arista_topology_type", "type": CustomFieldTypeChoices.TYPE_TEXT, "label": "Topology Type"},
+        {
+            "name": "arista_topology_rack",
+            "type": CustomFieldTypeChoices.TYPE_TEXT,
+            "label": "Topology Rack",
+        },
+        {
+            "name": "arista_topology_pod",
+            "type": CustomFieldTypeChoices.TYPE_TEXT,
+            "label": "Topology Pod",
+        },
     ]:
-        field, _ = CustomField.objects.get_or_create(
+        field, _ = CustomField.objects.update_or_create(
             name=device_cf_dict["name"], defaults=device_cf_dict, slug=device_cf_dict["name"]
         )
         field.content_types.set([ContentType.objects.get_for_model(Device)])
@@ -89,7 +99,7 @@ def post_migrate_create_custom_fields(apps=global_apps, **kwargs):
 def post_migrate_create_manufacturer(apps=global_apps, **kwargs):
     """Callback function for post_migrate() -- create Arista Manufacturer."""
     Manufacturer = apps.get_model("dcim", "Manufacturer")
-    Manufacturer.objects.get_or_create(name="Arista", slug="arista")
+    Manufacturer.objects.update_or_create(name="Arista", slug="arista")
 
 
 def post_migrate_create_platform(apps=global_apps, **kwargs):
@@ -125,4 +135,4 @@ def post_migrate_create_controller_relationship(apps=global_apps, **kwargs):
         "destination_type": ContentType.objects.get_for_model(Device),
         "destination_label": "Device",
     }
-    Relationship.objects.get_or_create(name=relationship_dict["name"], defaults=relationship_dict)
+    Relationship.objects.update_or_create(name=relationship_dict["name"], defaults=relationship_dict)

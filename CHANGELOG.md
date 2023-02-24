@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.5.1 - 2023-02-24
+
+### Added
+
+- #134 - Added CVP Fields for Topology Pod and Rack. Addresses #126.
+
+### Fixed
+
+- #144 - Fix CustomField creation and CVP Version. Addresses #143 and #133
+
 ## v1.5.0 - 2023-01-13
 
 ### Added
