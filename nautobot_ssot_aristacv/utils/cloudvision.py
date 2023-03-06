@@ -8,8 +8,9 @@ import google.protobuf.timestamp_pb2 as pbts
 import grpc
 import requests
 from arista.inventory.v1 import models, services
-from arista.tag.v1 import models as tag_models
-from arista.tag.v1 import services as tag_services
+from arista.tag.v2 import models as tag_models
+from arista.tag.v2 import services as tag_services
+
 from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue  # pylint: disable=no-name-in-module
 
@@ -292,8 +293,8 @@ def get_devices(client):
 
 def get_tags_by_type(client, creator_type: int = tag_models.CREATOR_TYPE_USER):
     """Get tags by creator type from CloudVision."""
-    tag_stub = tag_services.DeviceTagServiceStub(client)
-    req = tag_services.DeviceTagStreamRequest(partial_eq_filter=[tag_models.DeviceTag(creator_type=creator_type)])
+    tag_stub = tag_services.TagServiceStub(client)
+    req = tag_services.TagStreamRequest(partial_eq_filter=[tag_models.Tag(creator_type=creator_type)])
     responses = tag_stub.GetAll(req)
     tags = []
     for resp in responses:
@@ -307,11 +308,11 @@ def get_tags_by_type(client, creator_type: int = tag_models.CREATOR_TYPE_USER):
 
 def get_device_tags(client, device_id: str):
     """Get tags for specific device."""
-    tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(client)
-    req = tag_services.DeviceTagAssignmentConfigStreamRequest(
+    tag_stub = tag_services.TagAssignmentConfigServiceStub(client)
+    req = tag_services.TagAssignmentConfigStreamRequest(
         partial_eq_filter=[
-            tag_models.DeviceTagAssignmentConfig(
-                key=tag_models.DeviceTagAssignmentKey(
+            tag_models.TagAssignmentConfig(
+                key=tag_models.TagAssignmentKey(
                     device_id=StringValue(value=device_id),
                 )
             )
@@ -330,9 +331,9 @@ def get_device_tags(client, device_id: str):
 
 def create_tag(client, label: str, value: str):
     """Create user-defined tag in CloudVision."""
-    tag_stub = tag_services.DeviceTagConfigServiceStub(client)
-    req = tag_services.DeviceTagConfigSetRequest(
-        value=tag_models.DeviceTagConfig(
+    tag_stub = tag_services.TagConfigServiceStub(client)
+    req = tag_services.TagConfigSetRequest(
+        value=tag_models.TagConfig(
             key=tag_models.TagKey(label=StringValue(value=label), value=StringValue(value=value))
         )
     )
@@ -346,8 +347,8 @@ def create_tag(client, label: str, value: str):
 
 def delete_tag(client, label: str, value: str):
     """Delete user-defined tag in CloudVision."""
-    tag_stub = tag_services.DeviceTagConfigServiceStub(client)
-    req = tag_services.DeviceTagConfigDeleteRequest(
+    tag_stub = tag_services.TagConfigServiceStub(client)
+    req = tag_services.TagConfigDeleteRequest(
         key=tag_models.TagKey(label=StringValue(value=label), value=StringValue(value=value))
     )
     try:
@@ -360,10 +361,10 @@ def delete_tag(client, label: str, value: str):
 
 def assign_tag_to_device(client, device_id: str, label: str, value: str):
     """Assign user-defined tag to device in CloudVision."""
-    tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(client)
-    req = tag_services.DeviceTagAssignmentConfigSetRequest(
-        value=tag_models.DeviceTagAssignmentConfig(
-            key=tag_models.DeviceTagAssignmentKey(
+    tag_stub = tag_services.TagAssignmentConfigServiceStub(client)
+    req = tag_services.TagAssignmentConfigSetRequest(
+        value=tag_models.TagAssignmentConfig(
+            key=tag_models.TagAssignmentKey(
                 label=StringValue(value=label),
                 value=StringValue(value=value),
                 device_id=StringValue(value=device_id),
@@ -375,9 +376,9 @@ def assign_tag_to_device(client, device_id: str, label: str, value: str):
 
 def remove_tag_from_device(client, device_id: str, label: str, value: str):
     """Unassign a tag from a device in CloudVision."""
-    tag_stub = tag_services.DeviceTagAssignmentConfigServiceStub(client)
-    req = tag_services.DeviceTagAssignmentConfigDeleteRequest(
-        key=tag_models.DeviceTagAssignmentKey(
+    tag_stub = tag_services.TagAssignmentConfigServiceStub(client)
+    req = tag_services.TagAssignmentConfigDeleteRequest(
+        key=tag_models.TagAssignmentKey(
             label=StringValue(value=label),
             value=StringValue(value=value),
             device_id=StringValue(value=device_id),
