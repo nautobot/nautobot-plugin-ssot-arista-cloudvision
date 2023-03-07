@@ -55,7 +55,7 @@ COPY . /source
 
 # Get container's installed Nautobot version as a forced constraint
 # NAUTOBOT_VER may be a branch name and not a published release therefor we need to get the installed version
-#  so pip can use it to recognize local constraints.
+#   so pip can use it to recognize local constraints.
 RUN pip show nautobot | grep "^Version: " | sed -e 's/Version: /nautobot==/' > constraints.txt
 
 # Use Poetry to grab dev dependencies from the lock file
