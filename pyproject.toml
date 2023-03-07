@@ -45,6 +45,9 @@ parameterized = "^0.8.1"
 nautobot = ["nautobot"]
 nautobot-device-lifecycle-mgmt = ["nautobot-device-lifecycle-mgmt"]
 
+[tool.poetry.group.dev.dependencies]
+nautobot-device-lifecycle-mgmt = {version = "^1.0.2", optional = true}
+
 [tool.black]
 line-length = 120
 target-version = ['py37']

@@ -2099,19 +2099,20 @@ sso = ["social-auth-core[openidconnect,saml] (>=4.3.0,<4.4.0)"]
 
 [[package]]
 name = "nautobot-device-lifecycle-mgmt"
-version = "1.0.2"
+version = "1.1.2"
 description = "Manages device lifecycles for platforms and software."
 category = "main"
 optional = true
-python-versions = ">=3.6.2,<4.0.0"
+python-versions = ">=3.7,<4.0"
 files = [
-    {file = "nautobot-device-lifecycle-mgmt-1.0.2.tar.gz", hash = "sha256:bb5f412044d0bb07c4dc427abce8bf55004f41a4bb5621e76ebc2baa023ccdc2"},
-    {file = "nautobot_device_lifecycle_mgmt-1.0.2-py3-none-any.whl", hash = "sha256:ec80e365244c7b70eb89fdaab7e4929c32b3bb0a6e02a02a657ee3fec60502ee"},
+    {file = "nautobot_device_lifecycle_mgmt-1.1.2-py3-none-any.whl", hash = "sha256:5d5b07963462ea35e0dae42fb37130f072f33094271b81fa06d2c5bc4826d4e2"},
+    {file = "nautobot_device_lifecycle_mgmt-1.1.2.tar.gz", hash = "sha256:a32b76b2784468f782e74644995a16d7037458ab87ae5278f840a76092f2e911"},
 ]
 
 [package.dependencies]
 matplotlib = ">=3.3.4,<4.0.0"
-pycountry = ">=20.7.3,<21.0.0"
+nautobot = ">=1.2.0,<2.0.0"
+pycountry = ">=22.3.5,<23.0.0"
 
 [[package]]
 name = "nautobot-ssot"
@@ -2532,14 +2533,17 @@ files = [
 
 [[package]]
 name = "pycountry"
-version = "20.7.3"
+version = "22.3.5"
 description = "ISO country, subdivision, language, currency and script definitions and their translations"
 category = "main"
 optional = true
-python-versions = "*"
+python-versions = ">=3.6, <4"
 files = [
-    {file = "pycountry-20.7.3.tar.gz", hash = "sha256:81084a53d3454344c0292deebc20fcd0a1488c136d4900312cbd465cf552cb42"},
+    {file = "pycountry-22.3.5.tar.gz", hash = "sha256:b2163a246c585894d808f18783e19137cb70a0c18fb36748dc01fc6f109c1646"},
 ]
+
+[package.dependencies]
+setuptools = "*"
 
 [[package]]
 name = "pycparser"
@@ -3131,7 +3135,7 @@ files = [
 name = "setuptools"
 version = "67.5.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3645,4 +3649,4 @@ nautobot-device-lifecycle-mgmt = ["nautobot-device-lifecycle-mgmt"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "fa230375c834d623c77ddcf6ae331634d9f75053cbadbced32b4e597e17a451a"
+content-hash = "95b985474918b3245c756165ab86a76fce647def30a85ff6ae0f19ac4ba67f70"
