@@ -194,7 +194,6 @@ class TestCloudvisionUtils(TestCase):
 
     def test_get_interfaces_chassis(self):
         """Test get_interfaces_chassis method."""
-        self.maxDiff = None  # pylint:disable=invalid-name
         mock_query = MagicMock()
         mock_query.dataset.type = "device"
         mock_query.dataset.name = "JPE12345678"
