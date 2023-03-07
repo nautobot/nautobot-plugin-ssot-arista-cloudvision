@@ -24,7 +24,7 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
     description = "Nautobot SSoT Arista CloudVision."
     base_url = "nautobot-sot_aristacv"
     required_settings = []
-    min_version = "1.2.0"
+    min_version = "1.4.0"
     max_version = "1.9999"
     default_settings = {
         "cvp_host": os.getenv("NAUTOBOT_ARISTACV_HOST"),
