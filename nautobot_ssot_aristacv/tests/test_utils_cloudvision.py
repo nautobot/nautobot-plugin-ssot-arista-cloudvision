@@ -263,6 +263,46 @@ class TestCloudvisionUtils(TestCase):
             )
         self.assertEqual(results, "xcvr1000BaseT")
 
+    def test_get_interface_mode_trunk(self):
+        """Test the get_interface_mode method for a trunk."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\010bridging",
+            "\304\020switchIntfConfig",
+            "\304\020switchIntfConfig",
+            "\304\tEthernet1",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.TRUNK_INTF_MODE_QUERY
+            results = cloudvision.get_interface_mode(client=self.client, dId="JPE12345678", interface="Ethernet1")
+        expected = "trunk"
+        self.assertEqual(results, expected)
+
+    def test_get_interface_mode_access(self):
+        """Test the get_interface_mode method for a access."""
+        mock_query = MagicMock()
+        mock_query.dataset.type = "device"
+        mock_query.dataset.name = "JPE12345678"
+        mock_query.paths.path_elements = [
+            "\304\005Sysdb",
+            "\304\010bridging",
+            "\304\020switchIntfConfig",
+            "\304\020switchIntfConfig",
+            "\304\tEthernet5",
+        ]
+
+        with patch("cloudvision.Connector.grpc_client.grpcClient.create_query", mock_query):
+            self.client.get = MagicMock()
+            self.client.get.return_value = fixtures.ACCESS_INTF_MODE_QUERY
+            results = cloudvision.get_interface_mode(client=self.client, dId="JPE12345678", interface="Ethernet5")
+        expected = "access"
+        self.assertEqual(results, expected)
+
     port_types = [
         ("built_in_gig", {"port_info": {}, "transceiver": "xcvr1000BaseT"}, "1000base-t"),
         ("build_in_10g_sr", {"port_info": {}, "transceiver": "xcvr10GBaseSr"}, "10gbase-x-xfp"),
