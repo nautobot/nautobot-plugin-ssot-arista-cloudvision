@@ -677,7 +677,7 @@ dev = ["check-manifest", "coverage", "pep8", "pyflakes", "pylint", "pyyaml"]
 name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -1261,7 +1261,7 @@ pyflakes = ">=0.8.1"
 name = "fonttools"
 version = "4.38.0"
 description = "Tools to manipulate font files"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1651,7 +1651,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1908,7 +1908,7 @@ files = [
 name = "matplotlib"
 version = "3.5.3"
 description = "Python plotting package"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2167,7 +2167,7 @@ sso = ["social-auth-core[openidconnect,saml] (>=4.3.0,<4.4.0)"]
 name = "nautobot-device-lifecycle-mgmt"
 version = "1.1.2"
 description = "Manages device lifecycles for platforms and software."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
@@ -2229,7 +2229,7 @@ optionals = ["napalm (>=4.0.0,<5.0.0)"]
 name = "numpy"
 version = "1.21.1"
 description = "NumPy is the fundamental package for array computing with Python."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2604,7 +2604,7 @@ files = [
 name = "pycountry"
 version = "22.3.5"
 description = "ISO country, subdivision, language, currency and script definitions and their translations"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6, <4"
 files = [
@@ -3228,7 +3228,7 @@ files = [
 name = "setuptools"
 version = "67.6.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3753,4 +3753,4 @@ nautobot-device-lifecycle-mgmt = ["nautobot-device-lifecycle-mgmt"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "ba1cce68bae70de5c39e8d7356250e2b4c1e9a3b457c5cb6be17e5b2ae87889f"
+content-hash = "27e58f0d7ca9d78f72a6946f2e2ad005e2168a8beb034cebd7216573be6757df"

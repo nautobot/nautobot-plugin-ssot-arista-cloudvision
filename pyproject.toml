@@ -24,7 +24,6 @@ nautobot = "^1.4.0"
 nautobot-ssot = "^1.0.1"
 cloudvision = "^1.5.0"
 cvprac = "^1.2.2"
-nautobot-device-lifecycle-mgmt = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 invoke = "*"
