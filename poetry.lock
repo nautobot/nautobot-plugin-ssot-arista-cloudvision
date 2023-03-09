@@ -3644,9 +3644,9 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [extras]
 nautobot = ["nautobot"]
-nautobot-device-lifecycle-mgmt = []
+nautobot-device-lifecycle-mgmt = ["nautobot-device-lifecycle-mgmt"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "4edeaaec491ce996eb17c16cd1683f08e8265440eb2df9960438f26354157299"
+content-hash = "ba1cce68bae70de5c39e8d7356250e2b4c1e9a3b457c5cb6be17e5b2ae87889f"
