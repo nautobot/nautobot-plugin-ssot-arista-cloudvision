@@ -67,9 +67,9 @@ RUN poetry export -f requirements.txt --without-hashes --output poetry_freeze_ba
 RUN poetry export -f requirements.txt --dev --without-hashes --output poetry_freeze_all.txt
 RUN sort poetry_freeze_base.txt poetry_freeze_all.txt | uniq -u > poetry_freeze_dev.txt
 
-RUN cat poetry_freeze_base
-RUN cat poetry_freeze_all
-RUN cat poetry_freeze_dev
+RUN cat poetry_freeze_base.txt
+RUN cat poetry_freeze_all.txt
+RUN cat poetry_freeze_dev.txt
 
 # Install all local project as editable, constrained on Nautobot version, to get any additional
 #   direct dependencies of the app
