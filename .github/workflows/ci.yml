@@ -1,6 +1,6 @@
 ---
 name: "CI"
-concurrency:  # Cancel any existing runs of this workflow for this same PR
+concurrency: # Cancel any existing runs of this workflow for this same PR
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 on: # yamllint disable-line rule:truthy rule:comments
@@ -97,14 +97,8 @@ jobs:
       - "yamllint"
       - "black"
     runs-on: "ubuntu-20.04"
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: ["3.8"]
-        nautobot-version: ["1.4"]
     env:
-      INVOKE_NAUTOBOT_SSOT_ARISTACV_PYTHON_VER: "${{ matrix.python-version }}"
-      INVOKE_NAUTOBOT_SSOT_ARISTACV_NAUTOBOT_VER: "${{ matrix.nautobot-version }}"
+      INVOKE_NAUTOBOT_SSOT_ARISTACV_LOCAL: "True"
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v2"
