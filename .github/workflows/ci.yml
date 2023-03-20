@@ -102,7 +102,7 @@ jobs:
       NAUTOBOT_DB_USER: "nautobot"
       NAUTOBOT_DB_PASSWORD: "decinablesprewad"
       NAUTOBOT_DB_ENGINE: "django.db.backends.postgresql"
-      NAUTOBOT_CONFIG: "nautobot/core/tests/nautobot_config.py"
+      NAUTOBOT_CONFIG: "development/nautobot_config.py"
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v2"
