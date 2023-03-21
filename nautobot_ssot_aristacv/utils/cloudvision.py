@@ -81,6 +81,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
                     f"https://{self.cvp_host}/cvpservice/login/authenticate.do",
                     auth=(self.username, self.password),
                     verify=self.verify,
+                    timeout=10,
                 )
                 session_id = response.json().get("sessionId")
                 if not session_id:
