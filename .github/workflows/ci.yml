@@ -78,6 +78,8 @@ jobs:
       - "flake8"
       - "yamllint"
       - "black"
+    env:
+      INVOKE_NAUTOBOT_SSOT_ARISTACV_LOCAL: "True"
     runs-on: "ubuntu-20.04"
     steps:
       - name: "Check out repository code"
