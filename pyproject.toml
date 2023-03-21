@@ -22,7 +22,7 @@ packages = [
 python = "^3.7"
 nautobot = "^1.2.0"
 nautobot-ssot = "^1.0.1"
-cloudvision = "1.9.0"
+cloudvision = "^1.9.0"
 nautobot-device-lifecycle-mgmt = {version = "^1.0.2", optional = true}
 cvprac = "^1.2.2"
 
