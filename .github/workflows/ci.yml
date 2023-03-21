@@ -80,6 +80,7 @@ jobs:
       - "black"
     env:
       INVOKE_NAUTOBOT_SSOT_ARISTACV_LOCAL: "True"
+      NAUTOBOT_CONFIG: "development/nautobot_config.py"
     runs-on: "ubuntu-20.04"
     steps:
       - name: "Check out repository code"
