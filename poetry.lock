@@ -678,8 +678,8 @@ dev = ["check-manifest", "coverage", "pep8", "pyflakes", "pylint", "pyyaml"]
 name = "cycler"
 version = "0.11.0"
 description = "Composable style cycles"
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "cycler-0.11.0-py3-none-any.whl", hash = "sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"},
@@ -1262,8 +1262,8 @@ pyflakes = ">=0.8.1"
 name = "fonttools"
 version = "4.38.0"
 description = "Tools to manipulate font files"
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "fonttools-4.38.0-py3-none-any.whl", hash = "sha256:820466f43c8be8c3009aef8b87e785014133508f0de64ec469e4efb643ae54fb"},
@@ -1652,8 +1652,8 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
@@ -1935,8 +1935,8 @@ files = [
 name = "matplotlib"
 version = "3.5.3"
 description = "Python plotting package"
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "matplotlib-3.5.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:a206a1b762b39398efea838f528b3a6d60cdb26fe9d58b48265787e29cd1d693"},
@@ -2206,8 +2206,8 @@ sso = ["social-auth-core[openidconnect,saml] (>=4.3.0,<4.4.0)"]
 name = "nautobot-device-lifecycle-mgmt"
 version = "1.1.2"
 description = "Manages device lifecycles for platforms and software."
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.7,<4.0"
 files = [
     {file = "nautobot_device_lifecycle_mgmt-1.1.2-py3-none-any.whl", hash = "sha256:5d5b07963462ea35e0dae42fb37130f072f33094271b81fa06d2c5bc4826d4e2"},
@@ -2268,8 +2268,8 @@ optionals = ["napalm (>=4.0.0,<5.0.0)"]
 name = "numpy"
 version = "1.21.1"
 description = "NumPy is the fundamental package for array computing with Python."
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "numpy-1.21.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:38e8648f9449a549a7dfe8d8755a5979b45b3538520d1e735637ef28e8c2dc50"},
@@ -2643,8 +2643,8 @@ files = [
 name = "pycountry"
 version = "22.3.5"
 description = "ISO country, subdivision, language, currency and script definitions and their translations"
-category = "main"
-optional = true
+category = "dev"
+optional = false
 python-versions = ">=3.6, <4"
 files = [
     {file = "pycountry-22.3.5.tar.gz", hash = "sha256:b2163a246c585894d808f18783e19137cb70a0c18fb36748dc01fc6f109c1646"},
@@ -3302,7 +3302,7 @@ files = [
 name = "setuptools"
 version = "67.6.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -3821,9 +3821,9 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 
 [extras]
 nautobot = ["nautobot"]
-nautobot-device-lifecycle-mgmt = ["nautobot-device-lifecycle-mgmt"]
+nautobot-device-lifecycle-mgmt = []
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "14811ab396b220f54a89000ffb0e7daff863d791590a578b08ed3c4e94cfc1a4"
+content-hash = "c4edf3cb94e147f7992b8f7187ddb57769004412d38d5ea314e7979165bd44f0"
