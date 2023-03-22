@@ -97,12 +97,6 @@ jobs:
       - "yamllint"
       - "black"
     runs-on: "ubuntu-20.04"
-    env:
-      INVOKE_NAUTOBOT_SSOT_ARISTACV_LOCAL: "True"
-      NAUTOBOT_DB_USER: "nautobot"
-      NAUTOBOT_DB_PASSWORD: "decinablesprewad"
-      NAUTOBOT_DB_ENGINE: "django.db.backends.postgresql"
-      NAUTOBOT_CONFIG: "development/nautobot_config.py"
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v2"
