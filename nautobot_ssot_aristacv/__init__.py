@@ -1,4 +1,8 @@
 """Plugin declaration for aristacv_sync."""
+import os
+from django.conf import settings
+from django.db.models.signals import post_migrate
+from nautobot.extras.plugins import PluginConfig
 
 try:
     from importlib import metadata
@@ -7,11 +11,6 @@ except ImportError:
     import importlib_metadata as metadata
 
 __version__ = metadata.version(__name__)
-
-import os
-from django.conf import settings
-from django.db.models.signals import post_migrate
-from nautobot.extras.plugins import PluginConfig
 
 
 class NautobotSSOTAristaCVConfig(PluginConfig):
@@ -24,7 +23,7 @@ class NautobotSSOTAristaCVConfig(PluginConfig):
     description = "Nautobot SSoT Arista CloudVision."
     base_url = "nautobot-sot_aristacv"
     required_settings = []
-    min_version = "1.2.0"
+    min_version = "1.4.0"
     max_version = "1.9999"
     default_settings = {
         "cvp_host": os.getenv("NAUTOBOT_ARISTACV_HOST"),

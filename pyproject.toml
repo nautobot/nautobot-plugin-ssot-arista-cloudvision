@@ -20,10 +20,9 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-nautobot = "^1.2.0"
+nautobot = "^1.4.0"
 nautobot-ssot = "^1.0.1"
 cloudvision = "^1.5.0"
-nautobot-device-lifecycle-mgmt = {version = "^1.0.2", optional = true}
 cvprac = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
@@ -40,6 +39,7 @@ coverage = "*"
 mkdocs = "*"
 markdown-include = "*"
 parameterized = "^0.8.1"
+nautobot-device-lifecycle-mgmt = "^1.0.2"
 
 [tool.poetry.extras]
 nautobot = ["nautobot"]

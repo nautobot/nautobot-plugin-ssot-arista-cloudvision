@@ -38,7 +38,7 @@ namespace = Collection("nautobot_ssot_aristacv")
 namespace.configure(
     {
         "nautobot_ssot_aristacv": {
-            "nautobot_ver": "1.2.1",
+            "nautobot_ver": "1.4.0",
             "project_name": "nautobot-ssot-aristacv",
             "python_ver": "3.7",
             "local": False,
