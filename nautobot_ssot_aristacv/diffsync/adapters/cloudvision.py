@@ -222,4 +222,3 @@ class CloudvisionAdapter(DiffSync):
                 message="Configuration found for hostname_patterns but no site_mappings or role_mappings. Please ensure your mappings are defined."
             )
         self.load_devices()
-        
