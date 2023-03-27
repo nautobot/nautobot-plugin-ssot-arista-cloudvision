@@ -77,7 +77,7 @@ class CloudvisionApi:  # pylint: disable=too-many-instance-attributes, too-many-
             if self.cvp_token:
                 call_creds = grpc.access_token_call_credentials(self.cvp_token)
             elif self.username != "" and self.password != "":  # nosec
-                response = requests.post( # nosec
+                response = requests.post(  # nosec
                     f"https://{self.cvp_host}/cvpservice/login/authenticate.do",
                     auth=(self.username, self.password),
                     verify=self.verify,
