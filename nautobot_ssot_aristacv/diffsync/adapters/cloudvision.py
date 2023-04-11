@@ -3,7 +3,7 @@ from django.conf import settings
 import distutils
 import re
 
-import arista.tag.v1 as TAG
+import arista.tag.v2 as TAG
 from diffsync import DiffSync
 from diffsync.exceptions import ObjectAlreadyExists, ObjectNotFound
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import (
@@ -99,10 +99,8 @@ class CloudvisionAdapter(DiffSync):
         for port in port_info:
             if self.job.kwargs.get("debug"):
                 self.job.log_debug(message=f"Port {port['interface']} being loaded for {device.name}.")
-            port_mode = cloudvision.get_interface_mode(client=self.conn, dId=device.serial, interface=port["interface"])
-            transceiver = cloudvision.get_interface_transceiver(
-                client=self.conn, dId=device.serial, interface=port["interface"]
-            )
+            port_mode = cloudvision.get_interface_mode(client=self.conn, dId=device.serial, interface=port)
+            transceiver = cloudvision.get_interface_transceiver(client=self.conn, dId=device.serial, interface=port)
             if transceiver == "Unknown":
                 # Breakout transceivers, ie 40G -> 4x10G, shows up as 4 interfaces and requires looking at base interface to find transceiver, ie Ethernet1 if Ethernet1/1
                 base_port_name = re.sub(r"/\d", "", port["interface"])
