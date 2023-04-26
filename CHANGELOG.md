@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.6.0 - 2023-04-26
+
+### Added
+
+- #149 - Update gRPC service for Cloudvision tags to us tag.v2. Addresses #149.
+
+### Fixed
+
+- #151 - Correct Interface mode. Fixes #139.
+
 ## v1.5.1 - 2023-02-24
 
 ### Added

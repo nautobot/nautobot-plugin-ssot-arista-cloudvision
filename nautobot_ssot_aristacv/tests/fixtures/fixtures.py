@@ -22,5 +22,9 @@ CHASSIS_INTERFACE_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/g
 INTF_DESCRIPTION_QUERY = load_json(
     "./nautobot_ssot_aristacv/tests/fixtures/get_interface_description_client_query.json"
 )
+TRUNK_INTF_MODE_QUERY = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_interface_mode_client_query_trunk.json")
+ACCESS_INTF_MODE_QUERY = load_json(
+    "./nautobot_ssot_aristacv/tests/fixtures/get_interface_mode_client_query_access.json"
+)
 IP_INTF_QUERY = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_ip_interfaces_client_query.json")
 IP_INTF_FIXTURE = load_json("./nautobot_ssot_aristacv/tests/fixtures/get_ip_interfaces_response.json")

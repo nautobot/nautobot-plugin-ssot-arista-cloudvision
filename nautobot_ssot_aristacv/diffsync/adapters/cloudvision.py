@@ -3,7 +3,7 @@ from django.conf import settings
 import distutils
 import re
 
-import arista.tag.v1 as TAG
+import arista.tag.v2 as TAG
 from diffsync import DiffSync
 from diffsync.exceptions import ObjectAlreadyExists, ObjectNotFound
 from nautobot_ssot_aristacv.diffsync.models.cloudvision import (
