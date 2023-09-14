@@ -40,7 +40,7 @@ namespace.configure(
         "nautobot_ssot_aristacv": {
             "nautobot_ver": "1.4.0",
             "project_name": "nautobot-ssot-aristacv",
-            "python_ver": "3.7",
+            "python_ver": "3.8",
             "local": False,
             "compose_dir": os.path.join(os.path.dirname(__file__), "development"),
             "compose_files": [
