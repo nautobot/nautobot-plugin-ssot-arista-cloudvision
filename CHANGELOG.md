@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.6.1 - 2023-09-14
+
+### Fixed
+
+- #164 - Update fix for Device Tag retrieval.
+
 ## v1.6.0 - 2023-04-26
 
 ### Added
